@@ -7,6 +7,7 @@ export const grades = pgTable("grades", {
 	applicationId: uuid("application_id")
 		.notNull()
 		.references(() => applications.id, { onDelete: "cascade" }),
+	subjectCode: text("subject_code").notNull(),
 	subjectName: text("subject_name").notNull(),
 	units: integer("units").notNull(),
 	grade: text("grade").notNull(),

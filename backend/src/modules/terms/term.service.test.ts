@@ -31,8 +31,6 @@ describe("createTerm", () => {
 			schoolYear: "2025-2026",
 			semester: "1ST" as const,
 			gwaThreshold: "1.75",
-			minUnits: 18,
-			deadline: "2026-08-15",
 		};
 		const expected = { id: 1, ...input, isActive: false };
 
@@ -86,8 +84,8 @@ describe("getActiveTerm", () => {
 describe("updateTerm", () => {
 	it("updates a term and returns it", async () => {
 		const existing = { id: 1 };
-		const input = { deadline: "2026-09-01" };
-		const updated = { id: 1, deadline: "2026-09-01" };
+		const input = { gwaThreshold: "1.50" };
+		const updated = { id: 1, gwaThreshold: "1.50" };
 
 		vi.mocked(db.query.terms.findFirst).mockResolvedValue(existing as never);
 
@@ -104,8 +102,8 @@ describe("updateTerm", () => {
 	it("throws NotFoundError when term does not exist", async () => {
 		vi.mocked(db.query.terms.findFirst).mockResolvedValue(undefined);
 
-		await expect(updateTerm(999, { deadline: "2026-09-01" })).rejects.toThrow(
-			NotFoundError,
-		);
+		await expect(
+			updateTerm(999, { gwaThreshold: "1.50" }),
+		).rejects.toThrow(NotFoundError);
 	});
 });

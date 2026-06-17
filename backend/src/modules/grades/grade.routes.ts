@@ -40,13 +40,16 @@ export async function gradeRoutes(fastify: FastifyInstance) {
 				);
 			}
 
+			const gwa = await computeGWA(id);
+
 			const term = await db.query.terms.findFirst({
 				where: eq(terms.id, app.termId),
 			});
 
 			const disq = checkDisqualifiers(
 				gradeRows.map((g) => ({ grade: g.grade, units: g.units })),
-				term?.minUnits ?? 18,
+				gwa,
+				Number(term?.gwaThreshold ?? 1.75),
 			);
 
 			await db.transaction(async (tx) => {
@@ -54,14 +57,13 @@ export async function gradeRoutes(fastify: FastifyInstance) {
 				await tx.insert(grades).values(
 					gradeRows.map((g) => ({
 						applicationId: id,
+						subjectCode: g.subjectCode,
 						subjectName: g.subjectName,
 						units: g.units,
 						grade: g.grade,
 					})),
 				);
 			});
-
-			const gwa = await computeGWA(id);
 
 			return reply.send({
 				applicationId: id,
@@ -129,7 +131,8 @@ export async function gradeRoutes(fastify: FastifyInstance) {
 
 			const disq = checkDisqualifiers(
 				gradeRows.map((g) => ({ grade: g.grade, units: g.units })),
-				term?.minUnits ?? 18,
+				gwa,
+				Number(term?.gwaThreshold ?? 1.75),
 			);
 
 			return reply.send({ gwa, disqualifiers: disq.reasons });

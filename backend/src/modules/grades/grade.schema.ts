@@ -11,6 +11,7 @@ export const ALLOWED_GRADES = [
 ] as const;
 
 export const gradeSchema = z.object({
+	subjectCode: z.string().min(1).max(20),
 	subjectName: z.string().min(1).max(100),
 	units: z.number().int().min(1).max(6),
 	grade: z.enum(ALLOWED_GRADES),
@@ -20,10 +21,10 @@ export type GradeInput = z.infer<typeof gradeSchema>;
 
 export function checkDisqualifiers(
 	grades: Array<{ grade: string; units: number }>,
-	minUnits: number,
+	gwa: number | null,
+	gwaThreshold: number,
 ) {
 	const reasons: Array<{ code: string; message: string }> = [];
-	const totalUnits = grades.reduce((sum, g) => sum + g.units, 0);
 
 	const hasDisqualifyingGrade = grades.some(
 		(g) => g.grade === "5.0" || g.grade === "INC",
@@ -35,10 +36,10 @@ export function checkDisqualifiers(
 		});
 	}
 
-	if (totalUnits < minUnits) {
+	if (gwa !== null && gwa > gwaThreshold) {
 		reasons.push({
-			code: "GRD-005",
-			message: `Underloading: ${totalUnits} units (minimum ${minUnits})`,
+			code: "GRD-006",
+			message: `GWA ${gwa} does not meet the required threshold of ${gwaThreshold}`,
 		});
 	}
 

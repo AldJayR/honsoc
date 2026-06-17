@@ -116,6 +116,7 @@ export async function createApplication(
 			await tx.insert(grades).values(
 				gradeRows.map((g) => ({
 					applicationId: app.id,
+					subjectCode: g.subjectCode,
 					subjectName: g.subjectName,
 					units: g.units,
 					grade: g.grade,

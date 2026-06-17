@@ -34,7 +34,7 @@ The system utilizes a unified application wizard that automatically splits "Both
 | COG | Certificate of Grades — official sealed document from the Registrar |
 | COR | Certificate of Registration — proof of enrollment and unit load |
 | GMC | Good Moral Certificate — character clearance from the Registrar |
-| Disqualifier | Any condition that makes an applicant ineligible: INC grade, 5.0 grade, or underloading |
+| Disqualifier | Any condition that makes an applicant ineligible: INC grade, 5.0 grade, or GWA exceeding the configured threshold |
 | Threshold | GWA of 1.75 or better (lower numeric value = higher grade in Philippine grading) |
 | Honor Roll | The final published list of verified Honor Society members for a given term |
 | Term | One academic semester within a school year |
@@ -56,7 +56,6 @@ The system utilizes a unified application wizard that automatically splits "Both
 - Student number formats vary across different NEUST campuses; validation must remain flexible.
 - The system is internal to NEUST and not publicly accessible.
 - Philippine grading scale applies: 1.0 (highest) to 5.0 (lowest). INC denotes incomplete.
-- A student must maintain a full academic load (minimum units as defined per term by the president in system settings).
 
 ---
 
@@ -131,7 +130,7 @@ NHSVS follows a **Digitized Audit Model**:
 
 | ID | Requirement |
 |----|-------------|
-| TERM-01 | The `PRESIDENT` shall be able to configure the active academic term, including school year, semesters open for application (1st, 2nd, or Both), GWA threshold, minimum unit load, and Honor Roll deadline. |
+| TERM-01 | The `PRESIDENT` shall be able to configure the active academic term, including school year, semesters open for application (1st, 2nd, or Both), and GWA threshold. |
 | TERM-02 | Students shall only be able to submit applications when an active term is configured. If no active term exists, the portal shall display an "Applications are closed" screen. |
 | TERM-03 | Term settings shall take effect immediately upon save. |
 
@@ -142,11 +141,10 @@ NHSVS follows a **Digitized Audit Model**:
 | STU-01 | A student shall complete application in a sequential step-by-step wizard: Profile → Semester selection → Grade entry → Document upload. |
 | STU-02 | Students shall select whether they are applying for the 1st semester, 2nd semester, or both semesters of the active school year. |
 | STU-03 | The system shall prevent a student from submitting a duplicate application for the same semester within the active term. If an application for that specific semester already exists, the system shall redirect the student to the status tracking screen. |
-| STU-04 | The grade entry interface shall accept: subject name, unit count (integer 1–6), and grade value. The UI shall strictly limit the grade selection dropdown to the following valid grades: 1.0, 1.25, 1.50, 1.75, 2.00, 5.0, INC. Grades lower than 2.00 (e.g. 2.25, 2.50, 2.75, 3.00) are blocked at the UI level. |
+| STU-04 | The grade entry interface shall accept: subject code, subject name, unit count (integer 1–6), and grade value. The UI shall strictly limit the grade selection dropdown to the following valid grades: 1.0, 1.25, 1.50, 1.75, 2.00, 5.0, INC. Grades lower than 2.00 (e.g. 2.25, 2.50, 2.75, 3.00) are blocked at the UI level. |
 | STU-05 | GWA shall be computed and displayed in real time per semester as grades are entered, using the formula: `GWA = Σ(grade × units) / Σ(units)`. GWA values are calculated and tracked independently per semester; there is no cumulative GWA calculation. |
 | STU-06 | If the student selects "both semesters," the UI shall present separate grade entry tabs for each semester. Upon submission, the system's backend API shall automatically split this unified submission into **two separate, independent application records** (one for the 1st semester and one for the 2nd semester). |
-| STU-07 | If a grade of `5.0` or `INC` is entered, the system shall immediately display a disqualifier warning banner. The submission may still proceed (to allow the admin to review), but the warning shall persist. |
-| STU-08 | If total enrolled units in a semester fall below the configured minimum unit load, the system shall flag underloading and display a warning. |
+| STU-07 | If a grade of `5.0` or `INC` is entered, the system shall immediately display a disqualifier warning banner. The submission may still proceed (to allow the admin to review), but the warning shall persist. If the computed GWA exceeds the configured threshold, a GWA disqualifier warning shall also be displayed. |
 | STU-09 | The document upload step shall require: one COR (valid for both), one COG per applied semester (COG_1ST and/or COG_2ND), and one GMC (valid for both). For "both semesters" submissions, the backend shall link the single uploaded COR and GMC records to both generated application entries. |
 | STU-10 | The system shall display a sealed document notice at the point of upload: documents must bear the Registrar's official dry seal or wet signature. |
 | STU-11 | Upon successful submission, the system shall generate and display a unique application reference number for each created application record in the format `HS-[YY][SEM]-[STUDENT_NO]`. |
@@ -158,7 +156,7 @@ NHSVS follows a **Digitized Audit Model**:
 | STA-01 | The student portal shall display a real-time application timeline for each submitted semester application with the following states: `Submitted → Under Review → Flagged / Verified → Final Honor Roll`. |
 | STA-02 | Each timeline state shall include a timestamp when it was entered. |
 | STA-03 | If an application is flagged, the student shall see: all reason codes applied, the admin's note for each reason, and an action interface to correct and re-submit the specific semester's details. |
-| STA-04 | Flag reason codes shall include at minimum: `DOC-001` (scan unreadable), `GRD-002` (grade mismatch), `DOC-003` (missing document), `GRD-004` (INC grade), `GRD-005` (underloading), `OTH-006` (other). |
+| STA-04 | Flag reason codes shall include at minimum: `DOC-001` (scan unreadable), `GRD-002` (grade mismatch), `DOC-003` (missing document), `GRD-004` (INC grade), `GRD-006` (GWA below threshold), `OTH-005` (other). |
 | STA-05 | On re-submission after a flag, the target application state shall return to `Under Review` and the admin queue shall be updated. The status of the student's other semester application (if any) shall remain unaffected. |
 | STA-06 | The student portal shall display the Honor Roll deadline and days remaining. |
 
@@ -170,7 +168,7 @@ NHSVS follows a **Digitized Audit Model**:
 | ADM-02 | The applicant queue shall support filtering by semester (1st, 2nd) and status (All, Pending, Verified, Flagged). |
 | ADM-03 | The audit workspace shall display a persistent split-screen layout: left pane shows the uploaded document scans (with tab selectors for COG, COR, and GMC); right pane shows the system-computed grade table for the selected semester, computed GWA, and document completeness chips. |
 | ADM-04 | The right pane shall include a per-subject match indicator (✓/✕) comparing the student's entered grade against the visible scan. |
-| ADM-05 | The Verify button shall be disabled (hard-blocked) if any of the following conditions exist: a disqualifying grade (INC or 5.0) is present, required documents for the semester are missing, or unit load is below the minimum threshold. |
+| ADM-05 | The Verify button shall be disabled (hard-blocked) if any of the following conditions exist: a disqualifying grade (INC or 5.0) is present, or required documents for the semester are missing. |
 | ADM-06 | The Flag action shall open a modal requiring the admin to: select at least one reason code, and enter a mandatory text note before the flag is saved. |
 | ADM-07 | The Escalate action shall route the application to the president's escalation queue, with the admin's note attached. |
 | ADM-08 | All admin actions (verify, flag, escalate) shall be immediately and automatically recorded in the audit log with actor ID, timestamp, applicant ID, and action type. No separate "save" step is required. |
@@ -219,7 +217,7 @@ NHSVS follows a **Digitized Audit Model**:
 | SEC-03 | All API endpoints shall enforce role-based access control (RBAC). A `STUDENT` token shall never return admin-scoped data. |
 | SEC-04 | Document storage URLs shall be non-guessable and access-controlled. Direct URL access without an authenticated session shall return 403. |
 | SEC-05 | The audit log shall be append-only. No role, including `PRESIDENT`, shall be able to modify or delete audit entries. |
-| SEC-06 | Input fields accepting grade values shall be validated server-side against the allowed value set: `['1.0', '1.25', '1.50', '1.75', '2.00', '5.0', 'INC']`. If any grade numerically greater than `2.00` (except the explicit `5.0` and `INC` tokens) is supplied, the server shall return a `422 Unprocessable Entity` response. |
+| SEC-06 | Input fields accepting grade values shall be validated server-side against the allowed value set: `['1.00', '1.25', '1.50', '1.75', '2.00', '5.0', 'INC']`. If any grade numerically greater than `2.00` (except the explicit `5.0` and `INC` tokens) is supplied, the server shall return a `422 Unprocessable Entity` response. Additionally, the computed GWA per semester shall be checked against the term's GWA threshold; exceeding it triggers a disqualifier flag. |
 
 ### 5.3 Reliability and Data Integrity
 
@@ -282,8 +280,6 @@ terms (
   school_year     TEXT NOT NULL,        -- e.g. '2024-2025'
   semester        ENUM('1ST','2ND','BOTH'), -- semesters currently accepting applications
   gwa_threshold   NUMERIC(4,2) DEFAULT 1.75,
-  min_units       INT DEFAULT 18,
-  deadline        DATE NOT NULL,
   is_active       BOOLEAN DEFAULT FALSE
 )
 
@@ -302,6 +298,7 @@ applications (
 grades (
   id             SERIAL PRIMARY KEY,
   application_id UUID REFERENCES applications(id) ON DELETE CASCADE,
+  subject_code   TEXT NOT NULL,
   subject_name   TEXT NOT NULL,
   units          INT NOT NULL CHECK (units BETWEEN 1 AND 6),
   grade          TEXT NOT NULL         -- '1.00', '1.25', '1.50', '1.75', '2.00', '5.0', 'INC'
@@ -450,7 +447,7 @@ The following screens shall be implemented. Prototype references are noted for d
 | President escalations | PRESIDENT | Queue of escalated cases with admin notes. Approve / Return actions. |
 | President honor roll | PRESIDENT | Verified applicant table. Filter by semester. Preview and Export PDF. Timestamped on generation. |
 | President audit report | PRESIDENT | Full cross-admin log. Exportable. |
-| President settings — Term | PRESIDENT | Configure GWA threshold, deadline, semester, min units. |
+| President settings — Term | PRESIDENT | Configure GWA threshold, semester, and school year. |
 | President settings — Admins | PRESIDENT | Admin table with status (Active / Invite pending). Add, edit, deactivate. Provisioning form with live invite preview. |
 | 403 Unauthorized | All | Role-mismatch screen with return-to-portal action. |
 | Session expired | All | Inactivity timeout screen with re-login action. |

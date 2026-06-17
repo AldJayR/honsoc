@@ -42,7 +42,6 @@ function mockActiveTerm(overrides = {}) {
 		id: 1,
 		schoolYear: "2025-2026",
 		semester: "BOTH",
-		minUnits: 18,
 		...overrides,
 	};
 	vi.mocked(db.query.terms.findFirst).mockResolvedValue(term as never);
@@ -61,10 +60,10 @@ function mockNoExistingApplication() {
 
 describe("createApplication", () => {
 	const grades1st = [
-		{ subjectName: "Math", units: 3, grade: "1.50" as const },
+		{ subjectCode: "MATH101", subjectName: "Math 101", units: 3, grade: "1.50" as const },
 	];
 	const grades2nd = [
-		{ subjectName: "Eng", units: 3, grade: "1.25" as const },
+		{ subjectCode: "ENG102", subjectName: "Eng 102", units: 3, grade: "1.25" as const },
 	];
 
 	it("creates a single semester application", async () => {

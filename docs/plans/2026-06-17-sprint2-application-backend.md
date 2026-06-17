@@ -42,15 +42,15 @@
 **Schema: `src/db/schema/terms.ts`**
 
 ```typescript
-import { pgTable, serial, text, integer, numeric, date, boolean } from "drizzle-orm/pg-core";
+import { boolean, numeric, pgTable, serial, text } from "drizzle-orm/pg-core";
 
 export const terms = pgTable("terms", {
 	id: serial("id").primaryKey(),
-	schoolYear: text("school_year").notNull(),       // "2024-2025"
-	semester: text("semester").notNull().default("1ST"), // "1ST", "2ND", "BOTH"
-	gwaThreshold: numeric("gwa_threshold", { precision: 4, scale: 2 }).default("1.75").notNull(),
-	minUnits: integer("min_units").default(18).notNull(),
-	deadline: date("deadline").notNull(),
+	schoolYear: text("school_year").notNull(),
+	semester: text("semester").notNull().default("1ST"),
+	gwaThreshold: numeric("gwa_threshold", { precision: 4, scale: 2 })
+		.default("1.75")
+		.notNull(),
 	isActive: boolean("is_active").default(false).notNull(),
 });
 ```
@@ -96,6 +96,7 @@ import { applications } from "./applications.ts";
 export const grades = pgTable("grades", {
 	id: serial("id").primaryKey(),
 	applicationId: uuid("application_id").notNull().references(() => applications.id, { onDelete: "cascade" }),
+	subjectCode: text("subject_code").notNull(),
 	subjectName: text("subject_name").notNull(),
 	units: integer("units").notNull(),
 	grade: text("grade").notNull(),  // "1.00" | "1.25" | "1.50" | "1.75" | "2.00" | "5.0" | "INC"
@@ -155,7 +156,6 @@ R2_ENDPOINT=https://<accountid>.r2.cloudflarestorage.com
 R2_ACCESS_KEY_ID=
 R2_SECRET_ACCESS_KEY=
 R2_BUCKET=<bucket-name>
-R2_PUBLIC_URL=https://<bucket>.<accountid>.r2.cloudflarestorage.com
 ```
 
 **Modified:** `src/config/env.ts` — add Zod schema for R2 vars.
@@ -193,8 +193,6 @@ export const createTermSchema = z.object({
 	schoolYear: z.string(),
 	semester: z.enum(["1ST", "2ND", "BOTH"]),
 	gwaThreshold: z.string().default("1.75"),
-	minUnits: z.number().int().default(18),
-	deadline: z.string(), // ISO date
 });
 
 export const updateTermSchema = createTermSchema.partial();
@@ -212,32 +210,29 @@ The allowed grade values:
 export const ALLOWED_GRADES = ["1.00", "1.25", "1.50", "1.75", "2.00", "5.0", "INC"] as const;
 
 export const gradeSchema = z.object({
+	subjectCode: z.string().min(1).max(20),
 	subjectName: z.string().min(1).max(100),
 	units: z.number().int().min(1).max(6),
 	grade: z.enum(ALLOWED_GRADES),
-});
-
-export const disqualifierSchema = z.object({
-	hasDisqualifier: z.boolean(),
-	reasons: z.array(z.object({
-		code: z.enum(["GRD-004", "GRD-005"]),
-		message: z.string(),
-	})),
 });
 ```
 
 **Disqualifier logic** (reusable function):
 
 ```typescript
-export function checkDisqualifiers(grades: Array<{ grade: string; units: number }>, minUnits: number) {
+export function checkDisqualifiers(
+	grades: Array<{ grade: string; units: number }>,
+	gwa: number | null,
+	gwaThreshold: number,
+) {
 	const reasons: Array<{ code: string; message: string }> = [];
-	const totalUnits = grades.reduce((sum, g) => sum + g.units, 0);
 
 	const hasDisqualifyingGrade = grades.some(g => g.grade === "5.0" || g.grade === "INC");
 	if (hasDisqualifyingGrade) reasons.push({ code: "GRD-004", message: "Contains a disqualifying grade (5.0 or INC)" });
 
-	const isUnderload = totalUnits < minUnits;
-	if (isUnderload) reasons.push({ code: "GRD-005", message: `Underloading: ${totalUnits} units (minimum ${minUnits})` });
+	if (gwa !== null && gwa > gwaThreshold) {
+		reasons.push({ code: "GRD-006", message: `GWA ${gwa} does not meet the required threshold of ${gwaThreshold}` });
+	}
 
 	return { hasDisqualifier: reasons.length > 0, reasons };
 }
@@ -307,8 +302,8 @@ export async function createApplication(studentId: string, input: CreateApplicat
 ```json
 {
   "semester": "BOTH",
-  "grades_1st": [{ "subjectName": "Math 101", "units": 3, "grade": "1.50" }],
-  "grades_2nd": [{ "subjectName": "Eng 102", "units": 3, "grade": "1.25" }]
+  "grades_1st": [{ "subjectCode": "MATH101", "subjectName": "Math 101", "units": 3, "grade": "1.50" }],
+  "grades_2nd": [{ "subjectCode": "ENG102", "subjectName": "Eng 102", "units": 3, "grade": "1.25" }]
 }
 ```
 
@@ -316,7 +311,7 @@ export async function createApplication(studentId: string, input: CreateApplicat
 ```json
 {
   "semester": "1ST",
-  "grades": [{ "subjectName": "Math 101", "units": 3, "grade": "1.50" }]
+  "grades": [{ "subjectCode": "MATH101", "subjectName": "Math 101", "units": 3, "grade": "1.50" }]
 }
 ```
 
@@ -436,7 +431,6 @@ import { documentRoutes } from "@/modules/documents/document.routes.ts";
 - [ ] Grade values outside the allowed set return 422
 - [ ] Grade values > 2.00 (except 5.0) return 422
 - [ ] INC or 5.0 in grades triggers disqualifier flag
-- [ ] GWA computed on demand matches the formula (verified by unit test)
 - [ ] Presigned URL endpoint returns a valid R2 signed URL
 - [ ] Link endpoint records the object key in the documents table
 - [ ] `GET /applications/mine` returns the student's applications with computed GWA
