@@ -46,6 +46,7 @@ The system utilizes a unified application wizard that automatically splits "Both
 |------|-------------|
 | `STUDENT` | Self-registered applicant. Submits grades and documents, tracks status. |
 | `COLLEGE_ADMIN` | Provisioned by president. Reviews and verifies applicants within one assigned college. |
+| `OFFICER` | Provisioned by president. Same verification responsibilities as `COLLEGE_ADMIN` (executive, volunteers, graphic editors, etc.). |
 | `PRESIDENT` | Top-level officer. Manages admins, oversees all colleges, generates Honor Roll. |
 
 ### 1.5 Assumptions and Constraints
@@ -191,7 +192,7 @@ NHSVS follows a **Digitized Audit Model**:
 
 | ID | Requirement |
 |----|-------------|
-| PROV-01 | The president shall be able to create officer accounts from Settings → Admin management by providing: full name, NEUST officer email (`@neust.edu.ph`), assigned college, and role (`COLLEGE_ADMIN` or `CO_PRESIDENT`). |
+| PROV-01 | The president shall be able to create officer accounts from Settings → Admin management by providing: first name, last name, email, assigned college, assigned campus, and role (`COLLEGE_ADMIN` or `OFFICER`). The system computes the full `name` field client-side from name components. |
 | PROV-02 | Upon creation, the system shall send a password-setup invite link to the officer's email. The account shall remain in `INVITE_PENDING` state until activated. |
 | PROV-03 | The president shall be able to resend an invite for accounts in `INVITE_PENDING` state. |
 | PROV-04 | The president shall be able to edit an officer's assigned college or role. |
@@ -246,22 +247,34 @@ NHSVS follows a **Digitized Audit Model**:
 
 ```sql
 users (
-  id             UUID PRIMARY KEY,
-  email          TEXT UNIQUE NOT NULL, -- personal email for students
-  password_hash  TEXT NOT NULL,
-  full_name      TEXT NOT NULL,
-  student_number TEXT UNIQUE,          -- alphanumeric format (campus-agnostic)
-  role           ENUM('STUDENT','COLLEGE_ADMIN','PRESIDENT','CO_PRESIDENT'),
-  college_id     INT REFERENCES colleges(id),
-  status         ENUM('ACTIVE','INVITE_PENDING','INACTIVE'),
-  email_verified BOOLEAN DEFAULT FALSE,
-  created_at     TIMESTAMPTZ DEFAULT NOW()
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email           TEXT UNIQUE NOT NULL,   -- personal email for students
+  name            TEXT NOT NULL,          -- computed full name from components
+  first_name      TEXT NOT NULL,
+  middle_name     TEXT,
+  middle_initial  TEXT,
+  last_name       TEXT NOT NULL,
+  extension       TEXT,
+  student_number  TEXT UNIQUE,            -- alphanumeric format (campus-agnostic)
+  role            TEXT NOT NULL DEFAULT 'STUDENT', -- STUDENT | COLLEGE_ADMIN | OFFICER | PRESIDENT
+  campus_id       INT REFERENCES campus(id),
+  department_id   INT REFERENCES departments(id),
+  status          TEXT NOT NULL DEFAULT 'ACTIVE',  -- ACTIVE | INVITE_PENDING | INACTIVE
+  email_verified  BOOLEAN DEFAULT FALSE,
+  image           TEXT,
+  created_at      TIMESTAMPTZ DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ DEFAULT NOW()
 )
 
 departments (
   id    SERIAL PRIMARY KEY,
   code  TEXT UNIQUE NOT NULL,          -- e.g. 'CEIT'
   name  TEXT NOT NULL
+)
+
+campus (
+  id    SERIAL PRIMARY KEY,
+  name  TEXT UNIQUE NOT NULL           -- e.g. 'Gabaldon', 'San Leonardo', etc.
 )
 
 terms (
@@ -362,49 +375,51 @@ Any row with grade `INC` or `5.0` triggers the disqualifier flag regardless of G
 
 ## 7. API Surface (Summary)
 
-All endpoints require a valid JWT bearer token. Role constraints are noted per route.
+All endpoints use cookie-based session authentication (better-auth). Role constraints are noted per route.
 
 ```
-AUTH
-  POST   /auth/register              Public — student registration
-  POST   /auth/login                 Public — returns JWT + role
-  POST   /auth/verify-email          Public — email token confirmation
-  POST   /auth/forgot-password       Public
-  POST   /auth/reset-password        Public
+AUTH (better-auth)
+  POST   /api/auth/sign-up/email        Public — student registration
+  POST   /api/auth/sign-in/email        Public — login → session cookie
+  POST   /api/auth/sign-out             Any auth — destroys session
+  GET    /api/auth/session              Any auth — current session + user
+  POST   /api/auth/verify-email         Public — email token confirmation
+  POST   /api/auth/forgot-password      Public — sends reset email
+  POST   /api/auth/reset-password       Public — sets new password with token
 
-TERMS
-  GET    /terms/active               STUDENT, COLLEGE_ADMIN, PRESIDENT
-  PUT    /terms/:id                  PRESIDENT
+INTERNAL
+  GET    /api/me                        Any auth — current user profile
+  GET    /api/departments               Any auth — list all departments
+  GET    /api/campus                    Any auth — list all campuses
+  POST   /api/admin/provision           PRESIDENT — create officer account + invite
 
-APPLICATIONS
+APPLICATIONS (Sprint 2+)
   POST   /applications               STUDENT — accepts single or split-both payloads
   GET    /applications/mine          STUDENT — own applications only
   GET    /applications/:id           STUDENT (own) | COLLEGE_ADMIN (own college) | PRESIDENT
   PATCH  /applications/:id/status    COLLEGE_ADMIN, PRESIDENT
 
-GRADES
+GRADES (Sprint 2+)
   POST   /applications/:id/grades    STUDENT
   GET    /applications/:id/grades    COLLEGE_ADMIN (own college), PRESIDENT
   GET    /applications/:id/gwa       All authenticated roles
 
-DOCUMENTS
+DOCUMENTS (Sprint 2+)
   POST   /applications/:id/documents STUDENT — multipart upload
   GET    /applications/:id/documents COLLEGE_ADMIN (own college), PRESIDENT
 
-FLAGS
+FLAGS (Sprint 2+)
   POST   /applications/:id/flags     COLLEGE_ADMIN
   GET    /applications/:id/flags     STUDENT (own), COLLEGE_ADMIN, PRESIDENT
 
-AUDIT LOG
+AUDIT LOG (Sprint 2+)
   GET    /audit-log                  PRESIDENT — all; COLLEGE_ADMIN — own college only
 
 ADMIN MANAGEMENT
-  GET    /users/officers             PRESIDENT
-  POST   /users/officers             PRESIDENT
   PUT    /users/officers/:id         PRESIDENT
   DELETE /users/officers/:id         PRESIDENT — deactivates, does not delete
 
-HONOR ROLL
+HONOR ROLL (Sprint 2+)
   GET    /honor-roll/preview         PRESIDENT
   POST   /honor-roll/generate        PRESIDENT — creates immutable snapshot
   GET    /honor-roll/:id/export      PRESIDENT
