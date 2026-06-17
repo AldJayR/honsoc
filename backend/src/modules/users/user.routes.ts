@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import type { FastifyZodOpenApiSchema } from "fastify-zod-openapi";
 import { requireRole } from "@/auth/guards.ts";
 import { auth } from "@/auth/index.ts";
 import { env } from "@/config/env.ts";
@@ -8,7 +9,31 @@ import { provisionAdmin } from "@/modules/users/user.service.ts";
 export async function userRoutes(fastify: FastifyInstance) {
 	fastify.get(
 		"/api/me",
-		{ preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "OFFICER", "PRESIDENT") },
+		{
+			preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "OFFICER", "PRESIDENT"),
+			schema: {
+				summary: "Get current user profile",
+				tags: ["Users"],
+				security: [{ cookieAuth: [] }],
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "object",
+									properties: {
+										id: { type: "string" },
+										name: { type: "string" },
+										email: { type: "string" },
+										role: { type: "string" },
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
 		async (request, reply) => {
 			return reply.send(request.user);
 		},
@@ -16,7 +41,31 @@ export async function userRoutes(fastify: FastifyInstance) {
 
 	fastify.post(
 		"/api/admin/provision",
-		{ preHandler: requireRole("PRESIDENT") },
+		{
+			preHandler: requireRole("PRESIDENT"),
+			schema: {
+				summary: "Provision an officer account",
+				description: "Creates a new officer account and sends a password-setup invite email.",
+				tags: ["Admin"],
+				security: [{ cookieAuth: [] }],
+				body: provisionAdminSchema,
+				response: {
+					201: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "object",
+									properties: {
+										id: { type: "string" },
+										email: { type: "string" },
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
 		async (request, reply) => {
 			const input = provisionAdminSchema.parse(request.body);
 			const result = await provisionAdmin(input);

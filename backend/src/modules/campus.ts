@@ -1,11 +1,37 @@
 import { db } from "@/db";
 import type { FastifyInstance } from "fastify";
+import type { FastifyZodOpenApiSchema } from "fastify-zod-openapi";
 import { requireRole } from "@/auth/guards.ts";
 
 export async function campusRoutes(fastify: FastifyInstance) {
 	fastify.get(
 		"/api/campus",
-		{ preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "OFFICER", "PRESIDENT") },
+		{
+			preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "OFFICER", "PRESIDENT"),
+			schema: {
+				summary: "List all campuses",
+				tags: ["Campus"],
+				security: [{ cookieAuth: [] }],
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "array",
+									items: {
+										type: "object",
+										properties: {
+											id: { type: "integer" },
+											name: { type: "string" },
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
 		async (_request, reply) => {
 			const result = await db.query.campus.findMany();
 			return reply.send(result);

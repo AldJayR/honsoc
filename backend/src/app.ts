@@ -1,6 +1,14 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUI from "@fastify/swagger-ui";
+import {
+	fastifyZodOpenApiPlugin,
+	fastifyZodOpenApiTransformers,
+	serializerCompiler,
+	validatorCompiler,
+} from "fastify-zod-openapi";
 import { ZodError } from "zod";
 import { env } from "@/config/env.ts";
 import authPlugin from "@/auth/plugin.ts";
@@ -19,6 +27,9 @@ export async function buildApp() {
 		logger: env.NODE_ENV !== "test",
 	});
 
+	app.setValidatorCompiler(validatorCompiler);
+	app.setSerializerCompiler(serializerCompiler);
+
 	app.setErrorHandler((error, _request, reply) => {
 		if (error instanceof ZodError) {
 			return reply.status(422).send({
@@ -30,6 +41,35 @@ export async function buildApp() {
 			return reply.status(error.statusCode).send({ error: error.message });
 		}
 		reply.status(500).send({ error: "Internal Server Error" });
+	});
+
+	await app.register(fastifyZodOpenApiPlugin);
+
+	await app.register(fastifySwagger, {
+		openapi: {
+			info: {
+				title: "NEUST Honor Society Verification System",
+				description: "Backend API for NHSVS — student application submission, grade verification, and Honor Roll generation",
+				version: "1.0.0",
+			},
+			servers: [
+				{ url: "http://localhost:3000", description: "Development" },
+			],
+			components: {
+				securitySchemes: {
+					cookieAuth: {
+						type: "apiKey",
+						in: "cookie",
+						name: "better-auth.session_token",
+					},
+				},
+			},
+		},
+		...fastifyZodOpenApiTransformers,
+	});
+
+	await app.register(fastifySwaggerUI, {
+		routePrefix: "/documentation",
 	});
 
 	await app.register(cors, {

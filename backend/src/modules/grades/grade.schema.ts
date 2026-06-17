@@ -11,11 +11,23 @@ export const ALLOWED_GRADES = [
 ] as const;
 
 export const gradeSchema = z.object({
-	subjectCode: z.string().min(1).max(20),
-	subjectName: z.string().min(1).max(100),
-	units: z.number().int().min(1).max(6),
-	grade: z.enum(ALLOWED_GRADES),
-});
+	subjectCode: z.string().min(1).max(20).meta({
+		description: "Subject code (e.g. 'MATH101')",
+		example: "MATH101",
+	}),
+	subjectName: z.string().min(1).max(100).meta({
+		description: "Subject name",
+		example: "Calculus I",
+	}),
+	units: z.number().int().min(1).max(6).meta({
+		description: "Number of units (1–6)",
+		example: 3,
+	}),
+	grade: z.enum(ALLOWED_GRADES).meta({
+		description: "Grade value",
+		example: "1.50",
+	}),
+}).meta({ id: "Grade" });
 
 export type GradeInput = z.infer<typeof gradeSchema>;
 

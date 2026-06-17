@@ -17,4 +17,11 @@ export const createApplicationSchema = z.discriminatedUnion("semester", [
 	bothSemestersSchema,
 ]);
 
+export const applicationIdParamSchema = z.object({
+	id: z.string().meta({
+		description: "Application ID",
+		example: "550e8400-e29b-41d4-a716-446655440000",
+	}),
+});
+
 export type CreateApplicationInput = z.infer<typeof createApplicationSchema>;
