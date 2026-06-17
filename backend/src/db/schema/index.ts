@@ -4,3 +4,7 @@ export { users, usersRelations } from "./users.ts";
 export { sessions, sessionsRelations } from "./sessions.ts";
 export { accounts, accountsRelations } from "./accounts.ts";
 export { verifications } from "./verifications.ts";
+export { terms } from "./terms.ts";
+export { applications, applicationsRelations } from "./applications.ts";
+export { grades, gradesRelations } from "./grades.ts";
+export { documents, documentsRelations } from "./documents.ts";

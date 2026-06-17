@@ -8,6 +8,10 @@ import sessionHook from "@/auth/guards.ts";
 import { userRoutes } from "@/modules/users/user.routes.ts";
 import { departmentRoutes } from "@/modules/departments.ts";
 import { campusRoutes } from "@/modules/campus.ts";
+import { termRoutes } from "@/modules/terms/term.routes.ts";
+import { applicationRoutes } from "@/modules/applications/application.routes.ts";
+import { documentRoutes } from "@/modules/documents/document.routes.ts";
+import { gradeRoutes } from "@/modules/grades/grade.routes.ts";
 import { AppError } from "@/lib/errors.ts";
 
 export async function buildApp() {
@@ -41,6 +45,10 @@ export async function buildApp() {
 	await app.register(userRoutes);
 	await app.register(departmentRoutes);
 	await app.register(campusRoutes);
+	await app.register(termRoutes);
+	await app.register(applicationRoutes);
+	await app.register(documentRoutes);
+	await app.register(gradeRoutes);
 
 	return app;
 }
