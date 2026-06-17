@@ -12,13 +12,19 @@
   "type": "module",
   "dependencies": {
     "@fastify/cors": "^11.2.0",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
     "fastify": "^5.8.5",
+    "pg": "^8.21.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16",
     "@types/node": "^25.9.2",
+    "@types/pg": "^8.20.0",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.22.4",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
   }
 }
