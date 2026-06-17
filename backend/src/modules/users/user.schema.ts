@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const provisionAdminSchema = z.object({
-	email: z.string().email(),
+	email: z.email(),
 	name: z.string().min(1),
 	first_name: z.string().min(1),
 	last_name: z.string().min(1),
