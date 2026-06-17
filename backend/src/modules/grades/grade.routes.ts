@@ -1,17 +1,16 @@
 import type { FastifyInstance } from "fastify";
+import type { FastifyZodOpenApiSchema } from "fastify-zod-openapi";
 import { requireRole } from "@/auth/guards.ts";
 import { z } from "zod";
-import { db } from "@/db";
 import {
-	applications,
-	grades,
-	terms,
-} from "@/db/schema/index.ts";
-import { eq, and } from "drizzle-orm";
-import { NotFoundError, ForbiddenError, UnprocessableError } from "@/lib/errors.ts";
+	applicationIdParamSchema,
+} from "@/modules/applications/application.schema.ts";
 import { gradeSchema } from "@/modules/grades/grade.schema.ts";
-import { computeGWA } from "@/modules/grades/gwa.service.ts";
-import { checkDisqualifiers } from "@/modules/grades/grade.schema.ts";
+import {
+	submitGrades,
+	getGrades,
+	getGwaWithDisqualifiers,
+} from "@/modules/grades/grade.service.ts";
 
 const addGradesSchema = z.object({
 	grades: z.array(gradeSchema).min(1),
@@ -20,122 +19,133 @@ const addGradesSchema = z.object({
 export async function gradeRoutes(fastify: FastifyInstance) {
 	fastify.post(
 		"/api/applications/:id/grades",
-		{ preHandler: requireRole("STUDENT") },
+		{
+			preHandler: requireRole("STUDENT"),
+			schema: {
+				summary: "Submit grades for an application",
+				description: "Replace all grades for an application. Recomputes GWA and checks disqualifiers.",
+				tags: ["Grades"],
+				security: [{ cookieAuth: [] }],
+				params: applicationIdParamSchema,
+				body: addGradesSchema,
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "object",
+									properties: {
+										applicationId: { type: "string" },
+										gwa: { type: ["number", "null"] },
+										disqualifiers: {
+											type: "array",
+											items: {
+												type: "object",
+												properties: {
+													code: { type: "string" },
+													message: { type: "string" },
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
 		async (request, reply) => {
 			const { id } = request.params as { id: string };
 			const { grades: gradeRows } = addGradesSchema.parse(request.body);
-
-			const app = await db.query.applications.findFirst({
-				where: eq(applications.id, id),
-			});
-			if (!app) {
-				throw new NotFoundError("Application not found");
-			}
-			if (app.studentId !== request.user!.id) {
-				throw new NotFoundError("Application not found");
-			}
-			if (app.status !== "SUBMITTED" && app.status !== "FLAGGED") {
-				throw new UnprocessableError(
-					"Cannot modify grades for this application",
-				);
-			}
-
-			const gwa = await computeGWA(id);
-
-			const term = await db.query.terms.findFirst({
-				where: eq(terms.id, app.termId),
-			});
-
-			const disq = checkDisqualifiers(
-				gradeRows.map((g) => ({ grade: g.grade, units: g.units })),
-				gwa,
-				Number(term?.gwaThreshold ?? 1.75),
-			);
-
-			await db.transaction(async (tx) => {
-				await tx.delete(grades).where(eq(grades.applicationId, id));
-				await tx.insert(grades).values(
-					gradeRows.map((g) => ({
-						applicationId: id,
-						subjectCode: g.subjectCode,
-						subjectName: g.subjectName,
-						units: g.units,
-						grade: g.grade,
-					})),
-				);
-			});
-
-			return reply.send({
-				applicationId: id,
-				gwa,
-				disqualifiers: disq.reasons,
-			});
+			const result = await submitGrades(id, request.user!.id, gradeRows);
+			return reply.send(result);
 		},
 	);
 
 	fastify.get(
 		"/api/applications/:id/grades",
-		{ preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "PRESIDENT") },
+		{
+			preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "PRESIDENT"),
+			schema: {
+				summary: "Get grades for an application",
+				tags: ["Grades"],
+				security: [{ cookieAuth: [] }],
+				params: applicationIdParamSchema,
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "array",
+									items: {
+										type: "object",
+										properties: {
+											id: { type: "integer" },
+											applicationId: { type: "string" },
+											subjectCode: { type: "string" },
+											subjectName: { type: "string" },
+											units: { type: "integer" },
+											grade: { type: "string" },
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
 		async (request, reply) => {
 			const { id } = request.params as { id: string };
-
-			const app = await db.query.applications.findFirst({
-				where: eq(applications.id, id),
-			});
-			if (!app) {
-				throw new NotFoundError("Application not found");
-			}
-			if (
-				request.user!.role === "STUDENT" &&
-				app.studentId !== request.user!.id
-			) {
-				throw new NotFoundError("Application not found");
-			}
-
-			const gradeRows = await db.query.grades.findMany({
-				where: eq(grades.applicationId, id),
-			});
-
-			return reply.send(gradeRows);
+			const result = await getGrades(id, request.user!.id, request.user!.role);
+			return reply.send(result);
 		},
 	);
 
 	fastify.get(
 		"/api/applications/:id/gwa",
-		{ preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "PRESIDENT") },
+		{
+			preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "PRESIDENT"),
+			schema: {
+				summary: "Get GWA and disqualifiers for an application",
+				tags: ["Grades"],
+				security: [{ cookieAuth: [] }],
+				params: applicationIdParamSchema,
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "object",
+									properties: {
+										gwa: { type: ["number", "null"] },
+										disqualifiers: {
+											type: "array",
+											items: {
+												type: "object",
+												properties: {
+													code: { type: "string" },
+													message: { type: "string" },
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
 		async (request, reply) => {
 			const { id } = request.params as { id: string };
-
-			const app = await db.query.applications.findFirst({
-				where: eq(applications.id, id),
-			});
-			if (!app) {
-				throw new NotFoundError("Application not found");
-			}
-			if (
-				request.user!.role === "STUDENT" &&
-				app.studentId !== request.user!.id
-			) {
-				throw new NotFoundError("Application not found");
-			}
-
-			const gwa = await computeGWA(id);
-
-			const term = await db.query.terms.findFirst({
-				where: eq(terms.id, app.termId),
-			});
-
-			const gradeRows = await db.query.grades.findMany({
-				where: eq(grades.applicationId, id),
-			});
-
-			const disq = checkDisqualifiers(
-				gradeRows.map((g) => ({ grade: g.grade, units: g.units })),
-				gwa,
-				Number(term?.gwaThreshold ?? 1.75),
+			const result = await getGwaWithDisqualifiers(
+				id,
+				request.user!.id,
+				request.user!.role,
 			);
-
-			return reply.send({ gwa, disqualifiers: disq.reasons });
+			return reply.send(result);
 		},
 	);
 }
