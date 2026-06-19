@@ -105,6 +105,9 @@ export async function createApplication(
 					studentId,
 					termId: term.id,
 					semester: sem,
+					yearLevel: input.yearLevel,
+					program: input.program,
+					major: input.major,
 					referenceNo,
 				})
 				.returning({ id: applications.id, referenceNo: applications.referenceNo });
@@ -142,12 +145,15 @@ export async function getStudentApplications(studentId: string) {
 	 orderBy: (a, { desc }) => [desc(a.submittedAt)],
 	});
 
-	const results = await Promise.all(
+		const results = await Promise.all(
 		apps.map(async (app) => {
 			const gwa = await computeGWA(app.id);
 			return {
 				id: app.id,
 				semester: app.semester,
+				yearLevel: app.yearLevel,
+				program: app.program,
+				major: app.major,
 				status: app.status,
 				referenceNo: app.referenceNo,
 				gwa,
@@ -182,13 +188,16 @@ export async function getApplicationById(
 		where: eq(terms.id, app.termId),
 	});
 
-	return {
-		id: app.id,
-		semester: app.semester,
-		status: app.status,
-		referenceNo: app.referenceNo,
-		gwa,
-		submittedAt: app.submittedAt,
-		term: termData,
-	};
+		return {
+			id: app.id,
+			semester: app.semester,
+			yearLevel: app.yearLevel,
+			program: app.program,
+			major: app.major,
+			status: app.status,
+			referenceNo: app.referenceNo,
+			gwa,
+			submittedAt: app.submittedAt,
+			term: termData,
+		};
 }

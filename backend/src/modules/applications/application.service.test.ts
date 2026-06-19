@@ -86,6 +86,9 @@ describe("createApplication", () => {
 
 		const result = await createApplication("student-1", {
 			semester: "1ST",
+			yearLevel: "3RD_YEAR",
+			program: "BS in Information Technology",
+			major: null,
 			grades: grades1st,
 		});
 
@@ -117,6 +120,9 @@ describe("createApplication", () => {
 
 		const result = await createApplication("student-1", {
 			semester: "BOTH",
+			yearLevel: "2ND_YEAR",
+			program: "BS in Computer Science",
+			major: "Software Engineering",
 			grades_1st: grades1st,
 			grades_2nd: grades2nd,
 		});
@@ -132,6 +138,9 @@ describe("createApplication", () => {
 		await expect(
 			createApplication("student-1", {
 				semester: "1ST",
+				yearLevel: "3RD_YEAR",
+				program: "BS in Information Technology",
+				major: null,
 				grades: grades1st,
 			}),
 		).rejects.toThrow(UnprocessableError);
@@ -144,6 +153,9 @@ describe("createApplication", () => {
 		await expect(
 			createApplication("student-1", {
 				semester: "BOTH",
+				yearLevel: "2ND_YEAR",
+				program: "BS in Computer Science",
+				major: null,
 				grades_1st: grades1st,
 				grades_2nd: grades2nd,
 			}),
@@ -157,6 +169,9 @@ describe("createApplication", () => {
 		await expect(
 			createApplication("student-1", {
 				semester: "1ST",
+				yearLevel: "3RD_YEAR",
+				program: "BS in Information Technology",
+				major: null,
 				grades: grades1st,
 			}),
 		).rejects.toThrow(UnprocessableError);
@@ -172,6 +187,9 @@ describe("createApplication", () => {
 		await expect(
 			createApplication("student-1", {
 				semester: "BOTH",
+				yearLevel: "2ND_YEAR",
+				program: "BS in Computer Science",
+				major: null,
 				grades_1st: grades1st,
 				grades_2nd: grades2nd,
 			}),
@@ -187,6 +205,9 @@ describe("createApplication", () => {
 		await expect(
 			createApplication("student-1", {
 				semester: "1ST",
+				yearLevel: "3RD_YEAR",
+				program: "BS in Information Technology",
+				major: null,
 				grades: grades1st,
 			}),
 		).rejects.toThrow(UnprocessableError);
@@ -199,6 +220,9 @@ describe("getStudentApplications", () => {
 			{
 				id: "app-1",
 				semester: "1ST",
+				yearLevel: "3RD_YEAR",
+				program: "BS in Information Technology",
+				major: null,
 				status: "SUBMITTED",
 				referenceNo: "HS-251-1-2012345",
 				submittedAt: new Date(),
@@ -228,6 +252,9 @@ describe("getApplicationById", () => {
 			studentId: "student-1",
 			termId: 1,
 			semester: "1ST",
+			yearLevel: "3RD_YEAR",
+			program: "BS in Information Technology",
+			major: null,
 			status: "SUBMITTED",
 			referenceNo: "HS-251-1-2012345",
 			submittedAt: new Date(),
@@ -264,6 +291,9 @@ describe("getApplicationById", () => {
 			studentId: "any-student",
 			termId: 1,
 			semester: "1ST",
+			yearLevel: "2ND_YEAR",
+			program: "BS in Computer Science",
+			major: null,
 			status: "SUBMITTED",
 			referenceNo: "HS-251-1-2012345",
 			submittedAt: new Date(),

@@ -1,13 +1,27 @@
 import { z } from "zod";
 import { gradeSchema } from "@/modules/grades/grade.schema.ts";
 
+const yearLevelEnum = z.enum([
+	"1ST_YEAR",
+	"2ND_YEAR",
+	"3RD_YEAR",
+	"4TH_YEAR",
+	"5TH_YEAR",
+]);
+
 const singleSemesterSchema = z.object({
 	semester: z.enum(["1ST", "2ND"]),
+	yearLevel: yearLevelEnum,
+	program: z.string().min(1).max(200),
+	major: z.string().min(1).max(200).nullable(),
 	grades: z.array(gradeSchema).min(1),
 });
 
 const bothSemestersSchema = z.object({
 	semester: z.literal("BOTH"),
+	yearLevel: yearLevelEnum,
+	program: z.string().min(1).max(200),
+	major: z.string().min(1).max(200).nullable(),
 	grades_1st: z.array(gradeSchema).min(1),
 	grades_2nd: z.array(gradeSchema).min(1),
 });

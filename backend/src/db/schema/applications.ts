@@ -14,6 +14,9 @@ export const applications = pgTable("applications", {
 		.notNull()
 		.references(() => terms.id),
 	semester: text("semester").notNull(),
+	yearLevel: text("year_level").notNull(),
+	program: text("program").notNull(),
+	major: text("major"),
 	status: text("status").notNull().default("SUBMITTED"),
 	referenceNo: text("reference_no").notNull().unique(),
 	reviewedBy: uuid("reviewed_by").references(() => users.id),
