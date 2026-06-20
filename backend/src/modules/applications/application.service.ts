@@ -107,7 +107,7 @@ export async function createApplication(
 					semester: sem,
 					yearLevel: input.yearLevel,
 					program: input.program,
-					major: input.major,
+					majorId: input.majorId,
 					referenceNo,
 				})
 				.returning({ id: applications.id, referenceNo: applications.referenceNo });
@@ -153,7 +153,7 @@ export async function getStudentApplications(studentId: string) {
 				semester: app.semester,
 				yearLevel: app.yearLevel,
 				program: app.program,
-				major: app.major,
+				majorId: app.majorId,
 				status: app.status,
 				referenceNo: app.referenceNo,
 				gwa,
@@ -193,7 +193,7 @@ export async function getApplicationById(
 			semester: app.semester,
 			yearLevel: app.yearLevel,
 			program: app.program,
-			major: app.major,
+			majorId: app.majorId,
 			status: app.status,
 			referenceNo: app.referenceNo,
 			gwa,

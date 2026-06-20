@@ -8,6 +8,20 @@
       "when": 1781699550752,
       "tag": "0000_fancy_sway",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781877117290,
+      "tag": "0001_flawless_pride",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781880000000,
+      "tag": "0002_add_majors_table",
+      "breakpoints": true
     }
   ]
 }

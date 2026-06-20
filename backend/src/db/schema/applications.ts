@@ -4,6 +4,7 @@ import { users } from "./users.ts";
 import { terms } from "./terms.ts";
 import { grades } from "./grades.ts";
 import { documents } from "./documents.ts";
+import { majors } from "./majors.ts";
 
 export const applications = pgTable("applications", {
 	id: uuid("id").defaultRandom().primaryKey(),
@@ -16,7 +17,7 @@ export const applications = pgTable("applications", {
 	semester: text("semester").notNull(),
 	yearLevel: text("year_level").notNull(),
 	program: text("program").notNull(),
-	major: text("major"),
+	majorId: integer("major_id").references(() => majors.id),
 	status: text("status").notNull().default("SUBMITTED"),
 	referenceNo: text("reference_no").notNull().unique(),
 	reviewedBy: uuid("reviewed_by").references(() => users.id),
@@ -37,6 +38,10 @@ export const applicationsRelations = relations(applications, ({ one, many }) => 
 	term: one(terms, {
 		fields: [applications.termId],
 		references: [terms.id],
+	}),
+	major: one(majors, {
+		fields: [applications.majorId],
+		references: [majors.id],
 	}),
 	reviewer: one(users, {
 		fields: [applications.reviewedBy],

@@ -13,7 +13,7 @@ const singleSemesterSchema = z.object({
 	semester: z.enum(["1ST", "2ND"]),
 	yearLevel: yearLevelEnum,
 	program: z.string().min(1).max(200),
-	major: z.string().min(1).max(200).nullable(),
+	majorId: z.number().int().positive().nullable(),
 	grades: z.array(gradeSchema).min(1),
 });
 
@@ -21,7 +21,7 @@ const bothSemestersSchema = z.object({
 	semester: z.literal("BOTH"),
 	yearLevel: yearLevelEnum,
 	program: z.string().min(1).max(200),
-	major: z.string().min(1).max(200).nullable(),
+	majorId: z.number().int().positive().nullable(),
 	grades_1st: z.array(gradeSchema).min(1),
 	grades_2nd: z.array(gradeSchema).min(1),
 });
