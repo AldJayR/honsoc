@@ -1,8 +1,7 @@
 import type React from "react";
 import { Link } from "react-router";
 
-const imgHonorSocNewLogo1 =
-	"http://localhost:3845/assets/83caa9ed1a630c0801bcf3bd61b96c736e29fae7.png";
+const imgHonorSocNewLogo1 = "/images/honor-soc-new-logo.png";
 
 interface RegistrationLayoutProps {
 	children: React.ReactNode;
