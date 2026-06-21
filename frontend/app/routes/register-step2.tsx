@@ -47,49 +47,99 @@ export function HydrateFallback() {
 	);
 }
 
-// Client Action: validates and saves credentials
+// Client Action: validates and saves credentials by connecting to the Fastify/Better Auth backend
 export async function clientAction({ request }: Route.ClientActionArgs) {
-	const formData = await request.formData();
-	const values = {
-		email: (formData.get("email") as string) || "",
-		password: (formData.get("password") as string) || "",
-		confirmPassword: (formData.get("confirmPassword") as string) || "",
-	};
+  const formData = await request.formData();
+  const values = {
+    email: (formData.get("email") as string) || "",
+    password: (formData.get("password") as string) || "",
+    confirmPassword: (formData.get("confirmPassword") as string) || "",
+  };
 
-	// Validation
-	const errors: Record<string, string> = {};
-	if (!values.email.trim()) {
-		errors.email = "Email is required";
-	} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
-		errors.email = "Please enter a valid email address";
-	}
+  // Validation
+  const errors: Record<string, string> = {};
+  if (!values.email.trim()) {
+    errors.email = "Email is required";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+    errors.email = "Please enter a valid email address";
+  }
 
-	if (!values.password) {
-		errors.password = "Password is required";
-	} else if (values.password.length < 8) {
-		errors.password = "Password must be at least 8 characters long";
-	}
+  if (!values.password) {
+    errors.password = "Password is required";
+  } else if (values.password.length < 8) {
+    errors.password = "Password must be at least 8 characters long";
+  } else if (!/[a-zA-Z]/.test(values.password) || !/[0-9]/.test(values.password)) {
+    // Aligns with the backend Better Auth hook constraints
+    errors.password = "Password must contain at least one letter and one number";
+  }
 
-	if (!values.confirmPassword) {
-		errors.confirmPassword = "Confirm password is required";
-	} else if (values.password !== values.confirmPassword) {
-		errors.confirmPassword = "Passwords do not match";
-	}
+  if (!values.confirmPassword) {
+    errors.confirmPassword = "Confirm password is required";
+  } else if (values.password !== values.confirmPassword) {
+    errors.confirmPassword = "Passwords do not match";
+  }
 
-	if (Object.keys(errors).length > 0) {
-		return { errors, values };
-	}
+  if (Object.keys(errors).length > 0) {
+    return { errors, values };
+  }
 
-	// Save values
-	try {
-		const currentSaved = sessionStorage.getItem("honsoc_registration") || "{}";
-		const merged = { ...JSON.parse(currentSaved), ...values };
-		sessionStorage.setItem("honsoc_registration", JSON.stringify(merged));
-	} catch (e) {
-		console.error("Error saving step 2 progress", e);
-	}
+  // Load cached Step 1 personal info
+  let step1: Record<string, string> = {};
+  try {
+    const saved = sessionStorage.getItem("honsoc_registration");
+    if (saved) {
+      step1 = JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error("Error reading cache", e);
+  }
 
-	return redirect("/register/verify");
+  // Call the Fastify backend Better Auth sign-up endpoint
+  try {
+    const payload = {
+      email: values.email,
+      password: values.password,
+      name: `${step1.firstName || ""} ${step1.lastName || ""}`.trim() || "Honor Society Member",
+      first_name: step1.firstName || "",
+      middle_name: step1.middleName || "",
+      middle_initial: step1.middleInitial || "",
+      last_name: step1.lastName || "",
+      student_number: step1.studentNumber || "",
+    };
+
+    const response = await fetch("http://localhost:3000/api/auth/sign-up/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const message = errorData.message || errorData.error || "Failed to create account";
+      
+      // Map specific errors returned by Better Auth to the relevant field
+      if (message.toLowerCase().includes("email")) {
+        errors.email = message;
+      } else if (message.toLowerCase().includes("password")) {
+        errors.password = message;
+      } else {
+        errors.email = message;
+      }
+      return { errors, values };
+    }
+
+    // Save final details in sessionStorage for display on the verify page
+    const merged = { ...step1, ...values };
+    sessionStorage.setItem("honsoc_registration", JSON.stringify(merged));
+  } catch (e) {
+    console.error("Network connection error to backend server:", e);
+    errors.email = "Unable to connect to the authentication server. Please verify the backend is running.";
+    return { errors, values };
+  }
+
+  return redirect("/register/verify");
 }
 
 export default function RegisterStep2({
