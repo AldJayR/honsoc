@@ -1,7 +1,7 @@
-import { Loader2 } from "lucide-react";
 import { redirect } from "react-router";
 import { VerifyPage } from "~/registration/components/VerifyPage";
-import { STORAGE_KEYS } from "~/shared/lib/constants";
+import { LoadingFallback } from "~/shared/components/LoadingFallback";
+import { readRegistration } from "~/shared/lib/storage";
 import type { Route } from "./+types/register-verify";
 
 export function meta() {
@@ -15,28 +15,14 @@ export function meta() {
 }
 
 export async function clientLoader() {
-	try {
-		const saved = sessionStorage.getItem(STORAGE_KEYS.REGISTRATION);
-		if (!saved) throw redirect("/register");
-		const parsed = JSON.parse(saved);
-		if (!parsed.email) throw redirect("/register");
-		return { email: parsed.email };
-	} catch (e) {
-		if (e instanceof Response) throw e;
-		throw redirect("/register");
-	}
+	const parsed = readRegistration();
+	if (!parsed.email) throw redirect("/register");
+	return { email: parsed.email };
 }
 clientLoader.hydrate = true;
 
 export function HydrateFallback() {
-	return (
-		<div className="w-full max-w-[521px] mx-auto min-h-[300px] flex flex-col items-center justify-center gap-3 select-none" aria-live="polite">
-			<Loader2 className="size-8 animate-spin text-brand-primary" />
-			<p className="text-sm font-medium text-brand-muted">
-				Loading verification details...
-			</p>
-		</div>
-	);
+	return <LoadingFallback label="Loading verification details..." />;
 }
 
 export default function RegisterVerify({ loaderData }: Route.ComponentProps) {

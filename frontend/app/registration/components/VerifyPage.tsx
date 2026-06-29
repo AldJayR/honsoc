@@ -1,6 +1,7 @@
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import { PRIMARY_BUTTON_CLASS } from "~/shared/lib/constants";
 
 interface VerifyPageProps {
 	email: string;
@@ -17,7 +18,10 @@ export function VerifyPage({ email }: VerifyPageProps) {
 	return (
 		<div className="w-full max-w-[521px] mx-auto flex flex-col items-center gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 			<div className="flex items-center justify-center w-full select-none">
-				<div className="bg-brand-success-bg border border-brand-success-border text-brand-success-border flex items-center justify-center rounded-[32.5px] size-[65px] transition-transform duration-300 hover:scale-105 shadow-sm" aria-hidden="true">
+				<div
+					className="bg-brand-success-bg border border-brand-success-border text-brand-success-border flex items-center justify-center rounded-[32.5px] size-[65px] transition-transform duration-300 hover:scale-105 shadow-sm"
+					aria-hidden="true"
+				>
 					<Mail className="size-7 shrink-0" />
 				</div>
 			</div>
@@ -37,7 +41,7 @@ export function VerifyPage({ email }: VerifyPageProps) {
 					<Button
 						type="button"
 						onClick={handleResend}
-						className="bg-brand-primary-dark hover:bg-brand-primary-dark text-primary-foreground font-medium text-sm leading-5 tracking-normal h-8 w-[217px] rounded-lg flex items-center justify-center border-0 shadow-sm cursor-pointer transition-all duration-200 active:scale-[0.98]"
+						className={`${PRIMARY_BUTTON_CLASS} w-[217px]`}
 					>
 						Resend Verification Email
 					</Button>

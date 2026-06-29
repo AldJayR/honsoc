@@ -3,11 +3,12 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { INPUT_CLASS, STORAGE_KEYS } from "~/shared/lib/constants";
+import { INPUT_CLASS } from "~/shared/lib/constants";
 import {
 	type Step1Values,
 	step1Schema,
 } from "~/shared/lib/schemas/registration";
+import { writeRegistration } from "~/shared/lib/storage";
 import { FormActions } from "./FormActions";
 import { FormHeader } from "./FormHeader";
 
@@ -27,17 +28,7 @@ export function Step1Page({ defaultValues }: Step1PageProps) {
 	});
 
 	const onSubmit = (data: Step1Values) => {
-		try {
-			const existing = JSON.parse(
-				sessionStorage.getItem(STORAGE_KEYS.REGISTRATION) || "{}",
-			);
-			sessionStorage.setItem(
-				STORAGE_KEYS.REGISTRATION,
-				JSON.stringify({ ...existing, ...data }),
-			);
-		} catch (e) {
-			console.error("Error saving step 1 progress", e);
-		}
+		writeRegistration(data as unknown as Record<string, string>);
 		navigate("/register/step2");
 	};
 

@@ -2,6 +2,7 @@ import { UserPlus } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "~/components/ui/button";
+import { PRIMARY_BUTTON_CLASS } from "~/shared/lib/constants";
 
 export function HomePage() {
 	const handleLoginClick = () => {
@@ -17,8 +18,7 @@ export function HomePage() {
 			<Link
 				to="/register"
 				className={buttonVariants({
-					className:
-						"bg-brand-primary-dark hover:bg-brand-primary-dark text-primary-foreground font-medium text-sm leading-5 tracking-normal h-8 px-3 rounded-lg flex gap-1.5 items-center justify-center border-0 shadow-sm cursor-pointer w-full transition-all duration-200 active:scale-[0.98]",
+					className: `${PRIMARY_BUTTON_CLASS} w-full`,
 				})}
 			>
 				<UserPlus className="size-4 shrink-0" />

@@ -13,7 +13,10 @@ export function RegistrationLayout({ children }: RegistrationLayoutProps) {
 			<div className="w-full max-w-[512px] flex flex-col gap-12 items-center animate-fade-in">
 				{/* Header Branding */}
 				<header className="flex flex-col gap-4 items-center text-center">
-					<Link to="/" className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 rounded-lg">
+					<Link
+						to="/"
+						className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 rounded-lg"
+					>
 						<div className="relative size-[97px] transition-transform duration-300 group-hover:scale-105">
 							<img
 								alt="NEUST Honor Society Logo"
