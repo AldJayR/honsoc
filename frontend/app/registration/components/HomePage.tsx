@@ -4,15 +4,15 @@ import { toast } from "sonner";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { PRIMARY_BUTTON_CLASS } from "~/shared/lib/constants";
 
-export function HomePage() {
-	const handleLoginClick = () => {
-		toast.info("Login portal is currently under development.", {
-			description:
-				"Please proceed with 'Apply for membership' to see the registration steps.",
-			duration: 5000,
-		});
-	};
+const handleLoginClick = () => {
+	toast.info("Login portal is currently under development.", {
+		description:
+			"Please proceed with 'Apply for membership' to see the registration steps.",
+		duration: 5000,
+	});
+};
 
+export function HomePage() {
 	return (
 		<div className="flex flex-col gap-2.5 items-center mx-auto w-[215px] animate-in fade-in slide-in-from-bottom-4 duration-500">
 			<Link
