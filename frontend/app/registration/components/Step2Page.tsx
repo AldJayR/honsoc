@@ -103,6 +103,9 @@ export function Step2Page({ defaultValues }: Step2PageProps) {
 						error={errors.password?.message}
 						register={register("password")}
 					/>
+					<p className="text-xs text-muted-foreground -mt-2">
+						Password must be at least 8 characters long.
+					</p>
 
 					<PasswordField
 						id="confirmPassword"
