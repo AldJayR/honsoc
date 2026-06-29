@@ -1,13 +1,18 @@
 import type React from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 
 const imgHonorSocNewLogo1 = "/images/honor-soc-new-logo.png";
+const imgFallback =
+	"https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200&auto=format&fit=crop&q=80";
 
 interface RegistrationLayoutProps {
 	children: React.ReactNode;
 }
 
 export function RegistrationLayout({ children }: RegistrationLayoutProps) {
+	const [imgFailed, setImgFailed] = useState(false);
+
 	return (
 		<div className="min-h-screen bg-brand-background flex flex-col items-center justify-center p-6 transition-colors duration-300">
 			<div className="w-full max-w-[512px] flex flex-col gap-12 items-center animate-fade-in">
@@ -20,15 +25,9 @@ export function RegistrationLayout({ children }: RegistrationLayoutProps) {
 						<div className="relative size-[97px] transition-transform duration-300 group-hover:scale-105">
 							<img
 								alt="NEUST Honor Society Logo"
-								className="absolute inset-0 max-w-none object-cover pointer-events-none size-full select-none"
-								src={imgHonorSocNewLogo1}
-								onError={(e) => {
-									// Fallback to a placeholder if the local figma asset server is offline
-									e.currentTarget.src =
-										"https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200&auto=format&fit=crop&q=80";
-									e.currentTarget.className =
-										"absolute inset-0 max-w-none object-cover pointer-events-none size-full select-none rounded-full border-2 border-brand-primary";
-								}}
+								className={`absolute inset-0 max-w-none object-cover pointer-events-none size-full select-none${imgFailed ? " rounded-full border-2 border-brand-primary" : ""}`}
+								src={imgFailed ? imgFallback : imgHonorSocNewLogo1}
+								onError={() => setImgFailed(true)}
 							/>
 						</div>
 					</Link>

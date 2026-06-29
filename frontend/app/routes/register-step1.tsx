@@ -1,4 +1,4 @@
-import { Step1Page } from "~/registration/components/Step1Page";
+import { Step1Page } from "~/register/components/Step1Page";
 import { LoadingFallback } from "~/shared/components/LoadingFallback";
 import { readRegistration } from "~/shared/lib/storage";
 import type { Route } from "./+types/register-step1";

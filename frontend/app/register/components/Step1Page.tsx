@@ -28,7 +28,7 @@ export function Step1Page({ defaultValues }: Step1PageProps) {
 	});
 
 	const onSubmit = (data: Step1Values) => {
-		writeRegistration(data as unknown as Record<string, string>);
+		writeRegistration(data);
 		navigate("/register/step2");
 	};
 

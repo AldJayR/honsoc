@@ -1,5 +1,5 @@
 import { redirect } from "react-router";
-import { Step2Page } from "~/registration/components/Step2Page";
+import { Step2Page } from "~/register/components/Step2Page";
 import { LoadingFallback } from "~/shared/components/LoadingFallback";
 import { readRegistration } from "~/shared/lib/storage";
 import type { Route } from "./+types/register-step2";

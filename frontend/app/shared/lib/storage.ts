@@ -10,14 +10,14 @@ export function readRegistration(): Record<string, string> {
 	}
 }
 
-export function writeRegistration(data: Record<string, string>): void {
+export function writeRegistration(data: Record<string, unknown>): void {
 	try {
 		const existing = readRegistration();
 		sessionStorage.setItem(
 			STORAGE_KEYS.REGISTRATION,
 			JSON.stringify({ ...existing, ...data }),
 		);
-	} catch (e) {
-		console.error("Error saving registration data", e);
+	} catch {
+		// sessionStorage unavailable or corrupted — silently fail
 	}
 }

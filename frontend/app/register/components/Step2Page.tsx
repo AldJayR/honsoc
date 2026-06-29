@@ -51,7 +51,7 @@ export function Step2Page({ defaultValues }: Step2PageProps) {
 			},
 			{
 				onSuccess: () => {
-					writeRegistration({ ...step1, ...data } as Record<string, string>);
+					writeRegistration({ ...step1, ...data });
 					navigate("/register/verify");
 				},
 				onError: (error) => {

@@ -1,5 +1,5 @@
-import { Check, ArrowLeft, ArrowRight } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { Check } from "lucide-react";
+import { StepNavigation } from "~/portal/components/StepNavigation";
 
 interface PortalSemestersStepProps {
 	selectedSemesters: {
@@ -23,7 +23,7 @@ export function PortalSemestersStep({
 }: PortalSemestersStepProps) {
 	// Parse school years
 	// e.g. "2025-2026"
-	const firstSemYear = `AY ${schoolYear ? schoolYear.split("-")[0] : "2024"}-${schoolYear ? schoolYear.split("-")[0] : "2025"}`; // Wait, 1st sem year is the first year
+	const firstSemYear = `AY ${schoolYear ? schoolYear.split("-")[0] : "2024"}-${schoolYear ? schoolYear.split("-")[0] : "2025"}`;
 	const secondSemYear = `AY ${schoolYear ? schoolYear.split("-")[0] : "2025"}-${schoolYear ? schoolYear.split("-")[1] : "2026"}`;
 
 	const handleCardClick = (sem: "firstSem" | "secondSem") => {
@@ -50,7 +50,8 @@ export function PortalSemestersStep({
 	return (
 		<div className="flex flex-col gap-6 items-start w-full animate-fade-in">
 			<p className="font-sans font-normal text-sm leading-5 text-brand-muted select-none">
-				Select the semester(s) for which you are applying. Your GWA will be computed from the grades you enter for each selected semester.
+				Select the semester(s) for which you are applying. Your GWA will be
+				computed from the grades you enter for each selected semester.
 			</p>
 
 			<div className="flex gap-4 items-start w-full">
@@ -70,7 +71,7 @@ export function PortalSemestersStep({
 							className={`rounded-md size-4 flex items-center justify-center border transition-all ${
 								selectedSemesters.firstSem
 									? "bg-amber-500 border-amber-500 text-white"
-									: "bg-white border-brand-border text-transparent"
+									: "bg-card border-brand-border text-transparent"
 							}`}
 						>
 							<Check className="size-3 stroke-[3]" />
@@ -102,7 +103,7 @@ export function PortalSemestersStep({
 							className={`rounded-md size-4 flex items-center justify-center border transition-all ${
 								selectedSemesters.secondSem
 									? "bg-amber-500 border-amber-500 text-white"
-									: "bg-white border-brand-border text-transparent"
+									: "bg-card border-brand-border text-transparent"
 							}`}
 						>
 							<Check className="size-3 stroke-[3]" />
@@ -120,24 +121,7 @@ export function PortalSemestersStep({
 			</div>
 
 			{/* Navigation Buttons */}
-			<div className="flex items-center justify-end gap-3 w-full mt-4 select-none">
-				<Button
-					type="button"
-					onClick={onBack}
-					className="bg-white border border-brand-primary text-brand-primary hover:bg-brand-primary-light/5 font-medium text-sm h-8 px-4 rounded-lg flex gap-1.5 items-center justify-center shadow-sm cursor-pointer transition-all duration-200 active:scale-[0.98]"
-				>
-					<ArrowLeft className="size-4 shrink-0 text-brand-primary" />
-					Back
-				</Button>
-				<Button
-					type="button"
-					onClick={onContinue}
-					className="bg-brand-primary-dark hover:bg-brand-primary text-primary-foreground font-medium text-sm h-8 px-4 rounded-lg flex gap-1.5 items-center justify-center border-0 shadow-sm cursor-pointer transition-all duration-200 active:scale-[0.98]"
-				>
-					Continue
-					<ArrowRight className="size-4 shrink-0" />
-				</Button>
-			</div>
+			<StepNavigation onBack={onBack} onContinue={onContinue} />
 		</div>
 	);
 }

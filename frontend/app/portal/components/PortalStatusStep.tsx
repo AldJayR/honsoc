@@ -1,20 +1,23 @@
+import { AlertTriangle, Award, Check, Clock, Copy } from "lucide-react";
 import { useState } from "react";
-import { Copy, Check, Clock, AlertTriangle, FileCheck, Award } from "lucide-react";
 import { toast } from "sonner";
-import type { ApplicationStatusItem } from "~/shared/services/api";
+import type { ApplicationStatusItem } from "~/shared/services/auth.api";
 
 interface PortalStatusStepProps {
 	applications: ApplicationStatusItem[];
 	schoolYear: string;
 }
 
-export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepProps) {
+export function PortalStatusStep({
+	applications,
+	schoolYear,
+}: PortalStatusStepProps) {
 	const [activeAppIdx, setActiveAppIdx] = useState(0);
 	const [copied, setCopied] = useState(false);
 
 	if (!applications || applications.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center p-8 text-center bg-white border border-brand-border rounded-2xl w-full">
+			<div className="flex flex-col items-center justify-center p-8 text-center bg-card border border-brand-border rounded-2xl w-full">
 				<Clock className="size-8 text-brand-primary animate-pulse mb-3" />
 				<span className="font-sans font-semibold text-sm text-foreground">
 					No Application Found
@@ -37,20 +40,34 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 
 	// Determine timeline node active state based on application status
 	// Statuses: SUBMITTED, UNDER_REVIEW, FLAGGED, VERIFIED, REJECTED
-	const getStepStatus = (stepName: "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED_VERIFIED" | "HONOR_ROLL") => {
+	const getStepStatus = (
+		stepName: "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED_VERIFIED" | "HONOR_ROLL",
+	) => {
 		const status = app.status;
 
 		if (stepName === "SUBMITTED") {
-			return { active: true, completed: status !== "SUBMITTED", label: "Submitted" };
+			return {
+				active: true,
+				completed: status !== "SUBMITTED",
+				label: "Submitted",
+			};
 		}
 		if (stepName === "UNDER_REVIEW") {
-			const active = status === "UNDER_REVIEW" || status === "FLAGGED" || status === "VERIFIED";
+			const active =
+				status === "UNDER_REVIEW" ||
+				status === "FLAGGED" ||
+				status === "VERIFIED";
 			const completed = status === "VERIFIED";
 			return { active, completed, label: "Under Review" };
 		}
 		if (stepName === "FLAGGED_VERIFIED") {
 			if (status === "FLAGGED") {
-				return { active: true, completed: false, label: "Flagged", error: true };
+				return {
+					active: true,
+					completed: false,
+					label: "Flagged",
+					error: true,
+				};
 			}
 			if (status === "VERIFIED") {
 				return { active: true, completed: true, label: "Verified" };
@@ -70,12 +87,13 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 	const verifyStep = getStepStatus("FLAGGED_VERIFIED");
 	const honorStep = getStepStatus("HONOR_ROLL");
 
-	const formattedDate = new Date(app.submittedAt).toLocaleDateString(undefined, {
+	const submittedDate = new Date(app.submittedAt);
+	const formattedDate = submittedDate.toLocaleDateString(undefined, {
 		month: "short",
 		day: "numeric",
 		year: "numeric",
 	});
-	const formattedTime = new Date(app.submittedAt).toLocaleTimeString(undefined, {
+	const formattedTime = submittedDate.toLocaleTimeString(undefined, {
 		hour: "2-digit",
 		minute: "2-digit",
 	});
@@ -92,20 +110,23 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 							onClick={() => setActiveAppIdx(idx)}
 							className={`px-3 py-1 text-xs font-semibold rounded-md transition-all select-none cursor-pointer ${
 								activeAppIdx === idx
-									? "bg-white text-black shadow-sm"
-									: "text-brand-muted hover:text-black"
+									? "bg-card text-foreground shadow-sm"
+									: "text-brand-muted hover:text-foreground"
 							}`}
 						>
-							{a.semester === "1ST" ? "1st Semester" : "2nd Semester"} Application
+							{a.semester === "1ST" ? "1st Semester" : "2nd Semester"}{" "}
+							Application
 						</button>
 					))}
 				</div>
 			)}
 
 			{/* Submission Success Banner */}
-			<div className="bg-white border border-[#d5c4b0] p-5 rounded-2xl flex flex-col gap-3 items-center justify-center text-center w-full shadow-sm">
-				<span className="font-sans font-semibold text-[#c68700] text-base leading-6 select-none">
-					{app.status === "FLAGGED" ? "Action Required" : "Application Submitted"}
+			<div className="bg-card border border-brand-border p-5 rounded-2xl flex flex-col gap-3 items-center justify-center text-center w-full shadow-sm">
+				<span className="font-sans font-semibold text-amber-600 text-base leading-6 select-none">
+					{app.status === "FLAGGED"
+						? "Action Required"
+						: "Application Submitted"}
 				</span>
 				<p className="font-sans font-normal text-sm leading-5 text-foreground">
 					{app.status === "FLAGGED"
@@ -116,7 +137,7 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 				{/* Reference No */}
 				<div className="flex items-center gap-1.5 text-xs text-brand-muted select-none mt-1">
 					<span>Application Reference</span>
-					<span className="font-sans font-semibold text-black select-text">
+					<span className="font-sans font-semibold text-foreground select-text">
 						{app.referenceNo}
 					</span>
 					<button
@@ -147,9 +168,9 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 						<div className="relative">
 							{/* Bullet icon */}
 							<div
-								className={`absolute -left-[31px] top-0 rounded-full size-[18px] border-2 bg-white flex items-center justify-center transition-all ${
+								className={`absolute -left-[31px] top-0 rounded-full size-[18px] border-2 bg-card flex items-center justify-center transition-all ${
 									submittedStep.completed || submittedStep.active
-										? "border-green-600 bg-green-50"
+										? "border-green-600 bg-green-500/10"
 										: "border-brand-border"
 								}`}
 							>
@@ -171,11 +192,11 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 						<div className="relative">
 							{/* Bullet icon */}
 							<div
-								className={`absolute -left-[31px] top-0 rounded-full size-[18px] border-2 bg-white flex items-center justify-center transition-all ${
+								className={`absolute -left-[31px] top-0 rounded-full size-[18px] border-2 bg-card flex items-center justify-center transition-all ${
 									reviewStep.completed
-										? "border-green-600 bg-green-50"
+										? "border-green-600 bg-green-500/10"
 										: reviewStep.active
-											? "border-amber-600 bg-amber-50"
+											? "border-amber-600 bg-amber-500/10"
 											: "border-brand-border"
 								}`}
 							>
@@ -203,11 +224,11 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 						<div className="relative">
 							{/* Bullet icon */}
 							<div
-								className={`absolute -left-[31px] top-0 rounded-full size-[18px] border-2 bg-white flex items-center justify-center transition-all ${
+								className={`absolute -left-[31px] top-0 rounded-full size-[18px] border-2 bg-card flex items-center justify-center transition-all ${
 									verifyStep.error
-										? "border-red-600 bg-red-50"
+										? "border-red-600 bg-red-500/10"
 										: verifyStep.completed
-											? "border-green-600 bg-green-50"
+											? "border-green-600 bg-green-500/10"
 											: "border-brand-border"
 								}`}
 							>
@@ -220,7 +241,9 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 							<div className="flex flex-col leading-tight">
 								<span
 									className={`font-sans font-semibold text-sm ${
-										verifyStep.error ? "text-red-600 animate-pulse-subtle" : "text-foreground"
+										verifyStep.error
+											? "text-red-600 animate-pulse-subtle"
+											: "text-foreground"
 									}`}
 								>
 									{verifyStep.label}
@@ -239,11 +262,15 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 						<div className="relative">
 							{/* Bullet icon */}
 							<div
-								className={`absolute -left-[31px] top-0 rounded-full size-[18px] border-2 bg-white flex items-center justify-center transition-all ${
-									honorStep.active ? "border-amber-600 bg-amber-50" : "border-brand-border"
+								className={`absolute -left-[31px] top-0 rounded-full size-[18px] border-2 bg-card flex items-center justify-center transition-all ${
+									honorStep.active
+										? "border-amber-600 bg-amber-500/10"
+										: "border-brand-border"
 								}`}
 							>
-								{honorStep.active ? <Award className="size-3 text-amber-600" /> : null}
+								{honorStep.active ? (
+									<Award className="size-3 text-amber-600" />
+								) : null}
 							</div>
 							<div className="flex flex-col leading-tight">
 								<span className="font-sans font-semibold text-sm text-foreground">
@@ -269,13 +296,15 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 						{/* SY */}
 						<div className="flex justify-between items-center pb-2 border-b border-brand-border/50 text-xs">
 							<span className="text-brand-muted">Academic Year</span>
-							<span className="font-semibold text-black">AY {schoolYear}</span>
+							<span className="font-semibold text-foreground">
+								AY {schoolYear}
+							</span>
 						</div>
 
 						{/* Semester */}
 						<div className="flex justify-between items-center pb-2 border-b border-brand-border/50 text-xs">
 							<span className="text-brand-muted">Semester</span>
-							<span className="font-semibold text-black">
+							<span className="font-semibold text-foreground">
 								{app.semester === "1ST" ? "1st Semester" : "2nd Semester"}
 							</span>
 						</div>
@@ -294,10 +323,10 @@ export function PortalStatusStep({ applications, schoolYear }: PortalStatusStepP
 							<span
 								className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
 									app.status === "VERIFIED"
-										? "bg-green-100 text-green-800"
+										? "bg-green-500/15 text-green-800"
 										: app.status === "FLAGGED"
-											? "bg-red-100 text-red-800"
-											: "bg-amber-100 text-amber-800"
+											? "bg-red-500/15 text-red-800"
+											: "bg-amber-500/15 text-amber-800"
 								}`}
 							>
 								{app.status}

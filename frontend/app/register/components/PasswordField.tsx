@@ -28,7 +28,10 @@ export function PasswordField({
 	return (
 		<Field className="w-full" data-invalid={!!error}>
 			<div className="flex justify-between items-center w-full mb-1">
-				<FieldLabel htmlFor={id} className="text-sm font-medium text-foreground">
+				<FieldLabel
+					htmlFor={id}
+					className="text-sm font-medium text-foreground"
+				>
 					{label}
 				</FieldLabel>
 				{labelRight}

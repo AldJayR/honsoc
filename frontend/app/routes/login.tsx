@@ -1,4 +1,4 @@
-import { LoginPage } from "~/registration/components/LoginPage";
+import { LoginPage } from "~/auth/components/LoginPage";
 
 export function meta() {
 	return [

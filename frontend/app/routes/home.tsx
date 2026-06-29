@@ -1,4 +1,4 @@
-import { HomePage } from "~/registration/components/HomePage";
+import { HomePage } from "~/home/components/HomePage";
 
 export function meta() {
 	return [

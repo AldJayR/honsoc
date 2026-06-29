@@ -1,5 +1,5 @@
 import { redirect } from "react-router";
-import { VerifyPage } from "~/registration/components/VerifyPage";
+import { VerifyPage } from "~/register/components/VerifyPage";
 import { LoadingFallback } from "~/shared/components/LoadingFallback";
 import { readRegistration } from "~/shared/lib/storage";
 import type { Route } from "./+types/register-verify";

@@ -1,18 +1,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { z } from "zod";
 import { toast } from "sonner";
+import { z } from "zod";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Button } from "~/components/ui/button";
-import { PasswordField } from "./PasswordField";
-import { useSignInEmail } from "~/shared/services/queries/auth";
 import { INPUT_CLASS } from "~/shared/lib/constants";
+import { useSignInEmail } from "~/shared/services/queries/auth";
+import { PasswordField } from "~/register/components/PasswordField";
 
 const loginSchema = z.object({
-	email: z.string().email("Please enter a valid email address"),
+	email: z.email("Please enter a valid email address"),
 	password: z.string().min(1, "Password is required"),
 	rememberMe: z.boolean(),
 });
@@ -37,25 +37,23 @@ export function LoginPage() {
 	});
 
 	const onSubmit = async (data: LoginValues) => {
-		try {
-			await signIn.mutateAsync(
-				{
-					email: data.email,
-					password: data.password,
+		await signIn.mutateAsync(
+			{
+				email: data.email,
+				password: data.password,
+			},
+			{
+				onSuccess: () => {
+					toast.success("Successfully logged in!");
+					navigate("/portal");
 				},
-				{
-					onSuccess: (res) => {
-						toast.success("Successfully logged in!");
-						navigate("/portal");
-					},
-					onError: (err) => {
-						toast.error(err.message || "Failed to log in. Please check your credentials.");
-					},
-				}
-			);
-		} catch (error) {
-			// handled by mutation onError
-		}
+				onError: (err) => {
+					toast.error(
+						err.message || "Failed to log in. Please check your credentials.",
+					);
+				},
+			},
+		);
 	};
 
 	return (
@@ -82,7 +80,7 @@ export function LoginPage() {
 						<Input
 							id="email"
 							type="email"
-							placeholder="amldaldm@gmail.com"
+							placeholder="you@example.com"
 							className={INPUT_CLASS}
 							{...register("email")}
 						/>
@@ -114,7 +112,7 @@ export function LoginPage() {
 					<div className="flex items-center gap-2 select-none mt-1">
 						<Checkbox
 							id="rememberMe"
-							{...register("rememberMe")}
+							{...register("rememberMe", { setValueAs: (v) => !!v })}
 						/>
 						<label
 							htmlFor="rememberMe"
@@ -135,7 +133,9 @@ export function LoginPage() {
 					</Button>
 
 					<div className="text-center mt-2">
-						<span className="text-xs font-normal text-black mr-1">Not yet registered?</span>
+						<span className="text-xs font-normal text-black mr-1">
+							Not yet registered?
+						</span>
 						<Link
 							to="/register"
 							className="text-xs font-semibold text-brand-primary hover:underline"

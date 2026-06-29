@@ -1,4 +1,4 @@
-import type { UserProfile } from "~/shared/services/api";
+import type { UserProfile } from "~/shared/services/auth.api";
 
 interface PortalHeaderProps {
 	user: UserProfile;
@@ -6,8 +6,9 @@ interface PortalHeaderProps {
 
 export function PortalHeader({ user }: PortalHeaderProps) {
 	// Extract initials for placeholder avatar
-	const nameParts = user.name.split(" ");
+	const nameParts = user.name.trim().split(/\s+/);
 	const initials = nameParts
+		.filter((part) => part.length > 0)
 		.map((part) => part[0])
 		.join("")
 		.slice(0, 2)
@@ -39,7 +40,7 @@ export function PortalHeader({ user }: PortalHeaderProps) {
 				</div>
 				{/* Info */}
 				<div className="flex flex-col leading-tight">
-					<span className="font-sans font-normal text-xs text-black">
+					<span className="font-sans font-normal text-xs text-foreground">
 						{user.name}
 					</span>
 					<span className="font-sans font-medium text-[10px] text-brand-muted">

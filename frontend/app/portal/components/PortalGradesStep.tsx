@@ -1,7 +1,21 @@
-import { useState } from "react";
-import { Trash2, AlertTriangle, ArrowLeft, ArrowRight, Plus } from "lucide-react";
+import {
+	AlertTriangle,
+	Plus,
+	Trash2,
+} from "lucide-react";
+import { cn } from "~/lib/utils";
+import { useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
-import type { GradeInput } from "~/shared/services/api";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "~/components/ui/select";
+import { INPUT_CLASS } from "~/shared/lib/constants";
+import type { GradeInput } from "~/shared/services/auth.api";
+import { StepNavigation } from "~/portal/components/StepNavigation";
 
 interface PortalGradesStepProps {
 	selectedSemesters: {
@@ -29,12 +43,15 @@ export function PortalGradesStep({
 	onContinue,
 	gwaThreshold = 1.75,
 }: PortalGradesStepProps) {
+	const gradeKeyCounter = useRef(0);
+	const nextGradeKey = () => `grade_${gradeKeyCounter.current++}`;
 	// Set initial active tab
 	const initialTab = selectedSemesters.firstSem ? "1st" : "2nd";
 	const [activeTab, setActiveTab] = useState<"1st" | "2nd">(initialTab);
 
 	// Form input states
 	const [subjectCode, setSubjectCode] = useState("");
+	const [subjectName, setSubjectName] = useState("");
 	const [units, setUnits] = useState("");
 	const [grade, setGrade] = useState("1.0");
 
@@ -72,40 +89,46 @@ export function PortalGradesStep({
 		return gwa > 0 && gwa > gwaThreshold;
 	};
 
-	const is1stDisqualified = hasDisqualifyingGrade(grades1st) || isDisqualifiedByGWA(gwa1st);
-	const is2ndDisqualified = hasDisqualifyingGrade(grades2nd) || isDisqualifiedByGWA(gwa2nd);
+	const is1stDisqualified =
+		hasDisqualifyingGrade(grades1st) || isDisqualifiedByGWA(gwa1st);
+	const is2ndDisqualified =
+		hasDisqualifyingGrade(grades2nd) || isDisqualifiedByGWA(gwa2nd);
 
 	const handleAddGrade = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!subjectCode.trim()) return;
-		const unitsNum = Number.parseInt(units);
+		const unitsNum = Number.parseInt(units, 10);
 		if (Number.isNaN(unitsNum) || unitsNum < 1 || unitsNum > 6) return;
 
 		const newGrade: GradeInput = {
 			subjectCode: subjectCode.toUpperCase().trim(),
-			subjectName: subjectCode.toUpperCase().trim(), // Requirements use code and name, we can set both same for simplicity
+			subjectName: subjectName.trim() || subjectCode.toUpperCase().trim(),
 			units: unitsNum,
 			grade,
+			_key: nextGradeKey(),
 		};
 
 		setActiveGrades([...activeGrades, newGrade]);
 		setSubjectCode("");
+		setSubjectName("");
 		setUnits("");
 		setGrade("1.0");
 	};
 
-	const handleDeleteGrade = (idx: number) => {
-		setActiveGrades(activeGrades.filter((_, i) => i !== idx));
+	const handleDeleteGrade = (key: string) => {
+		setActiveGrades(activeGrades.filter((g) => g._key !== key));
 	};
 
 	return (
 		<div className="flex flex-col gap-6 items-start w-full animate-fade-in">
 			<p className="font-sans font-normal text-sm leading-5 text-brand-muted select-none">
-				Enter each subject from your COG exactly as printed. GWA is computed automatically. Entering an INC or 5.0 will trigger a disqualifier warning.
+				Enter each subject from your COG exactly as printed. GWA is computed
+				automatically. Entering an INC or 5.0 will trigger a disqualifier
+				warning.
 			</p>
 
 			{/* GWA Summary Panel */}
-			<div className="bg-white border border-[#d5c4b0] flex items-center justify-between p-4 rounded-2xl w-full shadow-sm">
+			<div className="bg-card border border-brand-border flex items-center justify-between p-4 rounded-2xl w-full shadow-sm">
 				{/* 1st Sem GWA */}
 				{selectedSemesters.firstSem && (
 					<div className="flex-1 flex flex-col items-center justify-center text-center">
@@ -137,18 +160,22 @@ export function PortalGradesStep({
 			</div>
 
 			{/* Disqualification Banners */}
-			{((activeTab === "1st" && is1stDisqualified) || (activeTab === "2nd" && is2ndDisqualified)) && (
-				<div className="w-full bg-red-50 border border-red-200 rounded-xl p-3 flex gap-2 items-start text-red-700 animate-pulse-subtle">
+			{((activeTab === "1st" && is1stDisqualified) ||
+				(activeTab === "2nd" && is2ndDisqualified)) && (
+				<div className="w-full bg-red-500/10 border border-red-200 rounded-xl p-3 flex gap-2 items-start text-red-700 animate-pulse-subtle">
 					<AlertTriangle className="size-5 shrink-0 text-red-500 mt-0.5" />
 					<div className="flex flex-col text-xs leading-normal">
-						<span className="font-semibold">Disqualifier Warning Triggered</span>
+						<span className="font-semibold">
+							Disqualifier Warning Triggered
+						</span>
 						<span>
 							{hasDisqualifyingGrade(activeGrades)
 								? "Your grades include a 5.0 or INC, which makes you ineligible for membership."
 								: `Your computed GWA (${(activeTab === "1st" ? gwa1st : gwa2nd).toFixed(2)}) is lower than the configured threshold of ${gwaThreshold.toFixed(2)}.`}
 						</span>
 						<span className="mt-1 text-[10px] text-red-500 font-medium">
-							Note: You can still submit this application for administrative review.
+							Note: You can still submit this application for administrative
+							review.
 						</span>
 					</div>
 				</div>
@@ -162,8 +189,8 @@ export function PortalGradesStep({
 						onClick={() => setActiveTab("1st")}
 						className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all select-none cursor-pointer ${
 							activeTab === "1st"
-								? "bg-white text-black shadow-sm"
-								: "text-brand-muted hover:text-black"
+								? "bg-card text-foreground shadow-sm"
+								: "text-brand-muted hover:text-foreground"
 						}`}
 					>
 						1st semester
@@ -173,8 +200,8 @@ export function PortalGradesStep({
 						onClick={() => setActiveTab("2nd")}
 						className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all select-none cursor-pointer ${
 							activeTab === "2nd"
-								? "bg-white text-black shadow-sm"
-								: "text-brand-muted hover:text-black"
+								? "bg-card text-foreground shadow-sm"
+								: "text-brand-muted hover:text-foreground"
 						}`}
 					>
 						2nd semester
@@ -198,9 +225,9 @@ export function PortalGradesStep({
 						No grades added yet. Enter a subject below to start.
 					</div>
 				) : (
-					activeGrades.map((g, idx) => (
+					activeGrades.map((g) => (
 						<div
-							key={`${g.subjectCode}-${idx}`}
+							key={g._key ?? `${g.subjectCode}-${Math.random()}`}
 							className="flex justify-between items-center w-full border-b border-brand-border last:border-0 px-4 py-2 text-sm text-foreground hover:bg-muted/10 transition-colors"
 						>
 							<div className="w-[300px] font-medium">{g.subjectCode}</div>
@@ -211,7 +238,7 @@ export function PortalGradesStep({
 							<div className="w-10 flex justify-end">
 								<button
 									type="button"
-									onClick={() => handleDeleteGrade(idx)}
+									onClick={() => g._key && handleDeleteGrade(g._key)}
 									className="text-brand-muted hover:text-red-500 transition-colors p-1 cursor-pointer select-none"
 									aria-label="Delete grade"
 								>
@@ -233,7 +260,14 @@ export function PortalGradesStep({
 					value={subjectCode}
 					onChange={(e) => setSubjectCode(e.target.value)}
 					placeholder="Subject Code (e.g. IT101)"
-					className="w-[280px] bg-white border border-brand-border h-[36px] px-3 rounded-lg text-sm text-foreground shadow-sm focus:border-brand-primary outline-none"
+					className={cn(INPUT_CLASS, "w-[280px]")}
+				/>
+				<input
+					type="text"
+					value={subjectName}
+					onChange={(e) => setSubjectName(e.target.value)}
+					placeholder="Subject Name (optional)"
+					className={cn(INPUT_CLASS, "w-[200px]")}
 				/>
 				<input
 					type="number"
@@ -242,22 +276,23 @@ export function PortalGradesStep({
 					placeholder="Units"
 					min="1"
 					max="6"
-					className="flex-1 bg-white border border-brand-border h-[36px] px-3 rounded-lg text-sm text-foreground shadow-sm focus:border-brand-primary outline-none"
+					className={cn(INPUT_CLASS, "flex-1")}
 				/>
-				<select
-					value={grade}
-					onChange={(e) => setGrade(e.target.value)}
-					className="flex-1 bg-white border border-brand-border h-[36px] px-3 rounded-lg text-sm text-foreground shadow-sm focus:border-brand-primary outline-none"
-				>
-					{validGrades.map((g) => (
-						<option key={g} value={g}>
-							{g}
-						</option>
-					))}
-				</select>
+				<Select value={grade} onValueChange={(val) => { if (val) setGrade(val); }}>
+					<SelectTrigger className="flex-1">
+						<SelectValue placeholder="Grade" />
+					</SelectTrigger>
+					<SelectContent>
+						{validGrades.map((g) => (
+							<SelectItem key={g} value={g}>
+								{g}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
 				<Button
 					type="submit"
-					className="bg-white border border-brand-primary text-brand-primary hover:bg-brand-primary-light/5 font-medium text-sm h-8 px-4 rounded-lg flex gap-1 items-center justify-center shadow-sm cursor-pointer transition-all duration-200 active:scale-[0.98]"
+					className="bg-card border border-brand-primary text-brand-primary hover:bg-brand-primary-light/5 font-medium text-sm h-8 px-4 rounded-lg flex gap-1 items-center justify-center shadow-sm cursor-pointer transition-all duration-200 active:scale-[0.98]"
 				>
 					<Plus className="size-4" />
 					Add
@@ -265,28 +300,14 @@ export function PortalGradesStep({
 			</form>
 
 			{/* Navigation Buttons */}
-			<div className="flex items-center justify-end gap-3 w-full mt-4 select-none">
-				<Button
-					type="button"
-					onClick={onBack}
-					className="bg-white border border-brand-primary text-brand-primary hover:bg-brand-primary-light/5 font-medium text-sm h-8 px-4 rounded-lg flex gap-1.5 items-center justify-center shadow-sm cursor-pointer transition-all duration-200 active:scale-[0.98]"
-				>
-					<ArrowLeft className="size-4 shrink-0 text-brand-primary" />
-					Back
-				</Button>
-				<Button
-					type="button"
-					onClick={onContinue}
-					disabled={
-						(selectedSemesters.firstSem && grades1st.length === 0) ||
-						(selectedSemesters.secondSem && grades2nd.length === 0)
-					}
-					className="bg-brand-primary-dark hover:bg-brand-primary text-primary-foreground font-medium text-sm h-8 px-4 rounded-lg flex gap-1.5 items-center justify-center border-0 shadow-sm cursor-pointer transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-				>
-					Continue
-					<ArrowRight className="size-4 shrink-0" />
-				</Button>
-			</div>
+			<StepNavigation
+				onBack={onBack}
+				onContinue={onContinue}
+				disabled={
+					(selectedSemesters.firstSem && grades1st.length === 0) ||
+					(selectedSemesters.secondSem && grades2nd.length === 0)
+				}
+			/>
 		</div>
 	);
 }
