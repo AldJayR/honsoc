@@ -57,7 +57,7 @@ export function Step1Page({ defaultValues }: Step1PageProps) {
 							</FieldLabel>
 							<Input
 								id="firstName"
-								placeholder="Maria"
+								placeholder="e.g., Juan"
 								className={INPUT_CLASS}
 								{...register("firstName")}
 							/>
@@ -77,7 +77,7 @@ export function Step1Page({ defaultValues }: Step1PageProps) {
 							</FieldLabel>
 							<Input
 								id="middleName"
-								placeholder="Maria"
+								placeholder="e.g., Santos"
 								className={INPUT_CLASS}
 								{...register("middleName")}
 							/>
@@ -94,7 +94,7 @@ export function Step1Page({ defaultValues }: Step1PageProps) {
 							</FieldLabel>
 							<Input
 								id="lastName"
-								placeholder="Maria"
+								placeholder="e.g., Dela Cruz"
 								className={INPUT_CLASS}
 								{...register("lastName")}
 							/>
@@ -114,7 +114,7 @@ export function Step1Page({ defaultValues }: Step1PageProps) {
 							</FieldLabel>
 							<Input
 								id="middleInitial"
-								placeholder="Maria"
+								placeholder="e.g., S"
 								className={INPUT_CLASS}
 								{...register("middleInitial")}
 							/>

@@ -86,7 +86,7 @@ export function Step2Page({ defaultValues }: Step2PageProps) {
 						<Input
 							id="email"
 							type="email"
-							placeholder="amldaldm@gmail.com"
+							placeholder="you@example.com"
 							className={INPUT_CLASS}
 							{...register("email")}
 						/>
@@ -100,6 +100,7 @@ export function Step2Page({ defaultValues }: Step2PageProps) {
 					<PasswordField
 						id="password"
 						label="Password"
+						placeholder="Enter your password"
 						error={errors.password?.message}
 						register={register("password")}
 					/>
@@ -110,6 +111,7 @@ export function Step2Page({ defaultValues }: Step2PageProps) {
 					<PasswordField
 						id="confirmPassword"
 						label="Confirm Password"
+						placeholder="Re-enter your password"
 						error={errors.confirmPassword?.message}
 						register={register("confirmPassword")}
 					/>
