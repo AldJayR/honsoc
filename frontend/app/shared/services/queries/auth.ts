@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signUpEmail } from "~/shared/services/auth.api";
 
 export const authKeys = {
@@ -6,6 +6,8 @@ export const authKeys = {
 };
 
 export function useSignUpEmail() {
+	const queryClient = useQueryClient();
+
 	return useMutation({
 		mutationFn: async (variables: Parameters<typeof signUpEmail>[0]) => {
 			const result = await signUpEmail(variables);
@@ -13,6 +15,9 @@ export function useSignUpEmail() {
 				throw new Error(result.error);
 			}
 			return result;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: authKeys.all });
 		},
 	});
 }
