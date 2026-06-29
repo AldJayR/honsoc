@@ -39,7 +39,7 @@ export function Step1Page({ defaultValues }: Step1PageProps) {
 				aria-labelledby="step1-heading"
 				className="flex flex-col gap-8 items-start"
 			>
-				<div id="step1-heading">
+				<div id="step1-heading" className="w-full">
 					<FormHeader
 						title="Create your account"
 						description="Your student number will be verified against your COR during application review."

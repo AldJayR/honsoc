@@ -68,7 +68,7 @@ export function Step2Page({ defaultValues }: Step2PageProps) {
 				aria-labelledby="step2-heading"
 				className="flex flex-col gap-8 items-start"
 			>
-				<div id="step2-heading">
+				<div id="step2-heading" className="w-full">
 					<FormHeader
 						title="Create your account"
 						description="Enter your login details"
