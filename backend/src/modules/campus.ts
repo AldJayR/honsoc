@@ -37,4 +37,38 @@ export async function campusRoutes(fastify: FastifyInstance) {
 			return reply.send(result);
 		},
 	);
+	fastify.get(
+		"/api/majors",
+		{
+			preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "OFFICER", "PRESIDENT"),
+			schema: {
+				summary: "List all majors",
+				tags: ["Campus"],
+				security: [{ cookieAuth: [] }],
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "array",
+									items: {
+										type: "object",
+										properties: {
+											id: { type: "integer" },
+											name: { type: "string" },
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
+		async (_request, reply) => {
+			const result = await db.query.majors.findMany();
+			return reply.send(result);
+		},
+	);
 }
+

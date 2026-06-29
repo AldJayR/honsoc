@@ -26,6 +26,7 @@ export async function userRoutes(fastify: FastifyInstance) {
 										name: { type: "string" },
 										email: { type: "string" },
 										role: { type: "string" },
+										student_number: { type: ["string", "null"] },
 									},
 								},
 							},

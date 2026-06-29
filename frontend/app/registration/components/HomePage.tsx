@@ -1,16 +1,7 @@
 import { UserPlus } from "lucide-react";
 import { Link } from "react-router";
-import { toast } from "sonner";
-import { Button, buttonVariants } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
 import { PRIMARY_BUTTON_CLASS } from "~/shared/lib/constants";
-
-const handleLoginClick = () => {
-	toast.info("Login portal is currently under development.", {
-		description:
-			"Please proceed with 'Apply for membership' to see the registration steps.",
-		duration: 5000,
-	});
-};
 
 export function HomePage() {
 	return (
@@ -33,13 +24,13 @@ export function HomePage() {
 				<div className="h-px bg-brand-border flex-1" />
 			</div>
 
-			<Button
-				onClick={handleLoginClick}
+			<Link
+				to="/login"
 				className="bg-background hover:bg-muted border-[0.5px] border-brand-primary text-brand-primary-light font-medium text-sm leading-5 tracking-normal h-8 px-3 rounded-lg flex gap-1.5 items-center justify-center shadow-sm cursor-pointer w-full transition-all duration-200 active:scale-[0.98]"
 			>
 				<UserPlus className="size-4 shrink-0 text-brand-primary" />
 				Login to existing account
-			</Button>
+			</Link>
 		</div>
 	);
 }

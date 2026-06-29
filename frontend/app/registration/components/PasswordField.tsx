@@ -12,6 +12,7 @@ interface PasswordFieldProps {
 	placeholder?: string;
 	error?: string;
 	register: UseFormRegisterReturn;
+	labelRight?: React.ReactNode;
 }
 
 export function PasswordField({
@@ -20,14 +21,18 @@ export function PasswordField({
 	placeholder = "************",
 	error,
 	register,
+	labelRight,
 }: PasswordFieldProps) {
 	const [visible, setVisible] = useState(false);
 
 	return (
 		<Field className="w-full" data-invalid={!!error}>
-			<FieldLabel htmlFor={id} className="text-sm font-medium text-foreground">
-				{label}
-			</FieldLabel>
+			<div className="flex justify-between items-center w-full mb-1">
+				<FieldLabel htmlFor={id} className="text-sm font-medium text-foreground">
+					{label}
+				</FieldLabel>
+				{labelRight}
+			</div>
 			<div className="relative w-full">
 				<Input
 					id={id}

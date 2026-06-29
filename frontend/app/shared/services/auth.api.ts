@@ -41,3 +41,47 @@ export async function signUpEmail(
 		};
 	}
 }
+
+interface SignInPayload {
+	email: string;
+	password: string;
+}
+
+interface SignInResult {
+	success: boolean;
+	error?: string;
+	user?: {
+		id: string;
+		email: string;
+		name: string;
+		role: string;
+	};
+}
+
+export async function signInEmail(
+	payload: SignInPayload,
+): Promise<SignInResult> {
+	try {
+		const response = await apiClientRaw("/auth/sign-in/email", {
+			method: "POST",
+			body: payload,
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json().catch(() => ({}));
+			const message =
+				errorData.message || errorData.error || "Invalid email or password";
+			return { success: false, error: message };
+		}
+
+		const data = await response.json();
+		return { success: true, user: data.user };
+	} catch {
+		return {
+			success: false,
+			error:
+				"Unable to connect to the authentication server. Please verify the backend is running.",
+		};
+	}
+}
+
