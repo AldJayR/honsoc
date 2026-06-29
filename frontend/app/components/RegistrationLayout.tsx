@@ -9,11 +9,11 @@ interface RegistrationLayoutProps {
 
 export function RegistrationLayout({ children }: RegistrationLayoutProps) {
 	return (
-		<div className="min-h-screen bg-brand-background dark:bg-zinc-950 flex flex-col items-center justify-center p-6 transition-colors duration-300">
+		<div className="min-h-screen bg-brand-background flex flex-col items-center justify-center p-6 transition-colors duration-300">
 			<div className="w-full max-w-[512px] flex flex-col gap-12 items-center animate-fade-in">
 				{/* Header Branding */}
-				<div className="flex flex-col gap-4 items-center text-center">
-					<Link to="/" className="group focus:outline-none">
+				<header className="flex flex-col gap-4 items-center text-center">
+					<Link to="/" className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 rounded-lg">
 						<div className="relative size-[97px] transition-transform duration-300 group-hover:scale-105">
 							<img
 								alt="NEUST Honor Society Logo"
@@ -30,21 +30,21 @@ export function RegistrationLayout({ children }: RegistrationLayoutProps) {
 						</div>
 					</Link>
 					<div className="[word-break:break-word] content-stretch flex flex-col font-sans font-semibold items-center leading-[0] not-italic text-brand-primary text-center tracking-normal select-none">
-						<div className="flex flex-col justify-center text-[12px] tracking-widest uppercase">
+						<div className="flex flex-col justify-center text-xs tracking-widest uppercase">
 							<p className="leading-4">NEUST</p>
 						</div>
-						<div className="flex flex-col justify-center text-0px mt-1">
+						<div className="flex flex-col justify-center mt-1">
 							<p>
-								<span className="[word-break:break-word] font-sans font-semibold leading-[32px] not-italic text-[24px]">
+								<span className="[word-break:break-word] font-sans font-semibold leading-8 not-italic text-2xl">
 									Honor Society
 								</span>
 							</p>
 						</div>
 					</div>
-				</div>
+				</header>
 
 				{/* Content Area */}
-				<div className="w-full transition-all duration-300">{children}</div>
+				<main className="w-full transition-all duration-300">{children}</main>
 			</div>
 		</div>
 	);

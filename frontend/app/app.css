@@ -41,7 +41,6 @@
 	--brand-primary-dark: #614000;
 	--brand-primary-light: #c58a22;
 	--brand-background: #f8f9ff;
-	--brand-foreground: #0a0a0a;
 	--brand-muted: #737373;
 	--brand-border: #e5e5e5;
 	--brand-success-bg: #d1fae5;
@@ -75,6 +74,10 @@
 	--sidebar-accent-foreground: #f8f9ff;
 	--sidebar-border: #2e334d;
 	--sidebar-ring: #c58a22;
+
+	/* NEUST Honor Society Dark Mode Tokens */
+	--brand-muted: #a3a3a3;
+	--brand-background: var(--color-zinc-950);
 }
 
 @theme inline {
@@ -124,7 +127,6 @@
 	--color-brand-primary-dark: var(--brand-primary-dark);
 	--color-brand-primary-light: var(--brand-primary-light);
 	--color-brand-background: var(--brand-background);
-	--color-brand-foreground: var(--brand-foreground);
 	--color-brand-muted: var(--brand-muted);
 	--color-brand-border: var(--brand-border);
 	--color-brand-success-bg: var(--brand-success-bg);
