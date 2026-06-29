@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { INPUT_CLASS } from "~/shared/lib/constants";
 import {
 	type Step1Values,
 	type Step2Values,
@@ -62,63 +61,55 @@ export function Step2Page({ defaultValues }: Step2PageProps) {
 	};
 
 	return (
-		<div className="w-full max-w-[512px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-			<form
-				onSubmit={handleSubmit(onSubmit)}
-				aria-labelledby="step2-heading"
-				className="flex flex-col gap-8 items-start"
-			>
-				<div id="step2-heading" className="w-full">
-					<FormHeader
-						title="Create your account"
-						description="Enter your login details"
+		<form
+			onSubmit={handleSubmit(onSubmit)}
+			aria-labelledby="step2-heading"
+			className="w-full max-w-[512px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start gap-8"
+		>
+			<FormHeader
+				id="step2-heading"
+				title="Create your account"
+				description="Enter your login details"
+			/>
+
+			<div className="flex flex-col items-start justify-center w-full gap-4">
+				<Field className="w-full" data-invalid={!!errors.email}>
+					<FieldLabel htmlFor="email">Email</FieldLabel>
+					<Input
+						id="email"
+						type="email"
+						placeholder="you@example.com"
+						{...register("email")}
 					/>
-				</div>
+					{errors.email ? (
+						<FieldError className="text-xs mt-0.5">
+							{errors.email.message}
+						</FieldError>
+					) : null}
+				</Field>
 
-				<div className="flex flex-col gap-4 items-start justify-center w-full">
-					<Field className="w-full" data-invalid={!!errors.email}>
-						<FieldLabel
-							htmlFor="email"
-							className="text-sm font-medium text-foreground"
-						>
-							Email
-						</FieldLabel>
-						<Input
-							id="email"
-							type="email"
-							placeholder="you@example.com"
-							className={INPUT_CLASS}
-							{...register("email")}
-						/>
-						{errors.email && (
-							<FieldError className="text-xs mt-0.5">
-								{errors.email.message}
-							</FieldError>
-						)}
-					</Field>
+				<PasswordField
+					id="password"
+					label="Password"
+					placeholder="Enter your password"
+					error={errors.password?.message}
+					register={register("password")}
+				/>
 
-					<PasswordField
-						id="password"
-						label="Password"
-						placeholder="Enter your password"
-						error={errors.password?.message}
-						register={register("password")}
-					/>
-					<p className="text-xs text-muted-foreground -mt-2">
-						Password must be at least 8 characters long.
-					</p>
+				<p className="type-caption text-muted-foreground">
+					Password must be at least 8 characters long.
+				</p>
 
-					<PasswordField
-						id="confirmPassword"
-						label="Confirm Password"
-						placeholder="Re-enter your password"
-						error={errors.confirmPassword?.message}
-						register={register("confirmPassword")}
-					/>
-				</div>
+				<PasswordField
+					id="confirmPassword"
+					label="Confirm Password"
+					placeholder="Re-enter your password"
+					error={errors.confirmPassword?.message}
+					register={register("confirmPassword")}
+				/>
+			</div>
 
-				<FormActions isPending={signUp.isPending} />
-			</form>
-		</div>
+			<FormActions isPending={signUp.isPending} />
+		</form>
 	);
 }

@@ -7,9 +7,8 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { INPUT_CLASS } from "~/shared/lib/constants";
-import { useSignInEmail } from "~/shared/services/queries/auth";
 import { PasswordField } from "~/register/components/PasswordField";
+import { useSignInEmail } from "~/shared/services/queries/auth";
 
 const loginSchema = z.object({
 	email: z.email("Please enter a valid email address"),
@@ -60,20 +59,18 @@ export function LoginPage() {
 		<div className="w-full max-w-[512px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
 			<form
 				onSubmit={handleSubmit(onSubmit)}
-				className="flex flex-col gap-6 items-start w-full"
+				className="flex flex-col items-start w-full gap-6"
 			>
-				<div className="flex flex-col items-center justify-center w-full mb-2">
-					<h2 className="font-sans font-semibold text-lg leading-7 text-black text-center select-none whitespace-nowrap">
-						Login to your account
-					</h2>
-				</div>
+				<h2 className="w-full mb-2 text-center select-none type-h4">
+					Login to your account
+				</h2>
 
-				<div className="flex flex-col gap-4 items-start justify-center w-full">
+				<div className="flex flex-col items-start justify-center w-full gap-4">
 					{/* Email Input */}
 					<Field className="w-full" data-invalid={!!errors.email}>
 						<FieldLabel
 							htmlFor="email"
-							className="text-sm font-medium text-foreground"
+							className="type-label"
 						>
 							Email
 						</FieldLabel>
@@ -81,14 +78,13 @@ export function LoginPage() {
 							id="email"
 							type="email"
 							placeholder="you@example.com"
-							className={INPUT_CLASS}
 							{...register("email")}
 						/>
-						{errors.email && (
-							<FieldError className="text-xs mt-0.5">
+						{errors.email ? (
+							<FieldError className="type-caption mt-0.5">
 								{errors.email.message}
 							</FieldError>
-						)}
+						) : null}
 					</Field>
 
 					{/* Password Input */}
@@ -101,7 +97,7 @@ export function LoginPage() {
 						labelRight={
 							<Link
 								to="/forgot-password"
-								className="text-xs text-black hover:underline hover:text-brand-primary transition-colors cursor-pointer"
+								className="transition-colors cursor-pointer type-caption text-foreground hover:underline hover:text-primary"
 							>
 								Forgot Password?
 							</Link>
@@ -109,36 +105,32 @@ export function LoginPage() {
 					/>
 
 					{/* Remember Me */}
-					<div className="flex items-center gap-2 select-none mt-1">
+					<div className="flex items-center gap-2 mt-1 select-none">
 						<Checkbox
 							id="rememberMe"
 							{...register("rememberMe", { setValueAs: (v) => !!v })}
 						/>
 						<label
 							htmlFor="rememberMe"
-							className="text-sm font-medium text-foreground cursor-pointer"
+							className="cursor-pointer type-label"
 						>
 							Remember me
 						</label>
 					</div>
 				</div>
 
-				<div className="flex flex-col gap-3 items-center w-full mt-4">
-					<Button
-						type="submit"
-						disabled={signIn.isPending}
-						className="bg-brand-primary-dark hover:bg-brand-primary text-primary-foreground font-medium text-base leading-6 h-[36px] px-3 rounded-lg flex items-center justify-center shadow-md cursor-pointer w-full transition-all duration-200 active:scale-[0.98]"
-					>
+				<div className="flex flex-col items-center w-full gap-3 mt-4">
+					<Button type="submit" disabled={signIn.isPending} className="w-full">
 						{signIn.isPending ? "Logging in..." : "Login"}
 					</Button>
 
-					<div className="text-center mt-2">
-						<span className="text-xs font-normal text-black mr-1">
+					<div className="mt-2 text-center">
+						<span className="type-caption">
 							Not yet registered?
 						</span>
 						<Link
 							to="/register"
-							className="text-xs font-semibold text-brand-primary hover:underline"
+							className="font-semibold type-caption text-primary hover:underline"
 						>
 							Apply for membership
 						</Link>

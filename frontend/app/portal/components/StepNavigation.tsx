@@ -1,6 +1,5 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { BACK_BUTTON_CLASS, CONTINUE_BUTTON_CLASS } from "~/shared/lib/constants";
 
 interface StepNavigationProps {
 	onBack: () => void;
@@ -18,24 +17,23 @@ export function StepNavigation({
 	isPending,
 }: StepNavigationProps) {
 	return (
-		<div className="flex items-center justify-end gap-3 w-full mt-4 select-none">
+		<div className="flex items-center justify-end w-full gap-3 mt-4 select-none">
 			<Button
 				type="button"
+				variant="outline"
 				onClick={onBack}
 				disabled={isPending}
-				className={BACK_BUTTON_CLASS}
 			>
-				<ArrowLeft className="size-4 shrink-0 text-brand-primary" />
+				<ArrowLeft />
 				Back
 			</Button>
 			<Button
 				type="button"
 				onClick={onContinue}
 				disabled={disabled || isPending}
-				className={CONTINUE_BUTTON_CLASS}
 			>
 				{continueLabel}
-				<ArrowRight className="size-4 shrink-0" />
+				<ArrowRight />
 			</Button>
 		</div>
 	);

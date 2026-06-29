@@ -1,7 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
-import { PRIMARY_BUTTON_CLASS } from "~/shared/lib/constants";
 
 interface FormActionsProps {
 	to?: string;
@@ -19,30 +18,25 @@ export function FormActions({
 		<div
 			role="group"
 			aria-label="Form navigation"
-			className="flex items-center justify-between py-2 w-full mt-4 select-none"
+			className="flex items-center justify-between w-full py-2 mt-4 select-none"
 		>
 			<Link
 				to={to}
-				className="text-xs font-normal leading-4 text-foreground underline hover:text-brand-primary transition-colors whitespace-nowrap"
+				className="underline transition-colors type-caption text-foreground hover:text-primary whitespace-nowrap"
 			>
 				{label}
 			</Link>
 
-			<Button
-				type="submit"
-				disabled={isPending}
-				aria-busy={isPending}
-				className={`${PRIMARY_BUTTON_CLASS} w-[113px] disabled:opacity-50 disabled:cursor-not-allowed`}
-			>
+			<Button type="submit" disabled={isPending} aria-busy={isPending}>
 				{isPending ? (
 					<>
-						<span className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+						<span className="border-2 border-current rounded-full size-4 border-t-transparent animate-spin" />
 						Submitting
 					</>
 				) : (
 					<>
 						Continue
-						<ArrowRight className="size-4 shrink-0" />
+						<ArrowRight />
 					</>
 				)}
 			</Button>

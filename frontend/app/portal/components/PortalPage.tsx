@@ -78,13 +78,13 @@ export function PortalPage({
 	}
 
 	return (
-		<div className="min-h-screen bg-brand-background flex flex-col items-center p-6">
+		<div className="flex flex-col items-center min-h-screen p-6 bg-background">
 			<div className="w-full max-w-[708px] flex flex-col gap-6 items-center">
 				<PortalHeader user={user} />
 				<PortalStepsBar currentStep={step} />
 
-				<main className="w-full bg-card border border-brand-border rounded-2xl p-6 shadow-sm min-h-[300px] flex flex-col justify-start">
-					{step === 1 && (
+				<main className="w-full bg-card border border-border rounded-2xl p-6 shadow-sm min-h-[300px] flex flex-col justify-start">
+					{step === 1 ? (
 						<PortalProfileStep
 							defaultValues={profile}
 							onSubmit={(data) => {
@@ -93,9 +93,9 @@ export function PortalPage({
 							}}
 							schoolYear={schoolYear}
 						/>
-					)}
+					) : null}
 
-					{step === 2 && (
+					{step === 2 ? (
 						<PortalSemestersStep
 							selectedSemesters={selectedSemesters}
 							onChange={setSelectedSemesters}
@@ -104,9 +104,9 @@ export function PortalPage({
 							schoolYear={schoolYear}
 							openSemester={openSemester}
 						/>
-					)}
+					) : null}
 
-					{step === 3 && (
+					{step === 3 ? (
 						<PortalGradesStep
 							selectedSemesters={selectedSemesters}
 							grades1st={grades1st}
@@ -117,9 +117,9 @@ export function PortalPage({
 							onContinue={() => setStep(4)}
 							gwaThreshold={gwaThreshold}
 						/>
-					)}
+					) : null}
 
-					{step === 4 && (
+					{step === 4 ? (
 						<PortalDocumentsStep
 							selectedSemesters={selectedSemesters}
 							files={files}
@@ -129,14 +129,14 @@ export function PortalPage({
 							isPending={isSubmitting}
 							schoolYear={schoolYear}
 						/>
-					)}
+					) : null}
 
-					{step === 5 && (
+					{step === 5 ? (
 						<PortalStatusStep
 							applications={applications}
 							schoolYear={schoolYear}
 						/>
-					)}
+					) : null}
 				</main>
 			</div>
 		</div>

@@ -48,22 +48,22 @@ export function PortalSemestersStep({
 	const canSelectSecond = openSemester === "2ND" || openSemester === "BOTH";
 
 	return (
-		<div className="flex flex-col gap-6 items-start w-full animate-fade-in">
-			<p className="font-sans font-normal text-sm leading-5 text-brand-muted select-none">
+		<div className="flex flex-col items-start w-full gap-6 animate-fade-in">
+			<p className="select-none type-body-small text-muted-foreground">
 				Select the semester(s) for which you are applying. Your GWA will be
 				computed from the grades you enter for each selected semester.
 			</p>
 
-			<div className="flex gap-4 items-start w-full">
+			<div className="flex items-start w-full gap-4">
 				{/* 1st Semester Card */}
-				{canSelectFirst && (
+				{canSelectFirst ? (
 					<button
 						type="button"
 						onClick={() => handleCardClick("firstSem")}
 						className={`flex-1 text-left flex gap-3 items-start p-3 rounded-xl border transition-all duration-200 cursor-pointer select-none bg-card ${
 							selectedSemesters.firstSem
 								? "border-amber-500 ring-1 ring-amber-500/20 shadow-sm"
-								: "border-brand-border hover:border-brand-muted/40 shadow-sm"
+								: "border-border hover:border-muted-foreground/40 shadow-sm"
 						}`}
 					>
 						{/* Checkbox box */}
@@ -71,31 +71,31 @@ export function PortalSemestersStep({
 							className={`rounded-md size-4 flex items-center justify-center border transition-all ${
 								selectedSemesters.firstSem
 									? "bg-amber-500 border-amber-500 text-white"
-									: "bg-card border-brand-border text-transparent"
+									: "bg-card border-border text-transparent"
 							}`}
 						>
 							<Check className="size-3 stroke-[3]" />
 						</div>
 						<div className="flex flex-col gap-1 leading-tight">
-							<span className="font-sans font-medium text-sm text-foreground">
+							<span className="type-label">
 								1st Semester
 							</span>
-							<span className="font-sans font-normal text-xs text-brand-muted">
+							<span className="type-caption text-muted-foreground">
 								{firstSemYear}
 							</span>
 						</div>
 					</button>
-				)}
+				) : null}
 
 				{/* 2nd Semester Card */}
-				{canSelectSecond && (
+				{canSelectSecond ? (
 					<button
 						type="button"
 						onClick={() => handleCardClick("secondSem")}
 						className={`flex-1 text-left flex gap-3 items-start p-3 rounded-xl border transition-all duration-200 cursor-pointer select-none bg-card ${
 							selectedSemesters.secondSem
 								? "border-amber-500 ring-1 ring-amber-500/20 shadow-sm"
-								: "border-brand-border hover:border-brand-muted/40 shadow-sm"
+								: "border-border hover:border-muted-foreground/40 shadow-sm"
 						}`}
 					>
 						{/* Checkbox box */}
@@ -103,21 +103,21 @@ export function PortalSemestersStep({
 							className={`rounded-md size-4 flex items-center justify-center border transition-all ${
 								selectedSemesters.secondSem
 									? "bg-amber-500 border-amber-500 text-white"
-									: "bg-card border-brand-border text-transparent"
+									: "bg-card border-border text-transparent"
 							}`}
 						>
 							<Check className="size-3 stroke-[3]" />
 						</div>
 						<div className="flex flex-col gap-1 leading-tight">
-							<span className="font-sans font-medium text-sm text-foreground">
+							<span className="type-label">
 								2nd Semester
 							</span>
-							<span className="font-sans font-normal text-xs text-brand-muted">
+							<span className="type-caption text-muted-foreground">
 								{secondSemYear}
 							</span>
 						</div>
 					</button>
-				)}
+				) : null}
 			</div>
 
 			{/* Navigation Buttons */}

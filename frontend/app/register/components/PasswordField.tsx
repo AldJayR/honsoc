@@ -3,8 +3,6 @@ import { useState } from "react";
 import type { UseFormRegisterReturn } from "react-hook-form";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { cn } from "~/lib/utils";
-import { INPUT_CLASS } from "~/shared/lib/constants";
 
 interface PasswordFieldProps {
 	id: string;
@@ -27,10 +25,10 @@ export function PasswordField({
 
 	return (
 		<Field className="w-full" data-invalid={!!error}>
-			<div className="flex justify-between items-center w-full mb-1">
+			<div className="flex items-center justify-between w-full mb-1">
 				<FieldLabel
 					htmlFor={id}
-					className="text-sm font-medium text-foreground"
+					className="type-label"
 				>
 					{label}
 				</FieldLabel>
@@ -41,19 +39,21 @@ export function PasswordField({
 					id={id}
 					type={visible ? "text" : "password"}
 					placeholder={placeholder}
-					className={cn(INPUT_CLASS, "pr-10")}
+					className="pr-8"
 					{...register}
 				/>
 				<button
 					type="button"
 					onClick={() => setVisible((prev) => !prev)}
-					className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-primary transition-colors cursor-pointer select-none p-1"
+					className="absolute p-1 transition-colors -translate-y-1/2 cursor-pointer select-none right-3 top-1/2 text-muted-foreground hover:text-primary"
 					aria-label={visible ? "Hide password" : "Show password"}
 				>
 					{visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
 				</button>
 			</div>
-			{error && <FieldError className="text-xs mt-0.5">{error}</FieldError>}
+			{error ? (
+				<FieldError className="type-caption">{error}</FieldError>
+			) : null}
 		</Field>
 	);
 }

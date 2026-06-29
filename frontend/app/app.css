@@ -2,6 +2,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./shared/styles/typography.css";
 @import "@fontsource-variable/roboto";
 @import "@fontsource-variable/roboto-slab";
 
@@ -14,7 +15,7 @@
 	--card-foreground: #0a0a0a;
 	--popover: #ffffff;
 	--popover-foreground: #0a0a0a;
-	--primary: #614000;
+	--primary: #815600;
 	--primary-foreground: #fafafa;
 	--secondary: #ffffff;
 	--secondary-foreground: #815600;
@@ -36,15 +37,8 @@
 	--sidebar-border: #e5e5e5;
 	--sidebar-ring: #815600;
 
-	/* NEUST Honor Society Custom Standardized Tokens */
-	--brand-primary: #815600;
-	--brand-primary-dark: #614000;
-	--brand-primary-light: #c58a22;
-	--brand-background: #f8f9ff;
-	--brand-muted: #737373;
-	--brand-border: #e5e5e5;
-	--brand-success-bg: #d1fae5;
-	--brand-success-border: #047857;
+	--success: #d1fae5;
+	--success-foreground: #047857;
 }
 
 .dark {
@@ -54,7 +48,7 @@
 	--card-foreground: #f8f9ff;
 	--popover: #151724;
 	--popover-foreground: #f8f9ff;
-	--primary: #815600;
+	--primary: #614000;
 	--primary-foreground: #fafafa;
 	--secondary: #1a1d30;
 	--secondary-foreground: #c58a22;
@@ -75,9 +69,8 @@
 	--sidebar-border: #2e334d;
 	--sidebar-ring: #c58a22;
 
-	/* NEUST Honor Society Dark Mode Tokens */
-	--brand-muted: #a3a3a3;
-	--brand-background: var(--color-zinc-950);
+	--success: #022c22;
+	--success-foreground: #4ade80;
 }
 
 @theme inline {
@@ -122,15 +115,8 @@
 	--radius-3xl: calc(var(--radius) * 2.2);
 	--radius-4xl: calc(var(--radius) * 2.6);
 
-	/* Custom Theme Bindings */
-	--color-brand-primary: var(--brand-primary);
-	--color-brand-primary-dark: var(--brand-primary-dark);
-	--color-brand-primary-light: var(--brand-primary-light);
-	--color-brand-background: var(--brand-background);
-	--color-brand-muted: var(--brand-muted);
-	--color-brand-border: var(--brand-border);
-	--color-brand-success-bg: var(--brand-success-bg);
-	--color-brand-success-border: var(--brand-success-border);
+	--color-success: var(--success);
+	--color-success-foreground: var(--success-foreground);
 }
 
 @layer base {

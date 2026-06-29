@@ -59,7 +59,9 @@ export default function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<Outlet />
-			{import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+			{import.meta.env.DEV ? (
+				<ReactQueryDevtools initialIsOpen={false} />
+			) : null}
 		</QueryClientProvider>
 	);
 }
@@ -81,14 +83,14 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 	}
 
 	return (
-		<main className="pt-16 p-4 container mx-auto">
+		<main className="container p-4 pt-16 mx-auto">
 			<h1>{message}</h1>
 			<p>{details}</p>
-			{stack && (
+			{stack ? (
 				<pre className="w-full p-4 overflow-x-auto">
 					<code>{stack}</code>
 				</pre>
-			)}
+			) : null}
 		</main>
 	);
 }

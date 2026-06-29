@@ -1,15 +1,19 @@
 interface FormHeaderProps {
+	id?: string;
 	title: string;
 	description: string;
 }
 
-export function FormHeader({ title, description }: FormHeaderProps) {
+export function FormHeader({ id, title, description }: FormHeaderProps) {
 	return (
-		<div className="[word-break:break-word] flex flex-col items-center justify-center leading-normal text-center tracking-normal w-full">
-			<h2 className="font-sans font-semibold text-lg leading-7 text-foreground select-none">
+		<div
+			id={id}
+			className="flex flex-col items-center justify-center w-full text-center"
+		>
+			<h2 className="select-none type-h4">
 				{title}
 			</h2>
-			<p className="font-sans font-light text-xs leading-4 text-brand-muted mt-1 select-none">
+			<p className="type-caption text-muted-foreground">
 				{description}
 			</p>
 		</div>

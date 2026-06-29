@@ -15,35 +15,33 @@ export function PortalHeader({ user }: PortalHeaderProps) {
 		.toUpperCase();
 
 	return (
-		<div className="flex items-center justify-between py-4 border-b border-brand-border w-full select-none">
+		<div className="flex items-center justify-between w-full py-4 border-b select-none border-border">
 			{/* Logo and Branding */}
-			<div className="flex gap-2 items-center">
-				<div className="size-9 shrink-0 relative">
+			<div className="flex items-center gap-2">
+				<div className="relative size-9 shrink-0">
 					<img
 						alt="NEUST Honor Society Logo"
 						className="object-cover size-full"
 						src="/images/honor-soc-new-logo.png"
 					/>
 				</div>
-				<div className="flex flex-col">
-					<span className="font-sans font-semibold text-brand-primary text-base leading-6">
-						NEUST Honor Society
-					</span>
-				</div>
+				<span className="text-base font-semibold leading-6 text-primary">
+					NEUST Honor Society
+				</span>
 			</div>
 
 			{/* User Profile */}
-			<div className="flex gap-2 items-center">
+			<div className="flex items-center gap-2">
 				{/* Avatar */}
-				<div className="relative rounded-full size-8 bg-brand-primary/10 border border-brand-primary flex items-center justify-center text-brand-primary font-semibold text-xs select-none">
+				<div className="relative flex items-center justify-center text-xs font-semibold border rounded-full select-none size-8 bg-primary/10 border-primary text-primary">
 					{initials || "S"}
 				</div>
 				{/* Info */}
 				<div className="flex flex-col leading-tight">
-					<span className="font-sans font-normal text-xs text-foreground">
+					<span className="type-caption text-foreground">
 						{user.name}
 					</span>
-					<span className="font-sans font-medium text-[10px] text-brand-muted">
+					<span className="font-sans font-medium text-[10px] text-muted-foreground">
 						{user.student_number || "No student number"}
 					</span>
 				</div>

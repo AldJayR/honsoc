@@ -1,11 +1,7 @@
-import {
-	AlertTriangle,
-	Plus,
-	Trash2,
-} from "lucide-react";
-import { cn } from "~/lib/utils";
+import { AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -13,9 +9,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
-import { INPUT_CLASS } from "~/shared/lib/constants";
-import type { GradeInput } from "~/shared/services/auth.api";
 import { StepNavigation } from "~/portal/components/StepNavigation";
+import type { GradeInput } from "~/shared/services/auth.api";
 
 interface PortalGradesStepProps {
 	selectedSemesters: {
@@ -120,49 +115,49 @@ export function PortalGradesStep({
 	};
 
 	return (
-		<div className="flex flex-col gap-6 items-start w-full animate-fade-in">
-			<p className="font-sans font-normal text-sm leading-5 text-brand-muted select-none">
+		<div className="flex flex-col items-start w-full gap-6 animate-fade-in">
+			<p className="select-none type-body-small text-muted-foreground">
 				Enter each subject from your COG exactly as printed. GWA is computed
 				automatically. Entering an INC or 5.0 will trigger a disqualifier
 				warning.
 			</p>
 
 			{/* GWA Summary Panel */}
-			<div className="bg-card border border-brand-border flex items-center justify-between p-4 rounded-2xl w-full shadow-sm">
+			<div className="flex items-center justify-between w-full p-4 border shadow-sm bg-card border-border rounded-2xl">
 				{/* 1st Sem GWA */}
-				{selectedSemesters.firstSem && (
-					<div className="flex-1 flex flex-col items-center justify-center text-center">
-						<span className="text-sm font-normal text-brand-muted">
+				{selectedSemesters.firstSem ? (
+					<div className="flex flex-col items-center justify-center flex-1 text-center">
+						<span className="text-sm font-normal text-muted-foreground">
 							1st sem GWA
 						</span>
-						<span className="font-semibold text-2xl text-amber-600 mt-1 select-none">
+						<span className="mt-1 text-2xl font-semibold select-none text-amber-600">
 							{gwa1st > 0 ? gwa1st.toFixed(2) : "0.00"}
 						</span>
 					</div>
-				)}
+				) : null}
 
 				{/* Divider */}
-				{selectedSemesters.firstSem && selectedSemesters.secondSem && (
-					<div className="h-12 w-[1px] bg-brand-border mx-4" />
-				)}
+				{selectedSemesters.firstSem && selectedSemesters.secondSem ? (
+					<div className="h-12 w-[1px] bg-border mx-4" />
+				) : null}
 
 				{/* 2nd Sem GWA */}
-				{selectedSemesters.secondSem && (
-					<div className="flex-1 flex flex-col items-center justify-center text-center">
-						<span className="text-sm font-normal text-brand-muted">
+				{selectedSemesters.secondSem ? (
+					<div className="flex flex-col items-center justify-center flex-1 text-center">
+						<span className="text-sm font-normal text-muted-foreground">
 							2nd sem GWA
 						</span>
-						<span className="font-semibold text-2xl text-amber-600 mt-1 select-none">
+						<span className="mt-1 text-2xl font-semibold select-none text-amber-600">
 							{gwa2nd > 0 ? gwa2nd.toFixed(2) : "0.00"}
 						</span>
 					</div>
-				)}
+				) : null}
 			</div>
 
 			{/* Disqualification Banners */}
 			{((activeTab === "1st" && is1stDisqualified) ||
-				(activeTab === "2nd" && is2ndDisqualified)) && (
-				<div className="w-full bg-red-500/10 border border-red-200 rounded-xl p-3 flex gap-2 items-start text-red-700 animate-pulse-subtle">
+				(activeTab === "2nd" && is2ndDisqualified)) ? (
+				<div className="flex items-start w-full gap-2 p-3 text-red-700 border border-red-200 bg-red-500/10 rounded-xl animate-pulse-subtle">
 					<AlertTriangle className="size-5 shrink-0 text-red-500 mt-0.5" />
 					<div className="flex flex-col text-xs leading-normal">
 						<span className="font-semibold">
@@ -179,10 +174,10 @@ export function PortalGradesStep({
 						</span>
 					</div>
 				</div>
-			)}
+			) : null}
 
 			{/* Semester Tab Toggles */}
-			{selectedSemesters.firstSem && selectedSemesters.secondSem && (
+			{selectedSemesters.firstSem && selectedSemesters.secondSem ? (
 				<div className="flex bg-muted p-0.5 rounded-lg shrink-0">
 					<button
 						type="button"
@@ -190,7 +185,7 @@ export function PortalGradesStep({
 						className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all select-none cursor-pointer ${
 							activeTab === "1st"
 								? "bg-card text-foreground shadow-sm"
-								: "text-brand-muted hover:text-foreground"
+								: "text-muted-foreground hover:text-foreground"
 						}`}
 					>
 						1st semester
@@ -201,18 +196,18 @@ export function PortalGradesStep({
 						className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all select-none cursor-pointer ${
 							activeTab === "2nd"
 								? "bg-card text-foreground shadow-sm"
-								: "text-brand-muted hover:text-foreground"
+								: "text-muted-foreground hover:text-foreground"
 						}`}
 					>
 						2nd semester
 					</button>
 				</div>
-			)}
+			) : null}
 
 			{/* Table of Grades */}
-			<div className="flex flex-col items-start w-full border border-brand-border rounded-xl bg-card overflow-hidden">
+			<div className="flex flex-col items-start w-full overflow-hidden border border-border rounded-xl bg-card">
 				{/* Table Header */}
-				<div className="flex justify-between items-center w-full bg-muted/30 border-b border-brand-border px-4 py-2 text-xs font-semibold text-brand-muted uppercase tracking-wider">
+				<div className="flex items-center justify-between w-full px-4 py-2 text-xs font-semibold tracking-wider uppercase border-b bg-muted/30 border-border text-muted-foreground">
 					<div className="w-[300px]">Subject</div>
 					<div className="flex-1 text-center">Unit</div>
 					<div className="flex-1 text-center">Grade</div>
@@ -221,25 +216,25 @@ export function PortalGradesStep({
 
 				{/* Table Rows */}
 				{activeGrades.length === 0 ? (
-					<div className="flex items-center justify-center p-8 w-full text-sm text-brand-muted">
+					<p className="w-full p-8 text-sm text-muted-foreground">
 						No grades added yet. Enter a subject below to start.
-					</div>
+					</p>
 				) : (
 					activeGrades.map((g) => (
 						<div
 							key={g._key ?? `${g.subjectCode}-${Math.random()}`}
-							className="flex justify-between items-center w-full border-b border-brand-border last:border-0 px-4 py-2 text-sm text-foreground hover:bg-muted/10 transition-colors"
+							className="flex items-center justify-between w-full px-4 py-2 text-sm transition-colors border-b border-border last:border-0 text-foreground hover:bg-muted/10"
 						>
 							<div className="w-[300px] font-medium">{g.subjectCode}</div>
 							<div className="flex-1 text-center">{g.units}</div>
-							<div className="flex-1 text-center font-semibold text-brand-primary-dark">
+							<div className="flex-1 font-semibold text-center text-primary">
 								{g.grade}
 							</div>
-							<div className="w-10 flex justify-end">
+							<div className="flex justify-end w-10">
 								<button
 									type="button"
 									onClick={() => g._key && handleDeleteGrade(g._key)}
-									className="text-brand-muted hover:text-red-500 transition-colors p-1 cursor-pointer select-none"
+									className="p-1 transition-colors cursor-pointer select-none text-muted-foreground hover:text-destructive"
 									aria-label="Delete grade"
 								>
 									<Trash2 className="size-4" />
@@ -253,32 +248,37 @@ export function PortalGradesStep({
 			{/* Add Grade Form Input Row */}
 			<form
 				onSubmit={handleAddGrade}
-				className="flex gap-3 items-center w-full select-none"
+				className="flex items-center w-full gap-3 select-none"
 			>
-				<input
+				<Input
 					type="text"
 					value={subjectCode}
 					onChange={(e) => setSubjectCode(e.target.value)}
 					placeholder="Subject Code (e.g. IT101)"
-					className={cn(INPUT_CLASS, "w-[280px]")}
+					className="w-[280px]"
 				/>
-				<input
+				<Input
 					type="text"
 					value={subjectName}
 					onChange={(e) => setSubjectName(e.target.value)}
 					placeholder="Subject Name (optional)"
-					className={cn(INPUT_CLASS, "w-[200px]")}
+					className="w-[200px]"
 				/>
-				<input
+				<Input
 					type="number"
 					value={units}
 					onChange={(e) => setUnits(e.target.value)}
 					placeholder="Units"
 					min="1"
 					max="6"
-					className={cn(INPUT_CLASS, "flex-1")}
+					className="flex-1"
 				/>
-				<Select value={grade} onValueChange={(val) => { if (val) setGrade(val); }}>
+				<Select
+					value={grade}
+					onValueChange={(val) => {
+						if (val) setGrade(val);
+					}}
+				>
 					<SelectTrigger className="flex-1">
 						<SelectValue placeholder="Grade" />
 					</SelectTrigger>
@@ -290,11 +290,8 @@ export function PortalGradesStep({
 						))}
 					</SelectContent>
 				</Select>
-				<Button
-					type="submit"
-					className="bg-card border border-brand-primary text-brand-primary hover:bg-brand-primary-light/5 font-medium text-sm h-8 px-4 rounded-lg flex gap-1 items-center justify-center shadow-sm cursor-pointer transition-all duration-200 active:scale-[0.98]"
-				>
-					<Plus className="size-4" />
+				<Button type="submit">
+					<Plus />
 					Add
 				</Button>
 			</form>

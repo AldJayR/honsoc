@@ -105,9 +105,9 @@ export function PortalProfileStep({
 
 	if (loading) {
 		return (
-			<div className="flex flex-col items-center justify-center p-12 w-full">
-				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
-				<span className="mt-4 text-sm text-brand-muted">
+			<div className="flex flex-col items-center justify-center w-full p-12">
+				<div className="w-8 h-8 border-b-2 rounded-full animate-spin border-primary"></div>
+				<span className="mt-4 text-sm text-muted-foreground">
 					Loading options...
 				</span>
 			</div>
@@ -117,19 +117,19 @@ export function PortalProfileStep({
 	return (
 		<form
 			onSubmit={handleSubmit(handleFormSubmit)}
-			className="flex flex-col gap-6 items-start w-full animate-fade-in"
+			className="flex flex-col items-start w-full gap-6 animate-fade-in"
 		>
-			<p className="font-sans font-normal text-sm leading-5 text-brand-muted select-none">
+			<p className="select-none type-body-small text-muted-foreground">
 				Confirm your student details. These will be cross-checked against your
 				COR during verification.
 			</p>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+			<div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
 				{/* Campus */}
 				<Field className="w-full" data-invalid={!!errors.campusId}>
 					<FieldLabel
 						htmlFor="campusId"
-						className="text-sm font-medium text-foreground"
+						className="type-label"
 					>
 						Campus
 					</FieldLabel>
@@ -150,18 +150,18 @@ export function PortalProfileStep({
 							))}
 						</SelectContent>
 					</Select>
-					{errors.campusId && (
-						<FieldError className="text-xs mt-0.5">
+					{errors.campusId ? (
+						<FieldError className="type-caption mt-0.5">
 							Campus is required
 						</FieldError>
-					)}
+					) : null}
 				</Field>
 
 				{/* Department */}
 				<Field className="w-full" data-invalid={!!errors.departmentId}>
 					<FieldLabel
 						htmlFor="departmentId"
-						className="text-sm font-medium text-foreground"
+						className="type-label"
 					>
 						Department
 					</FieldLabel>
@@ -182,18 +182,18 @@ export function PortalProfileStep({
 							))}
 						</SelectContent>
 					</Select>
-					{errors.departmentId && (
-						<FieldError className="text-xs mt-0.5">
+					{errors.departmentId ? (
+						<FieldError className="type-caption mt-0.5">
 							Department is required
 						</FieldError>
-					)}
+					) : null}
 				</Field>
 
 				{/* Academic Year */}
 				<Field className="w-full">
 					<FieldLabel
 						htmlFor="academicYear"
-						className="text-sm font-medium text-foreground"
+						className="type-label"
 					>
 						Academic Year
 					</FieldLabel>
@@ -218,7 +218,7 @@ export function PortalProfileStep({
 				<Field className="w-full" data-invalid={!!errors.yearLevel}>
 					<FieldLabel
 						htmlFor="yearLevel"
-						className="text-sm font-medium text-foreground"
+						className="type-label"
 					>
 						Year Level
 					</FieldLabel>
@@ -226,11 +226,9 @@ export function PortalProfileStep({
 						value={watchedYearLevel ?? undefined}
 						onValueChange={(val) => {
 							if (val)
-								setValue(
-									"yearLevel",
-									val as ProfileFormValues["yearLevel"],
-									{ shouldValidate: true },
-								);
+								setValue("yearLevel", val as ProfileFormValues["yearLevel"], {
+									shouldValidate: true,
+								});
 						}}
 					>
 						<SelectTrigger className="w-full">
@@ -250,7 +248,7 @@ export function PortalProfileStep({
 				<Field className="w-full" data-invalid={!!errors.program}>
 					<FieldLabel
 						htmlFor="program"
-						className="text-sm font-medium text-foreground"
+						className="type-label"
 					>
 						Program/course
 					</FieldLabel>
@@ -271,18 +269,18 @@ export function PortalProfileStep({
 							))}
 						</SelectContent>
 					</Select>
-					{errors.program && (
-						<FieldError className="text-xs mt-0.5">
+					{errors.program ? (
+						<FieldError className="type-caption mt-0.5">
 							Program is required
 						</FieldError>
-					)}
+					) : null}
 				</Field>
 
 				{/* Major */}
 				<Field className="w-full">
 					<FieldLabel
 						htmlFor="majorId"
-						className="text-sm font-medium text-foreground"
+						className="type-label"
 					>
 						Major
 					</FieldLabel>
@@ -306,15 +304,10 @@ export function PortalProfileStep({
 				</Field>
 			</div>
 
-			<div className="flex items-center justify-end w-full mt-4 select-none">
-				<Button
-					type="submit"
-					className="bg-brand-primary-dark hover:bg-brand-primary text-primary-foreground font-medium text-sm h-8 px-4 rounded-lg flex gap-1.5 items-center justify-center border-0 shadow-sm cursor-pointer transition-all duration-200 active:scale-[0.98]"
-				>
-					Continue
-					<ArrowRight className="size-4 shrink-0" />
-				</Button>
-			</div>
+			<Button type="submit" className="self-end mt-4">
+				Continue
+				<ArrowRight />
+			</Button>
 		</form>
 	);
 }

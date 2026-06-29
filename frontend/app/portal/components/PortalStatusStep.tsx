@@ -17,12 +17,12 @@ export function PortalStatusStep({
 
 	if (!applications || applications.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center p-8 text-center bg-card border border-brand-border rounded-2xl w-full">
-				<Clock className="size-8 text-brand-primary animate-pulse mb-3" />
-				<span className="font-sans font-semibold text-sm text-foreground">
+			<div className="flex flex-col items-center justify-center w-full p-8 text-center border bg-card border-border rounded-2xl">
+				<Clock className="mb-2 size-8 text-primary animate-pulse" />
+				<span className="type-label">
 					No Application Found
 				</span>
-				<span className="text-xs text-brand-muted mt-1">
+				<span className="type-caption text-muted-foreground">
 					Please check back later or start a new application.
 				</span>
 			</div>
@@ -99,9 +99,9 @@ export function PortalStatusStep({
 	});
 
 	return (
-		<div className="flex flex-col gap-6 items-start w-full animate-fade-in">
+		<div className="flex flex-col items-start w-full gap-6 animate-fade-in">
 			{/* Application Tabs if multiple applications exist */}
-			{applications.length > 1 && (
+			{applications.length > 1 ? (
 				<div className="flex bg-muted p-0.5 rounded-lg select-none">
 					{applications.map((a, idx) => (
 						<button
@@ -111,7 +111,7 @@ export function PortalStatusStep({
 							className={`px-3 py-1 text-xs font-semibold rounded-md transition-all select-none cursor-pointer ${
 								activeAppIdx === idx
 									? "bg-card text-foreground shadow-sm"
-									: "text-brand-muted hover:text-foreground"
+									: "text-muted-foreground hover:text-foreground"
 							}`}
 						>
 							{a.semester === "1ST" ? "1st Semester" : "2nd Semester"}{" "}
@@ -119,31 +119,31 @@ export function PortalStatusStep({
 						</button>
 					))}
 				</div>
-			)}
+			) : null}
 
 			{/* Submission Success Banner */}
-			<div className="bg-card border border-brand-border p-5 rounded-2xl flex flex-col gap-3 items-center justify-center text-center w-full shadow-sm">
-				<span className="font-sans font-semibold text-amber-600 text-base leading-6 select-none">
+			<div className="flex flex-col items-center justify-center w-full gap-3 p-5 text-center border shadow-sm bg-card border-border rounded-2xl">
+				<span className="font-sans text-base font-semibold leading-6 select-none text-amber-600">
 					{app.status === "FLAGGED"
 						? "Action Required"
 						: "Application Submitted"}
 				</span>
-				<p className="font-sans font-normal text-sm leading-5 text-foreground">
+				<p className="type-body-small text-foreground">
 					{app.status === "FLAGGED"
 						? "Your application has been flagged by the reviewer. Please see the timeline details below."
 						: `Your application (${app.semester === "1ST" ? "1st Semester" : "2nd Semester"} AY ${schoolYear}) is in the queue. No further action needed.`}
 				</p>
 
 				{/* Reference No */}
-				<div className="flex items-center gap-1.5 text-xs text-brand-muted select-none mt-1">
+				<div className="flex items-center gap-1.5 type-caption text-muted-foreground select-none mt-1">
 					<span>Application Reference</span>
-					<span className="font-sans font-semibold text-foreground select-text">
+					<span className="font-sans font-semibold select-text text-foreground">
 						{app.referenceNo}
 					</span>
 					<button
 						type="button"
 						onClick={handleCopyRef}
-						className="text-brand-muted hover:text-brand-primary p-1 cursor-pointer transition-colors"
+						className="p-1 transition-colors cursor-pointer text-muted-foreground hover:text-primary"
 						aria-label="Copy reference number"
 					>
 						{copied ? (
@@ -156,14 +156,14 @@ export function PortalStatusStep({
 			</div>
 
 			{/* Split Timeline & Summary */}
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full mt-2">
+			<div className="grid w-full grid-cols-1 gap-8 mt-2 md:grid-cols-2">
 				{/* Timeline Pane */}
-				<div className="flex flex-col gap-4 items-start w-full">
-					<h3 className="font-sans font-semibold text-sm text-foreground">
+				<div className="flex flex-col items-start w-full gap-4">
+					<h3 className="type-label">
 						Application Timeline
 					</h3>
 
-					<div className="flex flex-col relative pl-6 border-l border-brand-border ml-2 gap-6 select-none py-1">
+					<div className="relative flex flex-col gap-6 py-1 pl-6 ml-2 border-l select-none border-border">
 						{/* Node 1: Submitted */}
 						<div className="relative">
 							{/* Bullet icon */}
@@ -171,18 +171,18 @@ export function PortalStatusStep({
 								className={`absolute -left-[31px] top-0 rounded-full size-[18px] border-2 bg-card flex items-center justify-center transition-all ${
 									submittedStep.completed || submittedStep.active
 										? "border-green-600 bg-green-500/10"
-										: "border-brand-border"
+										: "border-border"
 								}`}
 							>
-								{(submittedStep.completed || submittedStep.active) && (
-									<div className="size-2 rounded-full bg-green-600" />
-								)}
+								{(submittedStep.completed || submittedStep.active) ? (
+									<div className="bg-green-600 rounded-full size-2" />
+								) : null}
 							</div>
 							<div className="flex flex-col leading-tight">
-								<span className="font-sans font-semibold text-sm text-foreground">
+								<span className="font-sans text-sm font-semibold text-foreground">
 									{submittedStep.label}
 								</span>
-								<span className="font-sans text-[10px] text-brand-muted">
+								<span className="font-sans text-[10px] text-muted-foreground">
 									{formattedDate} {formattedTime}
 								</span>
 							</div>
@@ -197,20 +197,20 @@ export function PortalStatusStep({
 										? "border-green-600 bg-green-500/10"
 										: reviewStep.active
 											? "border-amber-600 bg-amber-500/10"
-											: "border-brand-border"
+											: "border-border"
 								}`}
 							>
 								{reviewStep.completed ? (
-									<div className="size-2 rounded-full bg-green-600" />
+									<div className="bg-green-600 rounded-full size-2" />
 								) : reviewStep.active ? (
-									<div className="size-2 rounded-full bg-amber-600" />
+									<div className="rounded-full size-2 bg-amber-600" />
 								) : null}
 							</div>
 							<div className="flex flex-col leading-tight">
-								<span className="font-sans font-semibold text-sm text-foreground">
+								<span className="font-sans text-sm font-semibold text-foreground">
 									{reviewStep.label}
 								</span>
-								<span className="font-sans text-[10px] text-brand-muted">
+								<span className="font-sans text-[10px] text-muted-foreground">
 									{reviewStep.completed
 										? "Review finished"
 										: reviewStep.active
@@ -229,26 +229,26 @@ export function PortalStatusStep({
 										? "border-red-600 bg-red-500/10"
 										: verifyStep.completed
 											? "border-green-600 bg-green-500/10"
-											: "border-brand-border"
+											: "border-border"
 								}`}
 							>
 								{verifyStep.error ? (
-									<AlertTriangle className="size-2.5 text-red-600" />
+									<AlertTriangle className="size-2.5 text-destructive" />
 								) : verifyStep.completed ? (
-									<div className="size-2 rounded-full bg-green-600" />
+									<div className="bg-green-600 rounded-full size-2" />
 								) : null}
 							</div>
 							<div className="flex flex-col leading-tight">
 								<span
 									className={`font-sans font-semibold text-sm ${
 										verifyStep.error
-											? "text-red-600 animate-pulse-subtle"
+											? "text-destructive animate-pulse-subtle"
 											: "text-foreground"
 									}`}
 								>
 									{verifyStep.label}
 								</span>
-								<span className="font-sans text-[10px] text-brand-muted">
+								<span className="font-sans text-[10px] text-muted-foreground">
 									{verifyStep.error
 										? "Action needed: incorrect details flagged"
 										: verifyStep.completed
@@ -265,7 +265,7 @@ export function PortalStatusStep({
 								className={`absolute -left-[31px] top-0 rounded-full size-[18px] border-2 bg-card flex items-center justify-center transition-all ${
 									honorStep.active
 										? "border-amber-600 bg-amber-500/10"
-										: "border-brand-border"
+										: "border-border"
 								}`}
 							>
 								{honorStep.active ? (
@@ -273,10 +273,10 @@ export function PortalStatusStep({
 								) : null}
 							</div>
 							<div className="flex flex-col leading-tight">
-								<span className="font-sans font-semibold text-sm text-foreground">
+								<span className="font-sans text-sm font-semibold text-foreground">
 									{honorStep.label}
 								</span>
-								<span className="font-sans text-[10px] text-brand-muted">
+								<span className="font-sans text-[10px] text-muted-foreground">
 									{app.status === "VERIFIED"
 										? "Verified member"
 										: "Published at the end of the term"}
@@ -287,39 +287,39 @@ export function PortalStatusStep({
 				</div>
 
 				{/* Summary Pane */}
-				<div className="flex flex-col gap-4 items-start w-full select-none">
-					<h3 className="font-sans font-semibold text-sm text-foreground">
+				<div className="flex flex-col items-start w-full gap-4 select-none">
+					<h3 className="type-label">
 						Summary
 					</h3>
 
-					<div className="flex flex-col gap-2 w-full border border-brand-border rounded-xl p-4 bg-muted/10">
+					<div className="flex flex-col w-full gap-2 p-4 border border-border rounded-xl bg-muted/10">
 						{/* SY */}
-						<div className="flex justify-between items-center pb-2 border-b border-brand-border/50 text-xs">
-							<span className="text-brand-muted">Academic Year</span>
+						<div className="flex items-center justify-between pb-2 text-xs border-b border-border/50">
+							<span className="text-muted-foreground">Academic Year</span>
 							<span className="font-semibold text-foreground">
 								AY {schoolYear}
 							</span>
 						</div>
 
 						{/* Semester */}
-						<div className="flex justify-between items-center pb-2 border-b border-brand-border/50 text-xs">
-							<span className="text-brand-muted">Semester</span>
+						<div className="flex items-center justify-between pb-2 text-xs border-b border-border/50">
+							<span className="text-muted-foreground">Semester</span>
 							<span className="font-semibold text-foreground">
 								{app.semester === "1ST" ? "1st Semester" : "2nd Semester"}
 							</span>
 						</div>
 
 						{/* GWA */}
-						<div className="flex justify-between items-center pb-2 border-b border-brand-border/50 text-xs">
-							<span className="text-brand-muted">Semester GWA</span>
-							<span className="font-semibold text-amber-600 text-sm">
+						<div className="flex items-center justify-between pb-2 text-xs border-b border-border/50">
+							<span className="text-muted-foreground">Semester GWA</span>
+							<span className="text-sm font-semibold text-amber-600">
 								{app.gwa ? app.gwa.toFixed(2) : "N/A"}
 							</span>
 						</div>
 
 						{/* Status */}
-						<div className="flex justify-between items-center text-xs">
-							<span className="text-brand-muted">Application Status</span>
+						<div className="flex items-center justify-between text-xs">
+							<span className="text-muted-foreground">Application Status</span>
 							<span
 								className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
 									app.status === "VERIFIED"

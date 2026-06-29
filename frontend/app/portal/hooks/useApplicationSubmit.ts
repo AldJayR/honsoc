@@ -26,9 +26,10 @@ interface UseApplicationSubmitArgs {
 	onStepChange: (step: number) => void;
 }
 
-function deriveSemester(
-	selectedSemesters: { firstSem: boolean; secondSem: boolean },
-): "1ST" | "2ND" | "BOTH" {
+function deriveSemester(selectedSemesters: {
+	firstSem: boolean;
+	secondSem: boolean;
+}): "1ST" | "2ND" | "BOTH" {
 	if (selectedSemesters.firstSem && !selectedSemesters.secondSem) return "1ST";
 	if (!selectedSemesters.firstSem && selectedSemesters.secondSem) return "2ND";
 	return "BOTH";
@@ -106,7 +107,9 @@ export function useApplicationSubmit({
 
 			const createdApps = await submitApplication(payload);
 			if (!createdApps || createdApps.length === 0) {
-				throw new Error("Failed to create application records in the database.");
+				throw new Error(
+					"Failed to create application records in the database.",
+				);
 			}
 
 			const app1st = createdApps.find(
