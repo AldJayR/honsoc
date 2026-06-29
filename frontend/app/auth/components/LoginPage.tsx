@@ -63,7 +63,7 @@ export function LoginPage() {
 				className="flex flex-col gap-6 items-start w-full"
 			>
 				<div className="flex flex-col items-center justify-center w-full mb-2">
-					<h2 className="font-sans font-semibold text-lg leading-7 text-black text-center select-none">
+					<h2 className="font-sans font-semibold text-lg leading-7 text-black text-center select-none whitespace-nowrap">
 						Login to your account
 					</h2>
 				</div>

@@ -26,7 +26,7 @@ export function HomePage() {
 
 			<Link
 				to="/login"
-				className="bg-background hover:bg-muted border-[0.5px] border-brand-primary text-brand-primary-light font-medium text-sm leading-5 tracking-normal h-8 px-3 rounded-lg flex gap-1.5 items-center justify-center shadow-sm cursor-pointer w-full transition-all duration-200 active:scale-[0.98]"
+				className="bg-background hover:bg-muted border-[0.5px] border-brand-primary text-brand-primary-light font-medium text-sm leading-5 tracking-normal h-8 px-3 rounded-lg flex gap-1.5 items-center justify-center shadow-sm cursor-pointer w-full whitespace-nowrap transition-all duration-200 active:scale-[0.98]"
 			>
 				<UserPlus className="size-4 shrink-0 text-brand-primary" />
 				Login to existing account
