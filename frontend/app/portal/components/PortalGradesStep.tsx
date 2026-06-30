@@ -9,6 +9,14 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "~/components/ui/table";
 import { StepNavigation } from "~/portal/components/StepNavigation";
 import type { GradeInput } from "~/shared/services/auth.api";
 
@@ -26,7 +34,7 @@ interface PortalGradesStepProps {
 	gwaThreshold: number;
 }
 
-const validGrades = ["1.0", "1.25", "1.50", "1.75", "2.00", "5.0", "INC"];
+const validGrades = ["1.00", "1.25", "1.50", "1.75", "2.00"];
 
 export function PortalGradesStep({
 	selectedSemesters,
@@ -48,7 +56,7 @@ export function PortalGradesStep({
 	const [subjectCode, setSubjectCode] = useState("");
 	const [subjectName, setSubjectName] = useState("");
 	const [units, setUnits] = useState("");
-	const [grade, setGrade] = useState("1.0");
+	const [grade, setGrade] = useState("1.00");
 
 	const activeGrades = activeTab === "1st" ? grades1st : grades2nd;
 	const setActiveGrades = activeTab === "1st" ? onChange1st : onChange2nd;
@@ -91,13 +99,13 @@ export function PortalGradesStep({
 
 	const handleAddGrade = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!subjectCode.trim()) return;
+		if (!subjectCode.trim() || !subjectName.trim()) return;
 		const unitsNum = Number.parseInt(units, 10);
 		if (Number.isNaN(unitsNum) || unitsNum < 1 || unitsNum > 6) return;
 
 		const newGrade: GradeInput = {
 			subjectCode: subjectCode.toUpperCase().trim(),
-			subjectName: subjectName.trim() || subjectCode.toUpperCase().trim(),
+			subjectName: subjectName.trim(),
 			units: unitsNum,
 			grade,
 			_key: nextGradeKey(),
@@ -107,7 +115,7 @@ export function PortalGradesStep({
 		setSubjectCode("");
 		setSubjectName("");
 		setUnits("");
-		setGrade("1.0");
+		setGrade("1.00");
 	};
 
 	const handleDeleteGrade = (key: string) => {
@@ -118,8 +126,7 @@ export function PortalGradesStep({
 		<div className="flex flex-col items-start w-full gap-6 animate-fade-in">
 			<p className="select-none type-body-small text-muted-foreground">
 				Enter each subject from your COG exactly as printed. GWA is computed
-				automatically. Entering an INC or 5.0 will trigger a disqualifier
-				warning.
+				automatically.
 			</p>
 
 			{/* GWA Summary Panel */}
@@ -205,45 +212,43 @@ export function PortalGradesStep({
 			) : null}
 
 			{/* Table of Grades */}
-			<div className="flex flex-col items-start w-full overflow-hidden border border-border rounded-xl bg-card">
-				{/* Table Header */}
-				<div className="flex items-center justify-between w-full px-4 py-2 text-xs font-semibold tracking-wider uppercase border-b bg-muted/30 border-border text-muted-foreground">
-					<div className="w-[300px]">Subject</div>
-					<div className="flex-1 text-center">Unit</div>
-					<div className="flex-1 text-center">Grade</div>
-					<div className="w-10"></div>
-				</div>
-
-				{/* Table Rows */}
-				{activeGrades.length === 0 ? (
-					<p className="w-full p-8 text-sm text-muted-foreground">
-						No grades added yet. Enter a subject below to start.
-					</p>
-				) : (
-					activeGrades.map((g) => (
-						<div
-							key={g._key ?? `${g.subjectCode}-${Math.random()}`}
-							className="flex items-center justify-between w-full px-4 py-2 text-sm transition-colors border-b border-border last:border-0 text-foreground hover:bg-muted/10"
-						>
-							<div className="w-[300px] font-medium">{g.subjectCode}</div>
-							<div className="flex-1 text-center">{g.units}</div>
-							<div className="flex-1 font-semibold text-center text-primary">
-								{g.grade}
-							</div>
-							<div className="flex justify-end w-10">
-								<button
-									type="button"
-									onClick={() => g._key && handleDeleteGrade(g._key)}
-									className="p-1 transition-colors cursor-pointer select-none text-muted-foreground hover:text-destructive"
-									aria-label="Delete grade"
-								>
-									<Trash2 className="size-4" />
-								</button>
-							</div>
-						</div>
-					))
-				)}
-			</div>
+			{activeGrades.length === 0 ? (
+				<p className="w-full p-8 text-sm text-center text-muted-foreground border border-dashed rounded-xl select-none">
+					No grades added yet. Enter a subject below to start.
+				</p>
+			) : (
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead className="w-[300px]">Subject</TableHead>
+							<TableHead className="text-center">Unit</TableHead>
+							<TableHead className="text-center">Grade</TableHead>
+							<TableHead className="w-10"></TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						{activeGrades.map((g) => (
+							<TableRow key={g._key ?? `${g.subjectCode}-${Math.random()}`}>
+								<TableCell className="font-medium">{g.subjectCode}</TableCell>
+								<TableCell className="text-center">{g.units}</TableCell>
+								<TableCell className="font-semibold text-center text-primary">
+									{g.grade}
+								</TableCell>
+								<TableCell className="text-right">
+									<button
+										type="button"
+										onClick={() => g._key && handleDeleteGrade(g._key)}
+										className="p-1 transition-colors cursor-pointer select-none text-muted-foreground hover:text-destructive"
+										aria-label="Delete grade"
+									>
+										<Trash2 className="size-4" />
+									</button>
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			)}
 
 			{/* Add Grade Form Input Row */}
 			<form
@@ -254,24 +259,28 @@ export function PortalGradesStep({
 					type="text"
 					value={subjectCode}
 					onChange={(e) => setSubjectCode(e.target.value)}
-					placeholder="Subject Code (e.g. IT101)"
-					className="w-[280px]"
+					placeholder="Subject Code"
+					className="w-[130px]"
 				/>
 				<Input
 					type="text"
 					value={subjectName}
 					onChange={(e) => setSubjectName(e.target.value)}
-					placeholder="Subject Name (optional)"
-					className="w-[200px]"
+					placeholder="Subject Name"
+					className="flex-1"
 				/>
 				<Input
-					type="number"
+					type="text"
+					inputMode="numeric"
 					value={units}
-					onChange={(e) => setUnits(e.target.value)}
+					onChange={(e) => {
+						const val = e.target.value;
+						if (val === "" || /^[1-6]$/.test(val)) {
+							setUnits(val);
+						}
+					}}
 					placeholder="Units"
-					min="1"
-					max="6"
-					className="flex-1"
+					className="w-[100px]"
 				/>
 				<Select
 					value={grade}
@@ -280,7 +289,7 @@ export function PortalGradesStep({
 					}}
 					items={validGrades.map((g) => ({ value: g, label: g }))}
 				>
-					<SelectTrigger className="flex-1">
+					<SelectTrigger className="w-[100px]">
 						<SelectValue placeholder="Grade" />
 					</SelectTrigger>
 					<SelectContent alignItemWithTrigger={false}>

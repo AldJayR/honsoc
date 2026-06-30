@@ -59,9 +59,6 @@ export function PortalDocumentsStep({
 				: "border-2 border-dashed border-border hover:border-muted-foreground"
 		}`;
 
-	const placeholderClass =
-		"type-caption text-muted-foreground select-none pointer-events-none";
-
 	return (
 		<div className="flex flex-col items-start w-full gap-6 animate-fade-in">
 			<p className="select-none type-body-small text-muted-foreground">
@@ -91,9 +88,17 @@ export function PortalDocumentsStep({
 								</FileUploadItem>
 							</FileUploadList>
 						) : (
-							<span className={placeholderClass}>
-								Certificate of Registration (COR) – click to browse
-							</span>
+							<div className="flex flex-col gap-1 w-full text-left">
+								<span className="text-sm font-semibold text-foreground">
+									Certificate of Registration (COR) - AY 2026–2027
+								</span>
+								<span className="text-xs text-muted-foreground">
+									Drag & drop or click to browse
+								</span>
+								<span className="text-[10px] text-muted-foreground/80">
+									Max size: 5MB (PDF, PNG, JPG)
+								</span>
+							</div>
 						)}
 					</FileUploadTrigger>
 				</FileUpload>
@@ -119,10 +124,17 @@ export function PortalDocumentsStep({
 									</FileUploadItem>
 								</FileUploadList>
 							) : (
-								<span className={placeholderClass}>
-									Certificate of Grades – 1st Sem A.Y.{" "}
-									{computeYear(schoolYear, -1)}
-								</span>
+								<div className="flex flex-col gap-1 w-full text-left">
+									<span className="text-sm font-semibold text-foreground">
+										Certificate of Grades - 1st Sem AY {computeYear(schoolYear, -1).replace(/\s*-\s*/, "–")}
+									</span>
+									<span className="text-xs text-muted-foreground">
+										Drag & drop or click to browse
+									</span>
+									<span className="text-[10px] text-muted-foreground/80">
+										Max size: 5MB (PDF, PNG, JPG)
+									</span>
+								</div>
 							)}
 						</FileUploadTrigger>
 					</FileUpload>
@@ -149,10 +161,17 @@ export function PortalDocumentsStep({
 									</FileUploadItem>
 								</FileUploadList>
 							) : (
-								<span className={placeholderClass}>
-									Certificate of Grades – 2nd Sem A.Y.{" "}
-									{computeYear(schoolYear, -1)}
-								</span>
+								<div className="flex flex-col gap-1 w-full text-left">
+									<span className="text-sm font-semibold text-foreground">
+										Certificate of Grades - 2nd Sem AY {computeYear(schoolYear, -1).replace(/\s*-\s*/, "–")}
+									</span>
+									<span className="text-xs text-muted-foreground">
+										Drag & drop or click to browse
+									</span>
+									<span className="text-[10px] text-muted-foreground/80">
+										Max size: 5MB (PDF, PNG, JPG)
+									</span>
+								</div>
 							)}
 						</FileUploadTrigger>
 					</FileUpload>
@@ -178,9 +197,17 @@ export function PortalDocumentsStep({
 								</FileUploadItem>
 							</FileUploadList>
 						) : (
-							<span className={placeholderClass}>
-								Certificate of Good Moral – click to browse
-							</span>
+							<div className="flex flex-col gap-1 w-full text-left">
+								<span className="text-sm font-semibold text-foreground">
+									Certificate of Good Moral
+								</span>
+								<span className="text-xs text-muted-foreground">
+									Drag & drop or click to browse
+								</span>
+								<span className="text-[10px] text-muted-foreground/80">
+									Max size: 5MB (PDF, PNG, JPG)
+								</span>
+							</div>
 						)}
 					</FileUploadTrigger>
 				</FileUpload>
