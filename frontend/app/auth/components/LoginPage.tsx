@@ -44,7 +44,7 @@ export function LoginPage() {
 			{
 				onSuccess: () => {
 					toast.success("Successfully logged in!");
-					navigate("/portal");
+					navigate("/portal", { replace: true });
 				},
 				onError: (err) => {
 					toast.error(
