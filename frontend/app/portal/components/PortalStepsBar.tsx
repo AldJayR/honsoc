@@ -3,7 +3,6 @@ import {
 	StepperIndicator,
 	StepperItem,
 	StepperList,
-	StepperSeparator,
 	StepperTitle,
 	StepperTrigger,
 } from "~/components/ui/stepper";
@@ -18,6 +17,7 @@ interface PortalStepsBarProps {
 export function PortalStepsBar({ currentStep }: PortalStepsBarProps) {
 	return (
 		<Stepper
+			key={currentStep}
 			value={STEP_VALUES[currentStep - 1]}
 			nonInteractive
 			className="w-full flex items-center justify-between gap-2 px-4 py-2 select-none"
@@ -49,17 +49,21 @@ export function PortalStepsBar({ currentStep }: PortalStepsBarProps) {
 								</StepperIndicator>
 								<StepperTitle
 									className={`text-xs tracking-wider ${
-										isCompleted
-											? "font-medium text-primary-foreground"
-											: "font-semibold text-foreground"
+										isActive
+											? "font-semibold text-foreground"
+											: isCompleted
+												? "font-medium text-primary"
+												: "font-medium text-muted-foreground"
 									}`}
 								>
 									{STEP_LABELS[idx]}
 								</StepperTitle>
 							</StepperTrigger>
 							{idx < STEP_VALUES.length - 1 && (
-								<StepperSeparator
-									className={`h-px flex-1 mx-3 min-w-[20px] ${
+								<div
+									role="separator"
+									aria-hidden="true"
+									className={`h-px flex-1 mx-3 min-w-[20px] transition-colors ${
 										isCompleted ? "bg-primary" : "bg-border"
 									}`}
 								/>
