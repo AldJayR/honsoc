@@ -83,7 +83,7 @@ export function PortalPage({
 				<PortalHeader user={user} />
 				<PortalStepsBar currentStep={step} />
 
-				<main className="w-full bg-card border border-border rounded-2xl p-6 shadow-sm min-h-[300px] flex flex-col justify-start">
+				<main className="w-full p-6 min-h-[300px] flex flex-col justify-start">
 					{step === 1 ? (
 						<PortalProfileStep
 							defaultValues={profile}

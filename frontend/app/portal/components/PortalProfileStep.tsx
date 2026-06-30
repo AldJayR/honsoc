@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "~/components/ui/button";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
+import { Input } from "~/components/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -134,17 +135,18 @@ export function PortalProfileStep({
 						Campus
 					</FieldLabel>
 					<Select
-						value={watchedCampusId ?? undefined}
+						value={watchedCampusId}
 						onValueChange={(val) => {
 							if (val) setValue("campusId", val, { shouldValidate: true });
 						}}
+						items={campuses.map((c) => ({ value: c.id.toString(), label: c.name }))}
 					>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder="Select campus" />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent alignItemWithTrigger={false}>
 							{campuses.map((c) => (
-								<SelectItem key={c.id} value={c.id.toString()}>
+								<SelectItem key={c.id} value={c.id.toString()} className="overflow-hidden text-ellipsis">
 									{c.name}
 								</SelectItem>
 							))}
@@ -166,17 +168,18 @@ export function PortalProfileStep({
 						Department
 					</FieldLabel>
 					<Select
-						value={watchedDepartmentId ?? undefined}
+						value={watchedDepartmentId}
 						onValueChange={(val) => {
 							if (val) setValue("departmentId", val, { shouldValidate: true });
 						}}
+						items={departments.map((d) => ({ value: d.id.toString(), label: `${d.name} (${d.code})` }))}
 					>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder="Select department" />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent alignItemWithTrigger={false}>
 							{departments.map((d) => (
-								<SelectItem key={d.id} value={d.id.toString()}>
+								<SelectItem key={d.id} value={d.id.toString()} className="overflow-hidden text-ellipsis">
 									{d.name} ({d.code})
 								</SelectItem>
 							))}
@@ -197,21 +200,12 @@ export function PortalProfileStep({
 					>
 						Academic Year
 					</FieldLabel>
-					<Select
-						value={watch("academicYear") ?? undefined}
-						onValueChange={(val) => {
-							if (val) setValue("academicYear", val, { shouldValidate: true });
-						}}
-					>
-						<SelectTrigger className="w-full">
-							<SelectValue placeholder="Select year" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value={schoolYear}>{schoolYear}</SelectItem>
-							<SelectItem value="2025 - 2026">2025 - 2026</SelectItem>
-							<SelectItem value="2024 - 2025">2024 - 2025</SelectItem>
-						</SelectContent>
-					</Select>
+					<Input
+						id="academicYear"
+						value={schoolYear}
+						disabled
+						className="w-full"
+					/>
 				</Field>
 
 				{/* Year Level */}
@@ -223,20 +217,21 @@ export function PortalProfileStep({
 						Year Level
 					</FieldLabel>
 					<Select
-						value={watchedYearLevel ?? undefined}
+						value={watchedYearLevel}
 						onValueChange={(val) => {
 							if (val)
 								setValue("yearLevel", val as ProfileFormValues["yearLevel"], {
 									shouldValidate: true,
 								});
 						}}
+						items={yearLevels}
 					>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder="Select year level" />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent alignItemWithTrigger={false}>
 							{yearLevels.map((yl) => (
-								<SelectItem key={yl.value} value={yl.value}>
+								<SelectItem key={yl.value} value={yl.value} className="overflow-hidden text-ellipsis">
 									{yl.label}
 								</SelectItem>
 							))}
@@ -253,17 +248,18 @@ export function PortalProfileStep({
 						Program/course
 					</FieldLabel>
 					<Select
-						value={watchedProgram ?? undefined}
+						value={watchedProgram}
 						onValueChange={(val) => {
 							if (val) setValue("program", val, { shouldValidate: true });
 						}}
+						items={programsList.map((p) => ({ value: p, label: p }))}
 					>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder="Select program" />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent alignItemWithTrigger={false}>
 							{programsList.map((p) => (
-								<SelectItem key={p} value={p}>
+								<SelectItem key={p} value={p} className="overflow-hidden text-ellipsis">
 									{p}
 								</SelectItem>
 							))}
@@ -285,17 +281,18 @@ export function PortalProfileStep({
 						Major
 					</FieldLabel>
 					<Select
-						value={watchedMajorId ?? undefined}
+						value={watchedMajorId}
 						onValueChange={(val) => {
 							if (val) setValue("majorId", val, { shouldValidate: true });
 						}}
+						items={majors.map((m) => ({ value: m.id.toString(), label: m.name }))}
 					>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder="None" />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent alignItemWithTrigger={false}>
 							{majors.map((m) => (
-								<SelectItem key={m.id} value={m.id.toString()}>
+								<SelectItem key={m.id} value={m.id.toString()} className="overflow-hidden text-ellipsis">
 									{m.name}
 								</SelectItem>
 							))}

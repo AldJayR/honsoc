@@ -19,5 +19,6 @@ export async function apiClientRaw(
 			...headers,
 		},
 		body: body ? JSON.stringify(body) : undefined,
+		credentials: "include",
 	});
 }

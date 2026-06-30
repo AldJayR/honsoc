@@ -278,13 +278,14 @@ export function PortalGradesStep({
 					onValueChange={(val) => {
 						if (val) setGrade(val);
 					}}
+					items={validGrades.map((g) => ({ value: g, label: g }))}
 				>
 					<SelectTrigger className="flex-1">
 						<SelectValue placeholder="Grade" />
 					</SelectTrigger>
-					<SelectContent>
+					<SelectContent alignItemWithTrigger={false}>
 						{validGrades.map((g) => (
-							<SelectItem key={g} value={g}>
+							<SelectItem key={g} value={g} className="overflow-hidden text-ellipsis">
 								{g}
 							</SelectItem>
 						))}
