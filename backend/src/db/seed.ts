@@ -115,62 +115,92 @@ async function main() {
 		.onConflictDoNothing();
 	console.log("  Inserted active term");
 
-	console.log("Seeding verified account...");
-	let verifiedUser = (
-		await db
-			.select()
-			.from(users)
-			.where(eq(users.email, "verified@example.com"))
-			.limit(1)
-	)[0];
+	const seedUsers = [
+		{
+			name: "Verified User",
+			email: "verified@example.com",
+			first_name: "Verified",
+			last_name: "User",
+			student_number: "SUM2023-00123",
+		},
+		{
+			name: "Alice Santos",
+			email: "alice@example.com",
+			first_name: "Alice",
+			last_name: "Santos",
+			student_number: "SUM2023-00124",
+		},
+		{
+			name: "Bob Reyes",
+			email: "bob@example.com",
+			first_name: "Bob",
+			last_name: "Reyes",
+			student_number: "SUM2023-00125",
+		},
+		{
+			name: "Carla Gomez",
+			email: "carla@example.com",
+			first_name: "Carla",
+			last_name: "Gomez",
+			student_number: "SUM2023-00126",
+		},
+	];
 
-	if (!verifiedUser) {
-		const results = await db
-			.insert(users)
-			.values({
-				name: "Verified User",
-				email: "verified@example.com",
-				emailVerified: true,
-				first_name: "Verified",
-				last_name: "User",
-				role: "STUDENT",
-				status: "ACTIVE",
-				student_number: "SUM2023-00123",
-			})
-			.returning();
-		verifiedUser = results[0];
-	} else if (verifiedUser.student_number !== "SUM2023-00123") {
-		await db
-			.update(users)
-			.set({ student_number: "SUM2023-00123" })
-			.where(eq(users.id, verifiedUser.id));
-		verifiedUser.student_number = "SUM2023-00123";
-		console.log(`  Updated student number for verified user: ${verifiedUser.email}`);
-	}
+	console.log("Seeding accounts...");
+	const passwordHash = await hashPassword("password123");
 
-	if (!verifiedUser) {
-		throw new Error("Failed to insert or find verified user");
-	}
+	for (const user of seedUsers) {
+		let existingUser = (
+			await db
+				.select()
+				.from(users)
+				.where(eq(users.email, user.email))
+				.limit(1)
+		)[0];
 
-	const existingAccount = (
-		await db
-			.select()
-			.from(accounts)
-			.where(eq(accounts.userId, verifiedUser.id))
-			.limit(1)
-	)[0];
+		if (!existingUser) {
+			const results = await db
+				.insert(users)
+				.values({
+					...user,
+					emailVerified: true,
+					role: "STUDENT",
+					status: "ACTIVE",
+				})
+				.returning();
+			existingUser = results[0];
+		} else if (existingUser.student_number !== user.student_number) {
+			await db
+				.update(users)
+				.set({ student_number: user.student_number })
+				.where(eq(users.id, existingUser.id));
+			existingUser.student_number = user.student_number;
+			console.log(`  Updated student number for ${user.email}`);
+		}
 
-	if (!existingAccount) {
-		const passwordHash = await hashPassword("password123");
-		await db.insert(accounts).values({
-			accountId: verifiedUser.id,
-			providerId: "credential",
-			userId: verifiedUser.id,
-			password: passwordHash,
-		});
-		console.log(`  Inserted verified user: ${verifiedUser.email}`);
-	} else {
-		console.log(`  Verified user already exists: ${verifiedUser.email}`);
+		if (!existingUser) {
+			throw new Error(`Failed to insert or find user: ${user.email}`);
+		}
+
+		const existingAccount = (
+			await db
+				.select()
+				.from(accounts)
+				.where(eq(accounts.userId, existingUser.id))
+				.limit(1)
+		)[0];
+
+		if (!existingAccount) {
+			await db.insert(accounts).values({
+				accountId: existingUser.id,
+				providerId: "credential",
+				userId: existingUser.id,
+				password: passwordHash,
+			});
+			console.log(`  Inserted user: ${user.email}`);
+		} else {
+			console.log(`  User already exists: ${user.email}`);
+		}
 	}
 
 	console.log("Seed complete.");
