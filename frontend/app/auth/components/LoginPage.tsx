@@ -43,7 +43,6 @@ export function LoginPage() {
 			},
 			{
 				onSuccess: () => {
-					toast.success("Successfully logged in!");
 					navigate("/portal", { replace: true });
 				},
 				onError: (err) => {
