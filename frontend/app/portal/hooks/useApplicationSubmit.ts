@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { ProfileFormValues } from "~/shared/lib/schemas/portal";
 import type {
@@ -73,10 +73,10 @@ export function useApplicationSubmit({
 	onApplicationsChange,
 	onStepChange,
 }: UseApplicationSubmitArgs) {
-	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isPending, startTransition] = useTransition();
 	const [statusText, setStatusText] = useState("");
 
-	const submit = useCallback(async () => {
+	const submit = useCallback(() => {
 		if (
 			!files.COR ||
 			!files.GMC ||
@@ -87,74 +87,73 @@ export function useApplicationSubmit({
 			return;
 		}
 
-		setIsSubmitting(true);
-		setStatusText("Creating application records...");
+		startTransition(async () => {
+			setStatusText("Creating application records...");
 
-		try {
-			const semester = deriveSemester(selectedSemesters);
-			const payload = {
-				semester,
-				yearLevel: profile.yearLevel,
-				program: profile.program,
-				majorId: profile.majorId ? Number.parseInt(profile.majorId, 10) : null,
-				...(semester === "1ST" && { grades: grades1st }),
-				...(semester === "2ND" && { grades: grades2nd }),
-				...(semester === "BOTH" && {
-					grades_1st: grades1st,
-					grades_2nd: grades2nd,
-				}),
-			};
+			try {
+				const semester = deriveSemester(selectedSemesters);
+				const payload = {
+					semester,
+					yearLevel: profile.yearLevel,
+					program: profile.program,
+					majorId: profile.majorId ? Number.parseInt(profile.majorId, 10) : null,
+					...(semester === "1ST" && { grades: grades1st }),
+					...(semester === "2ND" && { grades: grades2nd }),
+					...(semester === "BOTH" && {
+						grades_1st: grades1st,
+						grades_2nd: grades2nd,
+					}),
+				};
 
-			const createdApps = await submitApplication(payload);
-			if (!createdApps || createdApps.length === 0) {
-				throw new Error(
-					"Failed to create application records in the database.",
+				const createdApps = await submitApplication(payload);
+				if (!createdApps || createdApps.length === 0) {
+					throw new Error(
+						"Failed to create application records in the database.",
+					);
+				}
+
+				const app1st = createdApps.find(
+					(a: ApplicationResponseItem) => a.semester === "1ST",
 				);
+				const app2nd = createdApps.find(
+					(a: ApplicationResponseItem) => a.semester === "2ND",
+				);
+				const primaryAppId = app1st?.id || app2nd?.id;
+				if (!primaryAppId) {
+					throw new Error("Application record mapping failed.");
+				}
+
+				const secondaryAppId =
+					semester === "BOTH" && app2nd ? app2nd.id : undefined;
+
+				setStatusText("Uploading Certificate of Registration (COR)...");
+				await uploadDocument("COR", files.COR!, primaryAppId, secondaryAppId);
+
+				setStatusText("Uploading Good Moral Certificate (GMC)...");
+				await uploadDocument("GMC", files.GMC!, primaryAppId, secondaryAppId);
+
+				if (selectedSemesters.firstSem && app1st && files.COG_1ST) {
+					setStatusText("Uploading 1st Semester Certificate of Grades...");
+					await uploadDocument("COG_1ST", files.COG_1ST, app1st.id);
+				}
+
+				if (selectedSemesters.secondSem && app2nd && files.COG_2ND) {
+					setStatusText("Uploading 2nd Semester Certificate of Grades...");
+					await uploadDocument("COG_2ND", files.COG_2ND, app2nd.id);
+				}
+
+				toast.success("Application submitted successfully!");
+				const refresh = await getMyApplications();
+				onApplicationsChange(refresh.applications);
+				onStepChange(5);
+			} catch (error) {
+				const message =
+					error instanceof Error
+						? error.message
+						: "Failed to submit application.";
+				toast.error(message);
 			}
-
-			const app1st = createdApps.find(
-				(a: ApplicationResponseItem) => a.semester === "1ST",
-			);
-			const app2nd = createdApps.find(
-				(a: ApplicationResponseItem) => a.semester === "2ND",
-			);
-			const primaryAppId = app1st?.id || app2nd?.id;
-			if (!primaryAppId) {
-				throw new Error("Application record mapping failed.");
-			}
-
-			const secondaryAppId =
-				semester === "BOTH" && app2nd ? app2nd.id : undefined;
-
-			setStatusText("Uploading Certificate of Registration (COR)...");
-			await uploadDocument("COR", files.COR, primaryAppId, secondaryAppId);
-
-			setStatusText("Uploading Good Moral Certificate (GMC)...");
-			await uploadDocument("GMC", files.GMC, primaryAppId, secondaryAppId);
-
-			if (selectedSemesters.firstSem && app1st && files.COG_1ST) {
-				setStatusText("Uploading 1st Semester Certificate of Grades...");
-				await uploadDocument("COG_1ST", files.COG_1ST, app1st.id);
-			}
-
-			if (selectedSemesters.secondSem && app2nd && files.COG_2ND) {
-				setStatusText("Uploading 2nd Semester Certificate of Grades...");
-				await uploadDocument("COG_2ND", files.COG_2ND, app2nd.id);
-			}
-
-			toast.success("Application submitted successfully!");
-			const refresh = await getMyApplications();
-			onApplicationsChange(refresh.applications);
-			onStepChange(5);
-		} catch (error) {
-			const message =
-				error instanceof Error
-					? error.message
-					: "Failed to submit application.";
-			toast.error(message);
-		} finally {
-			setIsSubmitting(false);
-		}
+		});
 	}, [
 		profile,
 		selectedSemesters,
@@ -165,5 +164,5 @@ export function useApplicationSubmit({
 		onStepChange,
 	]);
 
-	return { submit, isSubmitting, statusText };
+	return { submit, isSubmitting: isPending, statusText };
 }
