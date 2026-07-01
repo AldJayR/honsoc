@@ -23,8 +23,11 @@ export function PortalSemestersStep({
 }: PortalSemestersStepProps) {
 	// Parse school years
 	// e.g. "2025-2026"
-	const firstSemYear = `AY ${schoolYear ? schoolYear.split("-")[0] : "2024"}-${schoolYear ? schoolYear.split("-")[0] : "2025"}`;
-	const secondSemYear = `AY ${schoolYear ? schoolYear.split("-")[0] : "2025"}-${schoolYear ? schoolYear.split("-")[1] : "2026"}`;
+	const startYear = schoolYear ? schoolYear.split("-")[0]?.trim() : "";
+	const endYear = schoolYear ? schoolYear.split("-")[1]?.trim() : "";
+	const formattedYear = startYear && endYear ? `${startYear}–${endYear}` : "2025–2026";
+	const firstSemYear = `AY ${formattedYear}`;
+	const secondSemYear = `AY ${formattedYear}`;
 
 	const handleCardClick = (sem: "firstSem" | "secondSem") => {
 		// If the admin only opened one semester, lock it

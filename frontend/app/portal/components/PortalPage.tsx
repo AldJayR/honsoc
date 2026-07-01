@@ -44,7 +44,7 @@ export function PortalPage({
 		departmentId: "",
 		academicYear: schoolYear,
 		yearLevel: "2ND_YEAR",
-		program: "Bachelor of Science in Information Technology",
+		program: "BS in Information Technology",
 		majorId: "",
 	});
 

@@ -72,6 +72,12 @@ export function Step2Page({ defaultValues }: Step2PageProps) {
 				description="Enter your login details"
 			/>
 
+			{errors.root?.message ? (
+				<div className="w-full p-3 text-sm text-red-700 border border-red-200 bg-red-500/10 rounded-xl">
+					{errors.root.message}
+				</div>
+			) : null}
+
 			<div className="flex flex-col items-start justify-center w-full gap-4">
 				<Field className="w-full" data-invalid={!!errors.email}>
 					<FieldLabel htmlFor="email">Email</FieldLabel>

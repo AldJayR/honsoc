@@ -1,5 +1,5 @@
 import { AlertTriangle, Plus, Trash2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -46,8 +46,6 @@ export function PortalGradesStep({
 	onContinue,
 	gwaThreshold = 1.75,
 }: PortalGradesStepProps) {
-	const gradeKeyCounter = useRef(0);
-	const nextGradeKey = () => `grade_${gradeKeyCounter.current++}`;
 	// Set initial active tab
 	const initialTab = selectedSemesters.firstSem ? "1st" : "2nd";
 	const [activeTab, setActiveTab] = useState<"1st" | "2nd">(initialTab);
@@ -108,7 +106,7 @@ export function PortalGradesStep({
 			subjectName: subjectName.trim(),
 			units: unitsNum,
 			grade,
-			_key: nextGradeKey(),
+			_key: `grade_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
 		};
 
 		setActiveGrades([...activeGrades, newGrade]);
@@ -226,9 +224,9 @@ export function PortalGradesStep({
 							<TableHead className="w-10"></TableHead>
 						</TableRow>
 					</TableHeader>
-					<TableBody>
+					<TableBody key={activeTab}>
 						{activeGrades.map((g) => (
-							<TableRow key={g._key ?? `${g.subjectCode}-${Math.random()}`}>
+							<TableRow key={g._key ?? `${activeTab}-${g.subjectCode}`}>
 								<TableCell className="font-medium">{g.subjectCode}</TableCell>
 								<TableCell className="text-center">{g.units}</TableCell>
 								<TableCell className="font-semibold text-center text-primary">
