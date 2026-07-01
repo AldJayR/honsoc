@@ -130,7 +130,7 @@ NHSVS follows a **Digitized Audit Model**:
 
 | ID | Requirement |
 |----|-------------|
-| TERM-01 | The `PRESIDENT` shall be able to configure the active academic term, including school year, semesters open for application (1st, 2nd, or Both), and GWA threshold. |
+| TERM-01 | The `PRESIDENT` shall be able to configure the active academic term, including school year, semesters covered by the term (1st, 2nd, or Both), and GWA threshold. The system shall allow students to apply for any individual semester within the term's coverage — if the term covers Both, students may apply for 1st, 2nd, or Both. |
 | TERM-02 | Students shall only be able to submit applications when an active term is configured. If no active term exists, the portal shall display an "Applications are closed" screen. |
 | TERM-03 | Term settings shall take effect immediately upon save. |
 

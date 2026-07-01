@@ -162,19 +162,34 @@ describe("createApplication", () => {
 		).rejects.toThrow(UnprocessableError);
 	});
 
-	it("throws when single semester requested but term is BOTH", async () => {
+	it("creates single semester application when term is BOTH", async () => {
 		mockActiveTerm({ semester: "BOTH" });
 		mockStudent();
+		mockNoExistingApplication();
 
-		await expect(
-			createApplication("student-1", {
-				semester: "1ST",
-				yearLevel: "3RD_YEAR",
-				program: "BS in Information Technology",
-				majorId: null,
-				grades: grades1st,
-			}),
-		).rejects.toThrow(UnprocessableError);
+		const mockApp = { id: "app-1", referenceNo: "HS-251-1-2012345" };
+		const mockReturning = vi.fn().mockResolvedValue([mockApp]);
+		const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
+		const mockGradesInsert = vi.fn().mockResolvedValue([]);
+		const mockTx = {
+			insert: vi.fn().mockReturnValue({ values: mockGradesInsert }),
+		};
+		mockTx.insert.mockReturnValueOnce({ values: mockValues });
+		mockTx.insert.mockReturnValueOnce({ values: mockGradesInsert });
+		vi.mocked(db.transaction).mockImplementation(
+			async (fn: any) => fn(mockTx),
+		);
+
+		const result = await createApplication("student-1", {
+			semester: "1ST",
+			yearLevel: "3RD_YEAR",
+			program: "BS in Information Technology",
+			majorId: null,
+			grades: grades1st,
+		});
+
+		expect(result).toHaveLength(1);
+		expect(result[0]?.referenceNo).toContain("HS-251");
 	});
 
 	it("throws ConflictError when duplicate application exists", async () => {

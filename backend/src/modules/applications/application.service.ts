@@ -50,12 +50,6 @@ export async function createApplication(
 		);
 	}
 
-	if (input.semester !== "BOTH" && term.semester === "BOTH") {
-		throw new UnprocessableError(
-			"Active term requires Both Semesters applications",
-		);
-	}
-
 	const student = await db.query.users.findFirst({
 		where: eq(users.id, studentId),
 		columns: { student_number: true },
