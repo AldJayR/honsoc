@@ -76,10 +76,10 @@ export function PortalDocumentsStep({
 				>
 					<FileUploadTrigger className={cardClass(hasFile("COR"))}>
 						{hasFile("COR") ? (
-							<FileUploadList orientation="horizontal">
+							<FileUploadList orientation="horizontal" className="w-full min-w-0">
 								<FileUploadItem
 									value={files.COR!}
-									className="p-0 bg-transparent border-0"
+									className="p-0 bg-transparent border-0 w-full min-w-0"
 								>
 									<FileUploadItemMetadata />
 								</FileUploadItem>
@@ -112,10 +112,10 @@ export function PortalDocumentsStep({
 					>
 						<FileUploadTrigger className={cardClass(hasFile("COG_1ST"))}>
 							{hasFile("COG_1ST") ? (
-								<FileUploadList orientation="horizontal">
+								<FileUploadList orientation="horizontal" className="w-full min-w-0">
 									<FileUploadItem
 										value={files.COG_1ST!}
-										className="p-0 bg-transparent border-0"
+										className="p-0 bg-transparent border-0 w-full min-w-0"
 									>
 										<FileUploadItemMetadata />
 									</FileUploadItem>
@@ -149,10 +149,10 @@ export function PortalDocumentsStep({
 					>
 						<FileUploadTrigger className={cardClass(hasFile("COG_2ND"))}>
 							{hasFile("COG_2ND") ? (
-								<FileUploadList orientation="horizontal">
+								<FileUploadList orientation="horizontal" className="w-full min-w-0">
 									<FileUploadItem
 										value={files.COG_2ND!}
-										className="p-0 bg-transparent border-0"
+										className="p-0 bg-transparent border-0 w-full min-w-0"
 									>
 										<FileUploadItemMetadata />
 									</FileUploadItem>
@@ -185,10 +185,10 @@ export function PortalDocumentsStep({
 				>
 					<FileUploadTrigger className={cardClass(hasFile("GMC"))}>
 						{hasFile("GMC") ? (
-							<FileUploadList orientation="horizontal">
+							<FileUploadList orientation="horizontal" className="w-full min-w-0">
 								<FileUploadItem
 									value={files.GMC!}
-									className="p-0 bg-transparent border-0"
+									className="p-0 bg-transparent border-0 w-full min-w-0"
 								>
 									<FileUploadItemMetadata />
 								</FileUploadItem>
