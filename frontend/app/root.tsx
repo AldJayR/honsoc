@@ -1,6 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { queryClient } from "~/lib/query";
 import type * as React from "react";
 import {
 	isRouteErrorResponse,
@@ -10,8 +9,10 @@ import {
 	Scripts,
 	ScrollRestoration,
 } from "react-router";
+import { queryClient } from "~/lib/query";
 import type { Route } from "./+types/root";
 import "./app.css";
+import { ThemeProvider } from "~/components/ThemeProvider";
 import { Toaster } from "~/components/ui/sonner";
 
 export const links: Route.LinksFunction = () => [
@@ -29,7 +30,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				<meta charSet="utf-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -37,8 +38,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 				<Links />
 			</head>
 			<body>
-				{children}
-				<Toaster />
+				<ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+					{children}
+					<Toaster />
+				</ThemeProvider>
 				<ScrollRestoration />
 				<Scripts />
 			</body>
