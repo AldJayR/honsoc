@@ -1,18 +1,12 @@
 import type { UserProfile } from "~/shared/services/auth.api";
+import { getInitials } from "~/lib/format";
 
 interface PortalHeaderProps {
 	user: UserProfile;
 }
 
 export function PortalHeader({ user }: PortalHeaderProps) {
-	// Extract initials for placeholder avatar
-	const nameParts = user.name.trim().split(/\s+/);
-	const initials = nameParts
-		.filter((part) => part.length > 0)
-		.map((part) => part[0])
-		.join("")
-		.slice(0, 2)
-		.toUpperCase();
+	const initials = getInitials(user.name);
 
 	return (
 		<div className="flex items-center justify-between w-full py-4 border-b select-none border-border">

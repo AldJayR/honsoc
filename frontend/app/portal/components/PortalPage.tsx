@@ -14,18 +14,27 @@ import type {
 	GradeInput,
 	Term,
 	UserProfile,
+	Campus,
+	Department,
+	Major,
 } from "~/shared/services/auth.api";
 
 interface PortalPageProps {
 	user: UserProfile;
 	activeTerm: Term | null;
 	applications: ApplicationStatusItem[];
+	campuses: Campus[];
+	departments: Department[];
+	majors: Major[];
 }
 
 export function PortalPage({
 	user,
 	activeTerm,
 	applications: initialApps,
+	campuses,
+	departments,
+	majors,
 }: PortalPageProps) {
 	const schoolYear = activeTerm?.schoolYear || "2025 - 2026";
 	const openSemester = activeTerm?.semester || "BOTH";
@@ -92,6 +101,9 @@ export function PortalPage({
 								setStep(2);
 							}}
 							schoolYear={schoolYear}
+							campuses={campuses}
+							departments={departments}
+							majors={majors}
 						/>
 					) : null}
 

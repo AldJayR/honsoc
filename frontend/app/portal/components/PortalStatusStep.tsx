@@ -2,6 +2,55 @@ import { AlertTriangle, Award, Check, Clock, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { ApplicationStatusItem } from "~/shared/services/auth.api";
+import { formatDate, formatTime } from "~/lib/format";
+
+type ApplicationStatus = ApplicationStatusItem["status"];
+type StepName = "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED_VERIFIED" | "HONOR_ROLL";
+
+interface StepStatus {
+	active: boolean;
+	completed: boolean;
+	label: string;
+	error?: boolean;
+}
+
+function getStepStatus(stepName: StepName, status: ApplicationStatus): StepStatus {
+	if (stepName === "SUBMITTED") {
+		return {
+			active: true,
+			completed: status !== "SUBMITTED",
+			label: "Submitted",
+		};
+	}
+	if (stepName === "UNDER_REVIEW") {
+		const active =
+			status === "UNDER_REVIEW" ||
+			status === "FLAGGED" ||
+			status === "VERIFIED";
+		const completed = status === "VERIFIED";
+		return { active, completed, label: "Under Review" };
+	}
+	if (stepName === "FLAGGED_VERIFIED") {
+		if (status === "FLAGGED") {
+			return {
+				active: true,
+				completed: false,
+				label: "Flagged",
+				error: true,
+			};
+		}
+		if (status === "VERIFIED") {
+			return { active: true, completed: true, label: "Verified" };
+		}
+		return { active: false, completed: false, label: "Verified or flagged" };
+	}
+	if (stepName === "HONOR_ROLL") {
+		const active = status === "VERIFIED"; // Roll published end of term
+		return { active, completed: false, label: "Final honor roll" };
+	}
+
+	return { active: false, completed: false, label: "" };
+}
 
 interface PortalStatusStepProps {
 	applications: ApplicationStatusItem[];
@@ -38,65 +87,13 @@ export function PortalStatusStep({
 		setTimeout(() => setCopied(false), 2000);
 	};
 
-	// Determine timeline node active state based on application status
-	// Statuses: SUBMITTED, UNDER_REVIEW, FLAGGED, VERIFIED, REJECTED
-	const getStepStatus = (
-		stepName: "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED_VERIFIED" | "HONOR_ROLL",
-	) => {
-		const status = app.status;
+	const submittedStep = getStepStatus("SUBMITTED", app.status);
+	const reviewStep = getStepStatus("UNDER_REVIEW", app.status);
+	const verifyStep = getStepStatus("FLAGGED_VERIFIED", app.status);
+	const honorStep = getStepStatus("HONOR_ROLL", app.status);
 
-		if (stepName === "SUBMITTED") {
-			return {
-				active: true,
-				completed: status !== "SUBMITTED",
-				label: "Submitted",
-			};
-		}
-		if (stepName === "UNDER_REVIEW") {
-			const active =
-				status === "UNDER_REVIEW" ||
-				status === "FLAGGED" ||
-				status === "VERIFIED";
-			const completed = status === "VERIFIED";
-			return { active, completed, label: "Under Review" };
-		}
-		if (stepName === "FLAGGED_VERIFIED") {
-			if (status === "FLAGGED") {
-				return {
-					active: true,
-					completed: false,
-					label: "Flagged",
-					error: true,
-				};
-			}
-			if (status === "VERIFIED") {
-				return { active: true, completed: true, label: "Verified" };
-			}
-			return { active: false, completed: false, label: "Verified or flagged" };
-		}
-		if (stepName === "HONOR_ROLL") {
-			const active = status === "VERIFIED"; // Roll published end of term
-			return { active, completed: false, label: "Final honor roll" };
-		}
-
-		return { active: false, completed: false, label: "" };
-	};
-
-	const submittedStep = getStepStatus("SUBMITTED");
-	const reviewStep = getStepStatus("UNDER_REVIEW");
-	const verifyStep = getStepStatus("FLAGGED_VERIFIED");
-	const honorStep = getStepStatus("HONOR_ROLL");
-
-	const submittedDate = new Date(app.submittedAt);
-	const formattedDate = submittedDate.toLocaleDateString(undefined, {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-	});
-	const formattedTime = submittedDate.toLocaleTimeString(undefined, {
-		hour: "2-digit",
-		minute: "2-digit",
-	});
+	const formattedDate = formatDate(app.submittedAt);
+	const formattedTime = formatTime(app.submittedAt);
 
 	return (
 		<div className="flex flex-col items-start w-full gap-6 animate-fade-in">

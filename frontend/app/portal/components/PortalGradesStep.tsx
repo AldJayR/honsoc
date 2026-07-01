@@ -19,6 +19,11 @@ import {
 } from "~/components/ui/table";
 import { StepNavigation } from "~/portal/components/StepNavigation";
 import type { GradeInput } from "~/shared/services/auth.api";
+import {
+	calculateGWA,
+	hasDisqualifyingGrade,
+	isDisqualifiedByGWA,
+} from "~/shared/lib/grades";
 
 interface PortalGradesStepProps {
 	selectedSemesters: {
@@ -59,41 +64,13 @@ export function PortalGradesStep({
 	const activeGrades = activeTab === "1st" ? grades1st : grades2nd;
 	const setActiveGrades = activeTab === "1st" ? onChange1st : onChange2nd;
 
-	// Calculate per-semester GWA
-	const calculateGWA = (grades: GradeInput[]) => {
-		let totalPoints = 0;
-		let totalUnits = 0;
-
-		for (const g of grades) {
-			const gradeNum = Number.parseFloat(g.grade);
-			// Exclude non-numeric grades from average calculation
-			if (!Number.isNaN(gradeNum) && g.grade !== "INC" && g.grade !== "5.0") {
-				totalPoints += gradeNum * g.units;
-				totalUnits += g.units;
-			}
-		}
-
-		if (totalUnits === 0) return 0;
-		return Math.round((totalPoints / totalUnits) * 100) / 100;
-	};
-
 	const gwa1st = calculateGWA(grades1st);
 	const gwa2nd = calculateGWA(grades2nd);
 
-	// Check for disqualifiers
-	const hasDisqualifyingGrade = (grades: GradeInput[]) => {
-		return grades.some((g) => g.grade === "5.0" || g.grade === "INC");
-	};
-
-	const isDisqualifiedByGWA = (gwa: number) => {
-		// lower numeric value = higher grade. GWA > threshold means worse grade (e.g. 1.8 > 1.75 is worse)
-		return gwa > 0 && gwa > gwaThreshold;
-	};
-
 	const is1stDisqualified =
-		hasDisqualifyingGrade(grades1st) || isDisqualifiedByGWA(gwa1st);
+		hasDisqualifyingGrade(grades1st) || isDisqualifiedByGWA(gwa1st, gwaThreshold);
 	const is2ndDisqualified =
-		hasDisqualifyingGrade(grades2nd) || isDisqualifiedByGWA(gwa2nd);
+		hasDisqualifyingGrade(grades2nd) || isDisqualifiedByGWA(gwa2nd, gwaThreshold);
 
 	const handleAddGrade = (e: React.FormEvent) => {
 		e.preventDefault();

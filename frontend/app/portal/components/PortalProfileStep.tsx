@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "~/components/ui/button";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
@@ -25,11 +24,6 @@ import {
 	profileSchema,
 } from "~/shared/lib/schemas/portal";
 import type { Campus, Department, Major } from "~/shared/services/auth.api";
-import {
-	getCampuses,
-	getDepartments,
-	getMajors,
-} from "~/shared/services/auth.api";
 
 export type { ProfileFormValues } from "~/shared/lib/schemas/portal";
 
@@ -37,6 +31,9 @@ interface PortalProfileStepProps {
 	defaultValues: ProfileFormValues;
 	onSubmit: (data: ProfileFormValues) => void;
 	schoolYear: string;
+	campuses: Campus[];
+	departments: Department[];
+	majors: Major[];
 }
 
 const yearLevels = [
@@ -61,12 +58,10 @@ export function PortalProfileStep({
 	defaultValues,
 	onSubmit,
 	schoolYear,
+	campuses,
+	departments,
+	majors,
 }: PortalProfileStepProps) {
-	const [campuses, setCampuses] = useState<Campus[]>([]);
-	const [departments, setDepartments] = useState<Department[]>([]);
-	const [majors, setMajors] = useState<Major[]>([]);
-	const [loading, setLoading] = useState(true);
-
 	const {
 		handleSubmit,
 		setValue,
@@ -86,42 +81,9 @@ export function PortalProfileStep({
 	const watchedProgram = watch("program");
 	const watchedMajorId = watch("majorId");
 
-	useEffect(() => {
-		const controller = new AbortController();
-		async function loadData() {
-			try {
-				const [campData, deptData, majData] = await Promise.all([
-					getCampuses(),
-					getDepartments(),
-					getMajors(),
-				]);
-				setCampuses(campData);
-				setDepartments(deptData);
-				setMajors(majData);
-			} catch (_e) {
-				// Network/abort errors are expected during unmount
-			} finally {
-				setLoading(false);
-			}
-		}
-		loadData();
-		return () => controller.abort();
-	}, []);
-
 	const handleFormSubmit = (data: ProfileFormValues) => {
 		onSubmit(data);
 	};
-
-	if (loading) {
-		return (
-			<div className="flex flex-col items-center justify-center w-full p-12">
-				<div className="w-8 h-8 border-b-2 rounded-full animate-spin border-primary"></div>
-				<span className="mt-4 text-sm text-muted-foreground">
-					Loading options...
-				</span>
-			</div>
-		);
-	}
 
 	return (
 		<form
