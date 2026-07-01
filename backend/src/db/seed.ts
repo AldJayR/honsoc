@@ -2,7 +2,8 @@ import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { hashPassword } from "better-auth/crypto";
-import { campus, departments, majors, users, accounts } from "@/db/schema/index.ts";
+import { campus, departments, majors, users, accounts, terms } from "@/db/schema/index.ts";
+import { eq } from "drizzle-orm";
 
 const pool = new pg.Pool({
 	connectionString: process.env.DATABASE_URL,
@@ -102,28 +103,67 @@ async function main() {
 		.onConflictDoNothing();
 	console.log(`  Inserted ${majorValues.length} majors`);
 
-	console.log("Seeding verified account...");
-	const [verifiedUser] = await db
-		.insert(users)
+	console.log("Seeding active term...");
+	await db
+		.insert(terms)
 		.values({
-			name: "Verified User",
-			email: "verified@example.com",
-			emailVerified: true,
-			first_name: "Verified",
-			last_name: "User",
-			role: "STUDENT",
-			status: "ACTIVE",
+			schoolYear: "2025-2026",
+			semester: "BOTH",
+			gwaThreshold: "1.75",
+			isActive: true,
 		})
-		.returning();
+		.onConflictDoNothing();
+	console.log("  Inserted active term");
 
-	const passwordHash = await hashPassword("password123");
-	await db.insert(accounts).values({
-		accountId: verifiedUser.id,
-		providerId: "credential",
-		userId: verifiedUser.id,
-		password: passwordHash,
-	});
-	console.log(`  Inserted verified user: ${verifiedUser.email}`);
+	console.log("Seeding verified account...");
+	let verifiedUser = (
+		await db
+			.select()
+			.from(users)
+			.where(eq(users.email, "verified@example.com"))
+			.limit(1)
+	)[0];
+
+	if (!verifiedUser) {
+		const results = await db
+			.insert(users)
+			.values({
+				name: "Verified User",
+				email: "verified@example.com",
+				emailVerified: true,
+				first_name: "Verified",
+				last_name: "User",
+				role: "STUDENT",
+				status: "ACTIVE",
+			})
+			.returning();
+		verifiedUser = results[0];
+	}
+
+	if (!verifiedUser) {
+		throw new Error("Failed to insert or find verified user");
+	}
+
+	const existingAccount = (
+		await db
+			.select()
+			.from(accounts)
+			.where(eq(accounts.userId, verifiedUser.id))
+			.limit(1)
+	)[0];
+
+	if (!existingAccount) {
+		const passwordHash = await hashPassword("password123");
+		await db.insert(accounts).values({
+			accountId: verifiedUser.id,
+			providerId: "credential",
+			userId: verifiedUser.id,
+			password: passwordHash,
+		});
+		console.log(`  Inserted verified user: ${verifiedUser.email}`);
+	} else {
+		console.log(`  Verified user already exists: ${verifiedUser.email}`);
+	}
 
 	console.log("Seed complete.");
 	await pool.end();
