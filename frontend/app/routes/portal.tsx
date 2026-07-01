@@ -9,6 +9,7 @@ import {
 	getMe,
 	getMyApplications,
 } from "~/shared/services/auth.api";
+import { queryClient } from "~/lib/query";
 import type { Route } from "./+types/portal";
 
 export function meta() {
@@ -23,18 +24,24 @@ export function meta() {
 
 export async function clientLoader() {
 	try {
-		const [user, activeTerm, appsRes, campuses, departments, majors] = await Promise.all([
-			getMe(),
-			getActiveTerm(),
-			getMyApplications(),
-			getCampuses(),
-			getDepartments(),
-			getMajors(),
+		const [user, activeTerm, applications, campuses, departments, majors] = await Promise.all([
+			queryClient.fetchQuery({ queryKey: ["user"], queryFn: getMe }),
+			queryClient.fetchQuery({ queryKey: ["activeTerm"], queryFn: getActiveTerm }),
+			queryClient.fetchQuery({
+				queryKey: ["applications"],
+				queryFn: async () => {
+					const res = await getMyApplications();
+					return res.applications;
+				},
+			}),
+			queryClient.fetchQuery({ queryKey: ["campuses"], queryFn: getCampuses, staleTime: Infinity }),
+			queryClient.fetchQuery({ queryKey: ["departments"], queryFn: getDepartments, staleTime: Infinity }),
+			queryClient.fetchQuery({ queryKey: ["majors"], queryFn: getMajors, staleTime: Infinity }),
 		]);
 		return {
 			user,
 			activeTerm,
-			applications: appsRes.applications,
+			applications,
 			campuses,
 			departments,
 			majors,

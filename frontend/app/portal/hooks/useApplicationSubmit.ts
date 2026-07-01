@@ -1,5 +1,6 @@
 import { useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { queryClient } from "~/lib/query";
 import type { ProfileFormValues } from "~/shared/lib/schemas/portal";
 import type {
 	ApplicationResponseItem,
@@ -143,8 +144,15 @@ export function useApplicationSubmit({
 				}
 
 				toast.success("Application submitted successfully!");
-				const refresh = await getMyApplications();
-				onApplicationsChange(refresh.applications);
+				await queryClient.invalidateQueries({ queryKey: ["applications"] });
+				const refresh = await queryClient.fetchQuery({
+					queryKey: ["applications"],
+					queryFn: async () => {
+						const res = await getMyApplications();
+						return res.applications;
+					},
+				});
+				onApplicationsChange(refresh);
 				onStepChange(5);
 			} catch (error) {
 				const message =
