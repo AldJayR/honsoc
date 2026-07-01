@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { computeSchoolYearOffset } from "~/lib/format";
 import {
 	FileUpload,
 	FileUploadItem,
@@ -25,11 +26,7 @@ interface PortalDocumentsStepProps {
 	schoolYear: string;
 }
 
-function computeYear(schoolYear: string, offset = 0) {
-	if (!schoolYear) return offset === 0 ? "2026 - 2027" : "2025 - 2026";
-	const parts = schoolYear.split("-").map((p) => Number.parseInt(p.trim(), 10));
-	return `${parts[0] + offset} - ${parts[1] + offset}`;
-}
+// computeSchoolYearOffset imported from ~/lib/format
 
 export function PortalDocumentsStep({
 	selectedSemesters,
@@ -90,7 +87,7 @@ export function PortalDocumentsStep({
 						) : (
 							<div className="flex flex-col gap-1 w-full text-left">
 								<span className="text-sm font-semibold text-foreground">
-									Certificate of Registration (COR) - AY 2026–2027
+									Certificate of Registration (COR) - AY {computeSchoolYearOffset(schoolYear).replace(/\s*-\s*/, "–")}
 								</span>
 								<span className="text-xs text-muted-foreground">
 									Drag & drop or click to browse
@@ -126,7 +123,7 @@ export function PortalDocumentsStep({
 							) : (
 								<div className="flex flex-col gap-1 w-full text-left">
 									<span className="text-sm font-semibold text-foreground">
-										Certificate of Grades - 1st Sem AY {computeYear(schoolYear, -1).replace(/\s*-\s*/, "–")}
+										Certificate of Grades - 1st Sem AY {computeSchoolYearOffset(schoolYear, -1).replace(/\s*-\s*/, "–")}
 									</span>
 									<span className="text-xs text-muted-foreground">
 										Drag & drop or click to browse
@@ -163,7 +160,7 @@ export function PortalDocumentsStep({
 							) : (
 								<div className="flex flex-col gap-1 w-full text-left">
 									<span className="text-sm font-semibold text-foreground">
-										Certificate of Grades - 2nd Sem AY {computeYear(schoolYear, -1).replace(/\s*-\s*/, "–")}
+										Certificate of Grades - 2nd Sem AY {computeSchoolYearOffset(schoolYear, -1).replace(/\s*-\s*/, "–")}
 									</span>
 									<span className="text-xs text-muted-foreground">
 										Drag & drop or click to browse

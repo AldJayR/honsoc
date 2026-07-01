@@ -35,3 +35,21 @@ export function formatTime(dateString: string): string {
 		minute: "2-digit",
 	});
 }
+
+/**
+ * Formats a raw school year range (e.g., "2025-2026") into an en-dash range (e.g., "2025–2026").
+ */
+export function formatSchoolYear(schoolYear: string): string {
+	const startYear = schoolYear ? schoolYear.split("-")[0]?.trim() : "";
+	const endYear = schoolYear ? schoolYear.split("-")[1]?.trim() : "";
+	return startYear && endYear ? `${startYear}–${endYear}` : "2025–2026";
+}
+
+/**
+ * Offsets a school year string range by a number of years (e.g., "2025-2026" with offset -1 becomes "2024 - 2025").
+ */
+export function computeSchoolYearOffset(schoolYear: string, offset = 0): string {
+	if (!schoolYear) return offset === 0 ? "2026 - 2027" : "2025 - 2026";
+	const parts = schoolYear.split("-").map((p) => Number.parseInt(p.trim(), 10));
+	return `${parts[0] + offset} - ${parts[1] + offset}`;
+}

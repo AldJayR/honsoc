@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { StepNavigation } from "~/portal/components/StepNavigation";
+import { formatSchoolYear } from "~/lib/format";
 
 interface PortalSemestersStepProps {
 	selectedSemesters: {
@@ -21,11 +22,7 @@ export function PortalSemestersStep({
 	schoolYear,
 	openSemester,
 }: PortalSemestersStepProps) {
-	// Parse school years
-	// e.g. "2025-2026"
-	const startYear = schoolYear ? schoolYear.split("-")[0]?.trim() : "";
-	const endYear = schoolYear ? schoolYear.split("-")[1]?.trim() : "";
-	const formattedYear = startYear && endYear ? `${startYear}–${endYear}` : "2025–2026";
+	const formattedYear = formatSchoolYear(schoolYear);
 	const firstSemYear = `AY ${formattedYear}`;
 	const secondSemYear = `AY ${formattedYear}`;
 
