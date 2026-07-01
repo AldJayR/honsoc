@@ -44,15 +44,30 @@ const yearLevels = [
 	{ value: "4TH_YEAR", label: "4th Year" },
 ];
 
-const programsList = [
-	"BS in Information Technology",
-	"BS in Computer Science",
-	"BS in Business Administration",
-	"BS in Civil Engineering",
-	"BS in Electrical Engineering",
-	"BS in Criminology",
-	"BS in Education",
-];
+const programsByDepartment: Record<string, string[]> = {
+	ARCH: ["BS in Architecture"],
+	EDUC: ["BS in Education"],
+	COE: [
+		"BS in Civil Engineering",
+		"BS in Electrical Engineering",
+		"BS in Mechanical Engineering",
+	],
+	CRIM: ["BS in Criminology"],
+	CICT: ["BS in Information Technology", "BS in Data Science"],
+	CMBT: ["BS in Business Administration"],
+	CON: ["BS in Nursing"],
+	COA: ["BS in Agriculture"],
+	CAS: [
+		"BS in Biology",
+		"BS in Psychology",
+		"BS in Environmental Science",
+		"BS in Chemistry",
+		"BS in Food Technology",
+	],
+	CIT: ["Bachelor of Industrial Technology"],
+	CPADM: ["BS in Public Administration"],
+	ILL: ["BA in Literary and Cultural"],
+};
 
 export function PortalProfileStep({
 	defaultValues,
@@ -74,11 +89,24 @@ export function PortalProfileStep({
 
 	const stepSchema = profileSchema.superRefine((data, ctx) => {
 		const selectedDept = departments.find((d) => d.id.toString() === data.departmentId);
-		if (data.yearLevel === "4TH_YEAR" && selectedDept?.code !== "ARCH") {
+		if (!selectedDept) return;
+
+		// Architecture/4th year constraint
+		if (data.yearLevel === "4TH_YEAR" && selectedDept.code !== "ARCH") {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
 				message: "4th year is only available for College of Architecture",
 				path: ["yearLevel"],
+			});
+		}
+
+		// Program/Department alignment constraint
+		const validPrograms = programsByDepartment[selectedDept.code] || [];
+		if (!validPrograms.includes(data.program)) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: `Selected program is not offered by ${selectedDept.name}`,
+				path: ["program"],
 			});
 		}
 	});
@@ -99,13 +127,16 @@ export function PortalProfileStep({
 	const watchedCampusId = watch("campusId");
 	const watchedDepartmentId = watch("departmentId");
 	const watchedYearLevel = watch("yearLevel");
+	const watchedProgram = watch("program");
 
 	const selectedDept = departments.find((d) => d.id.toString() === watchedDepartmentId);
 	const isArchitecture = selectedDept?.code === "ARCH";
 	const filteredYearLevels = yearLevels.filter(
 		(yl) => yl.value !== "4TH_YEAR" || isArchitecture,
 	);
-	const watchedProgram = watch("program");
+	const filteredPrograms = selectedDept
+		? programsByDepartment[selectedDept.code] || []
+		: [];
 	const watchedMajorId = watch("majorId");
 
 	const handleFormSubmit = (data: ProfileFormValues) => {
@@ -175,8 +206,16 @@ export function PortalProfileStep({
 							if (val) {
 								setValue("departmentId", val.value, { shouldValidate: true });
 								const selectedDept = departments.find((d) => d.id.toString() === val.value);
-								if (selectedDept?.code !== "ARCH" && watchedYearLevel === "4TH_YEAR") {
-									setValue("yearLevel", "1ST_YEAR", { shouldValidate: true });
+								if (selectedDept) {
+									// Reset yearLevel if not ARCH
+									if (selectedDept.code !== "ARCH" && watchedYearLevel === "4TH_YEAR") {
+										setValue("yearLevel", "1ST_YEAR", { shouldValidate: true });
+									}
+									// Reset program if not offered by new department
+									const validPrograms = programsByDepartment[selectedDept.code] || [];
+									if (!validPrograms.includes(watchedProgram)) {
+										setValue("program", validPrograms[0] || "", { shouldValidate: true });
+									}
 								}
 							}
 						}}
@@ -268,13 +307,13 @@ export function PortalProfileStep({
 						onValueChange={(val) => {
 							if (val) setValue("program", val, { shouldValidate: true });
 						}}
-						items={programsList.map((p) => ({ value: p, label: p }))}
+						items={filteredPrograms.map((p) => ({ value: p, label: p }))}
 					>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder="Select program" />
 						</SelectTrigger>
 						<SelectContent alignItemWithTrigger={false}>
-							{programsList.map((p) => (
+							{filteredPrograms.map((p) => (
 								<SelectItem key={p} value={p} className="overflow-hidden text-ellipsis">
 									{p}
 								</SelectItem>
@@ -283,7 +322,7 @@ export function PortalProfileStep({
 					</Select>
 					{errors.program ? (
 						<FieldError className="type-caption mt-0.5">
-							Program is required
+							{errors.program.message}
 						</FieldError>
 					) : null}
 				</Field>
