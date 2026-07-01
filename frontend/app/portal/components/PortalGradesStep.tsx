@@ -204,7 +204,7 @@ export function PortalGradesStep({
 					<TableBody key={activeTab}>
 						{activeGrades.map((g) => (
 							<TableRow key={g._key ?? `${activeTab}-${g.subjectCode}`}>
-								<TableCell className="font-medium">{g.subjectCode}</TableCell>
+								<TableCell className="font-medium">{g.subjectName}</TableCell>
 								<TableCell className="text-center">{g.units}</TableCell>
 								<TableCell className="font-semibold text-center text-primary">
 									{g.grade}

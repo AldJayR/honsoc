@@ -9,7 +9,6 @@ export const profileSchema = z.object({
 		"2ND_YEAR",
 		"3RD_YEAR",
 		"4TH_YEAR",
-		"5TH_YEAR",
 	]),
 	program: z.string().min(1, "Program is required"),
 	majorId: z.string(),

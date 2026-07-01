@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
@@ -41,7 +42,6 @@ const yearLevels = [
 	{ value: "2ND_YEAR", label: "2nd Year" },
 	{ value: "3RD_YEAR", label: "3rd Year" },
 	{ value: "4TH_YEAR", label: "4th Year" },
-	{ value: "5TH_YEAR", label: "5th Year" },
 ];
 
 const programsList = [
@@ -62,13 +62,34 @@ export function PortalProfileStep({
 	departments,
 	majors,
 }: PortalProfileStepProps) {
+	const campusItems = campuses.map((c) => ({
+		value: c.id.toString(),
+		label: c.name,
+	}));
+
+	const departmentItems = departments.map((d) => ({
+		value: d.id.toString(),
+		label: d.name,
+	}));
+
+	const stepSchema = profileSchema.superRefine((data, ctx) => {
+		const selectedDept = departments.find((d) => d.id.toString() === data.departmentId);
+		if (data.yearLevel === "4TH_YEAR" && selectedDept?.code !== "ARCH") {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "4th year is only available for College of Architecture",
+				path: ["yearLevel"],
+			});
+		}
+	});
+
 	const {
 		handleSubmit,
 		setValue,
 		watch,
 		formState: { errors },
 	} = useForm<ProfileFormValues>({
-		resolver: zodResolver(profileSchema),
+		resolver: zodResolver(stepSchema),
 		defaultValues: {
 			...defaultValues,
 			academicYear: schoolYear || defaultValues.academicYear || "2025 - 2026",
@@ -78,6 +99,12 @@ export function PortalProfileStep({
 	const watchedCampusId = watch("campusId");
 	const watchedDepartmentId = watch("departmentId");
 	const watchedYearLevel = watch("yearLevel");
+
+	const selectedDept = departments.find((d) => d.id.toString() === watchedDepartmentId);
+	const isArchitecture = selectedDept?.code === "ARCH";
+	const filteredYearLevels = yearLevels.filter(
+		(yl) => yl.value !== "4TH_YEAR" || isArchitecture,
+	);
 	const watchedProgram = watch("program");
 	const watchedMajorId = watch("majorId");
 
@@ -105,9 +132,10 @@ export function PortalProfileStep({
 						Campus
 					</FieldLabel>
 					<Combobox
-						value={watchedCampusId}
+						items={campusItems}
+						value={campusItems.find((c) => c.value === watchedCampusId)}
 						onValueChange={(val) => {
-							if (val) setValue("campusId", val, { shouldValidate: true });
+							if (val) setValue("campusId", val.value, { shouldValidate: true });
 						}}
 					>
 						<ComboboxInput
@@ -116,13 +144,13 @@ export function PortalProfileStep({
 						/>
 						<ComboboxContent align="start">
 							<ComboboxList>
-								{campuses.map((c) => (
-									<ComboboxItem key={c.id} value={c.id.toString()} className="overflow-hidden text-ellipsis">
-										{c.name}
+								{(item: { value: string; label: string }) => (
+									<ComboboxItem key={item.value} value={item} className="overflow-hidden text-ellipsis">
+										{item.label}
 									</ComboboxItem>
-								))}
-								<ComboboxEmpty>No campus found</ComboboxEmpty>
+								)}
 							</ComboboxList>
+							<ComboboxEmpty>No campus found</ComboboxEmpty>
 						</ComboboxContent>
 					</Combobox>
 					{errors.campusId ? (
@@ -141,9 +169,16 @@ export function PortalProfileStep({
 						Department
 					</FieldLabel>
 					<Combobox
-						value={watchedDepartmentId}
+						items={departmentItems}
+						value={departmentItems.find((d) => d.value === watchedDepartmentId)}
 						onValueChange={(val) => {
-							if (val) setValue("departmentId", val, { shouldValidate: true });
+							if (val) {
+								setValue("departmentId", val.value, { shouldValidate: true });
+								const selectedDept = departments.find((d) => d.id.toString() === val.value);
+								if (selectedDept?.code !== "ARCH" && watchedYearLevel === "4TH_YEAR") {
+									setValue("yearLevel", "1ST_YEAR", { shouldValidate: true });
+								}
+							}
 						}}
 					>
 						<ComboboxInput
@@ -152,13 +187,13 @@ export function PortalProfileStep({
 						/>
 						<ComboboxContent align="start">
 							<ComboboxList>
-								{departments.map((d) => (
-									<ComboboxItem key={d.id} value={d.id.toString()} className="overflow-hidden text-ellipsis">
-										{d.name} ({d.code})
+								{(item: { value: string; label: string }) => (
+									<ComboboxItem key={item.value} value={item} className="overflow-hidden text-ellipsis">
+										{item.label}
 									</ComboboxItem>
-								))}
-								<ComboboxEmpty>No department found</ComboboxEmpty>
+								)}
 							</ComboboxList>
+							<ComboboxEmpty>No department found</ComboboxEmpty>
 						</ComboboxContent>
 					</Combobox>
 					{errors.departmentId ? (
@@ -200,19 +235,24 @@ export function PortalProfileStep({
 									shouldValidate: true,
 								});
 						}}
-						items={yearLevels}
+						items={filteredYearLevels}
 					>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder="Select year level" />
 						</SelectTrigger>
 						<SelectContent alignItemWithTrigger={false}>
-							{yearLevels.map((yl) => (
+							{filteredYearLevels.map((yl) => (
 								<SelectItem key={yl.value} value={yl.value} className="overflow-hidden text-ellipsis">
 									{yl.label}
 								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
+					{errors.yearLevel ? (
+						<FieldError className="type-caption mt-0.5">
+							{errors.yearLevel.message}
+						</FieldError>
+					) : null}
 				</Field>
 
 				{/* Program/course */}
