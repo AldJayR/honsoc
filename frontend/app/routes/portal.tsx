@@ -11,6 +11,16 @@ import {
 } from "~/shared/services/auth.api";
 import type { Route } from "./+types/portal";
 
+export function meta() {
+	return [
+		{ title: "Application Portal - NEUST Honor Society" },
+		{
+			name: "description",
+			content: "Apply for membership and track your application status at the NEUST Honor Society portal.",
+		},
+	];
+}
+
 export async function clientLoader() {
 	try {
 		const [user, activeTerm, appsRes, campuses, departments, majors] = await Promise.all([
