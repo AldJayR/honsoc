@@ -1,8 +1,10 @@
 import "dotenv/config";
 import { env } from "@/config/env.ts";
 import { buildApp } from "@/app.ts";
+import { setupStorageCors } from "@/lib/storage.ts";
 
 async function main() {
+	await setupStorageCors();
 	const app = await buildApp();
 
 	await app.listen({ port: env.PORT, host: env.HOST });

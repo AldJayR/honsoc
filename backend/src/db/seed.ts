@@ -135,9 +135,17 @@ async function main() {
 				last_name: "User",
 				role: "STUDENT",
 				status: "ACTIVE",
+				student_number: "SUM2023-00123",
 			})
 			.returning();
 		verifiedUser = results[0];
+	} else if (verifiedUser.student_number !== "SUM2023-00123") {
+		await db
+			.update(users)
+			.set({ student_number: "SUM2023-00123" })
+			.where(eq(users.id, verifiedUser.id));
+		verifiedUser.student_number = "SUM2023-00123";
+		console.log(`  Updated student number for verified user: ${verifiedUser.email}`);
 	}
 
 	if (!verifiedUser) {
