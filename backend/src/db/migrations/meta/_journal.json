@@ -22,6 +22,13 @@
       "when": 1781880000000,
       "tag": "0002_add_majors_table",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782910546619,
+      "tag": "0003_drop-objectkey-unique",
+      "breakpoints": true
     }
   ]
 }

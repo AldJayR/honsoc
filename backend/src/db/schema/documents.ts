@@ -15,7 +15,7 @@ export const documents = pgTable("documents", {
 		.notNull()
 		.references(() => applications.id, { onDelete: "cascade" }),
 	docType: text("doc_type").notNull(),
-	objectKey: text("object_key").notNull().unique(),
+	objectKey: text("object_key").notNull(),
 	fileSizeKb: integer("file_size_kb"),
 	uploadedAt: timestamp("uploaded_at", { withTimezone: true })
 		.defaultNow()
