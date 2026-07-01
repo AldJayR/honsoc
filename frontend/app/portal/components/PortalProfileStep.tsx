@@ -13,6 +13,14 @@ import {
 	SelectValue,
 } from "~/components/ui/select";
 import {
+	Combobox,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxInput,
+	ComboboxItem,
+	ComboboxList,
+} from "~/components/ui/combobox";
+import {
 	type ProfileFormValues,
 	profileSchema,
 } from "~/shared/lib/schemas/portal";
@@ -40,13 +48,13 @@ const yearLevels = [
 ];
 
 const programsList = [
-	"Bachelor of Science in Information Technology",
-	"Bachelor of Science in Computer Science",
-	"Bachelor of Science in Business Administration",
-	"Bachelor of Science in Civil Engineering",
-	"Bachelor of Science in Electrical Engineering",
-	"Bachelor of Science in Criminology",
-	"Bachelor of Science in Education",
+	"BS in Information Technology",
+	"BS in Computer Science",
+	"BS in Business Administration",
+	"BS in Civil Engineering",
+	"BS in Electrical Engineering",
+	"BS in Criminology",
+	"BS in Education",
 ];
 
 export function PortalProfileStep({
@@ -134,24 +142,27 @@ export function PortalProfileStep({
 					>
 						Campus
 					</FieldLabel>
-					<Select
+					<Combobox
 						value={watchedCampusId}
 						onValueChange={(val) => {
 							if (val) setValue("campusId", val, { shouldValidate: true });
 						}}
-						items={campuses.map((c) => ({ value: c.id.toString(), label: c.name }))}
 					>
-						<SelectTrigger className="w-full">
-							<SelectValue placeholder="Select campus" />
-						</SelectTrigger>
-						<SelectContent alignItemWithTrigger={false}>
-							{campuses.map((c) => (
-								<SelectItem key={c.id} value={c.id.toString()} className="overflow-hidden text-ellipsis">
-									{c.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						<ComboboxInput
+							placeholder="Select campus"
+							className="w-full"
+						/>
+						<ComboboxContent align="start">
+							<ComboboxList>
+								{campuses.map((c) => (
+									<ComboboxItem key={c.id} value={c.id.toString()} className="overflow-hidden text-ellipsis">
+										{c.name}
+									</ComboboxItem>
+								))}
+								<ComboboxEmpty>No campus found</ComboboxEmpty>
+							</ComboboxList>
+						</ComboboxContent>
+					</Combobox>
 					{errors.campusId ? (
 						<FieldError className="type-caption mt-0.5">
 							Campus is required
@@ -167,24 +178,27 @@ export function PortalProfileStep({
 					>
 						Department
 					</FieldLabel>
-					<Select
+					<Combobox
 						value={watchedDepartmentId}
 						onValueChange={(val) => {
 							if (val) setValue("departmentId", val, { shouldValidate: true });
 						}}
-						items={departments.map((d) => ({ value: d.id.toString(), label: `${d.name} (${d.code})` }))}
 					>
-						<SelectTrigger className="w-full">
-							<SelectValue placeholder="Select department" />
-						</SelectTrigger>
-						<SelectContent alignItemWithTrigger={false}>
-							{departments.map((d) => (
-								<SelectItem key={d.id} value={d.id.toString()} className="overflow-hidden text-ellipsis">
-									{d.name} ({d.code})
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						<ComboboxInput
+							placeholder="Select department"
+							className="w-full"
+						/>
+						<ComboboxContent align="start">
+							<ComboboxList>
+								{departments.map((d) => (
+									<ComboboxItem key={d.id} value={d.id.toString()} className="overflow-hidden text-ellipsis">
+										{d.name} ({d.code})
+									</ComboboxItem>
+								))}
+								<ComboboxEmpty>No department found</ComboboxEmpty>
+							</ComboboxList>
+						</ComboboxContent>
+					</Combobox>
 					{errors.departmentId ? (
 						<FieldError className="type-caption mt-0.5">
 							Department is required
