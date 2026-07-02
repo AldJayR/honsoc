@@ -2,11 +2,15 @@ import "dotenv/config";
 import { env } from "@/config/env.ts";
 import { buildApp } from "@/app.ts";
 import { setupStorageCors } from "@/lib/storage.ts";
+import { startQueue, stopQueue } from "@/lib/queue.ts";
+import { registerWorker } from "@/lib/worker.ts";
 
 async function main() {
 	await setupStorageCors();
-	const app = await buildApp();
+	await startQueue();
+	await registerWorker();
 
+	const app = await buildApp();
 	await app.listen({ port: env.PORT, host: env.HOST });
 
 	let closing = false;
@@ -16,6 +20,7 @@ async function main() {
 			if (closing) return;
 			closing = true;
 			await app.close();
+			await stopQueue();
 			process.exit(0);
 		});
 	}

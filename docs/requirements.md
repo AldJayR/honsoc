@@ -225,7 +225,7 @@ NHSVS follows a **Digitized Audit Model**:
 |----|-------------|
 | REL-01 | The database schema shall enforce 3NF to prevent data anomalies. |
 | REL-02 | GWA computation shall be performed server-side. Client-side display values are for preview only; the server value is authoritative. |
-| REL-03 | The system shall enforce unique constraints on `(student_id, term_id, semester)` in the applications table to prevent duplicate applications for any single semester per term. |
+| REL-03 | The system shall enforce a uniqueness check at the service level on `(student_id, term_id, semester)` to prevent duplicate applications for any single semester per term. A student may hold applications for different semesters within the same term. |
 | REL-04 | Honor Roll exports shall be generated as read-only snapshots. Post-export edits to underlying records shall not retroactively alter a generated roll. |
 
 ### 5.4 Usability
@@ -292,7 +292,7 @@ applications (
   reference_no  TEXT UNIQUE NOT NULL,   -- unique reference per semester
   submitted_at  TIMESTAMPTZ DEFAULT NOW(),
   reviewed_by   UUID REFERENCES users(id),
-  UNIQUE(student_id, term_id, semester)
+  -- Uniqueness enforced at the service layer: one application per semester per term
 )
 
 grades (

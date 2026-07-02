@@ -7,6 +7,7 @@
 		"moduleResolution": "bundler",
 		"strict": true,
 		"noUncheckedIndexedAccess": true,
+		"jsx": "react-jsx",
 		"noImplicitOverride": true,
 		"noEmit": true,
 		"verbatimModuleSyntax": true,

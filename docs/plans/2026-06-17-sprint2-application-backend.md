@@ -282,7 +282,7 @@ GWA is **never stored**. It is computed on demand. Disqualifiers (INC, 5.0, unde
 export async function createApplication(studentId: string, input: CreateApplicationInput) {
 	// 1. Check active term exists → else throw 422 "No active term"
 	// 2. Check term covers requested semester(s) — if input.semester is "BOTH", term.semester must be "BOTH" (a term covering only 1 semester cannot accept a both-semesters application). Single semester inputs (1ST/2ND) are always allowed regardless of term coverage.
-	// 3. Check no duplicate per semester — UNIQUE(student_id, term_id, semester)
+	// 3. Check no duplicate per semester — enforced by service-level check within transaction
 	// 4. Generate reference numbers: HS-[YY][SEM]-[STUDENT_NO]
 	// 5. If BOTH: transactional batch insert two application rows + two grade sets
 	//    If SINGLE: insert one application + grades
@@ -427,7 +427,7 @@ import { documentRoutes } from "@/modules/documents/document.routes.ts";
 
 - [ ] PRESIDENT can create and activate a term
 - [ ] STUDENT creating a "Both Semesters" application generates two DB records with correct reference numbers
-- [ ] Duplicate semester applications are rejected (DB unique constraint + service check)
+- [ ] Duplicate semester applications are rejected (service-level check within transaction)
 - [ ] Grade values outside the allowed set return 422
 - [ ] Grade values > 2.00 (except 5.0) return 422
 - [ ] INC or 5.0 in grades triggers disqualifier flag

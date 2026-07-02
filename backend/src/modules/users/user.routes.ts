@@ -71,6 +71,8 @@ export async function userRoutes(fastify: FastifyInstance) {
 			const input = provisionAdminSchema.parse(request.body);
 			const result = await provisionAdmin(input);
 			try {
+				// Generates a password reset token and fires sendResetPassword callback
+				// which checks user.status and sends the invite-officer template
 				await auth.api.requestPasswordReset({
 					body: {
 						email: input.email,

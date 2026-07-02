@@ -50,7 +50,12 @@ export const auth = betterAuth({
 		minPasswordLength: 8,
 		requireEmailVerification: true,
 		sendResetPassword: async ({ user, url }) => {
-			await sendEmail(user.email, "Reset your password", url);
+			const extendedUser = user as { email: string } & { status?: string };
+			if (extendedUser.status === "INVITE_PENDING") {
+				await sendEmail(extendedUser.email, "invite-officer", url);
+			} else {
+				await sendEmail(extendedUser.email, "reset-password", url);
+			}
 		},
 	},
 
@@ -58,7 +63,7 @@ export const auth = betterAuth({
 		sendOnSignUp: true,
 		autoSignInAfterVerification: true,
 		sendVerificationEmail: async ({ user, url }) => {
-			await sendEmail(user.email, "Verify your email", url);
+			await sendEmail(user.email, "verify-email", url);
 		},
 	},
 
