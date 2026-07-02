@@ -8,6 +8,7 @@ import {
 	Outlet,
 	Scripts,
 	ScrollRestoration,
+	useNavigation,
 } from "react-router";
 import { queryClient } from "~/lib/query";
 import type { Route } from "./+types/root";
@@ -51,9 +52,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 // QueryClient imported from ~/lib/query
 
+function NavigationProgressBar() {
+	const navigation = useNavigation();
+	const isNavigating = Boolean(navigation.location);
+
+	if (!isNavigating) return null;
+
+	return (
+		<div
+			aria-hidden="true"
+			style={{
+				position: "fixed",
+				top: 0,
+				left: 0,
+				right: 0,
+				zIndex: 9999,
+				height: "3px",
+				background: "linear-gradient(90deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 60%, transparent) 100%)",
+				animation: "nav-progress 1.5s ease-in-out infinite",
+				transformOrigin: "left center",
+			}}
+		/>
+	);
+}
+
 export default function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
+			<NavigationProgressBar />
 			<Outlet />
 			{import.meta.env.DEV ? (
 				<ReactQueryDevtools initialIsOpen={false} />
