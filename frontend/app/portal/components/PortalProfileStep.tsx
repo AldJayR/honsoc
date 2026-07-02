@@ -22,7 +22,8 @@ import {
 } from "~/components/ui/combobox";
 import {
 	type ProfileFormValues,
-	profileSchema,
+	getRefinedProfileSchema,
+	programsByDepartment,
 } from "~/shared/lib/schemas/portal";
 import type { Campus, Department, Major } from "~/shared/services/auth.api";
 
@@ -44,30 +45,6 @@ const yearLevels = [
 	{ value: "4TH_YEAR", label: "4th Year" },
 ];
 
-const programsByDepartment: Record<string, string[]> = {
-	ARCH: ["BS in Architecture"],
-	EDUC: ["BS in Education"],
-	COE: [
-		"BS in Civil Engineering",
-		"BS in Electrical Engineering",
-		"BS in Mechanical Engineering",
-	],
-	CRIM: ["BS in Criminology"],
-	CICT: ["BS in Information Technology", "BS in Data Science"],
-	CMBT: ["BS in Business Administration"],
-	CON: ["BS in Nursing"],
-	COA: ["BS in Agriculture"],
-	CAS: [
-		"BS in Biology",
-		"BS in Psychology",
-		"BS in Environmental Science",
-		"BS in Chemistry",
-		"BS in Food Technology",
-	],
-	CIT: ["Bachelor of Industrial Technology"],
-	CPADM: ["BS in Public Administration"],
-	ILL: ["BA in Literary and Cultural"],
-};
 
 export function PortalProfileStep({
 	defaultValues,
@@ -87,29 +64,7 @@ export function PortalProfileStep({
 		label: d.name,
 	}));
 
-	const stepSchema = profileSchema.superRefine((data, ctx) => {
-		const selectedDept = departments.find((d) => d.id.toString() === data.departmentId);
-		if (!selectedDept) return;
-
-		// Architecture/4th year constraint
-		if (data.yearLevel === "4TH_YEAR" && selectedDept.code !== "ARCH") {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: "4th year is only available for College of Architecture",
-				path: ["yearLevel"],
-			});
-		}
-
-		// Program/Department alignment constraint
-		const validPrograms = programsByDepartment[selectedDept.code] || [];
-		if (!validPrograms.includes(data.program)) {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: `Selected program is not offered by ${selectedDept.name}`,
-				path: ["program"],
-			});
-		}
-	});
+	const stepSchema = getRefinedProfileSchema(departments);
 
 	const {
 		handleSubmit,
