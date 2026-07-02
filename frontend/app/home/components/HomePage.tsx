@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 export function HomePage() {
 	return (
 		<div className="flex flex-col gap-2.5 items-center mx-auto w-[215px] animate-in fade-in slide-in-from-bottom-4 duration-500">
-			<Button render={<Link to="/register" />} className="w-full">
+			<Button render={<Link to="/register" />} nativeButton={false} className="w-full">
 				<UserPlus />
 				Apply for membership
 			</Button>
@@ -21,6 +21,7 @@ export function HomePage() {
 			<Button
 				variant="outline"
 				render={<Link to="/login" />}
+				nativeButton={false}
 				className="w-full"
 			>
 				<LogIn />
