@@ -27,7 +27,10 @@ export async function draftRoutes(fastify: FastifyInstance) {
 									type: "object",
 									properties: {
 										id: { type: "string" },
-										data: { type: "object" },
+										data: {
+											type: "object",
+											additionalProperties: true,
+										},
 										createdAt: {
 											type: "string",
 											format: "date-time",
