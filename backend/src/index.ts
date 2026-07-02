@@ -1,12 +1,10 @@
 import "dotenv/config";
 import { env } from "@/config/env.ts";
 import { buildApp } from "@/app.ts";
-import { setupStorageCors } from "@/lib/storage.ts";
 import { startQueue, stopQueue } from "@/lib/queue.ts";
 import { registerWorker } from "@/lib/worker.ts";
 
 async function main() {
-	await setupStorageCors();
 	await startQueue();
 	await registerWorker();
 

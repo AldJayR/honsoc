@@ -54,7 +54,12 @@ describe("registerWorker", () => {
 	it("throws on Resend error", async () => {
 		vi.mocked(resend.emails.send).mockResolvedValue({
 			data: null,
-			error: { message: "API quota exceeded" },
+			error: {
+				message: "API quota exceeded",
+				statusCode: 429,
+				name: "rate_limit_exceeded",
+			},
+			headers: null,
 		});
 
 		await registerWorker();
