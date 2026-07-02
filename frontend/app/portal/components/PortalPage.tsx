@@ -98,14 +98,20 @@ export function PortalPage({
 
 	const [grades1st, setGrades1st] = useState<GradeInput[]>(() => {
 		if (!hasSubmitted && draft?.grades1st) {
-			return draft.grades1st;
+			return draft.grades1st.map((g) => ({
+				...g,
+				_key: g._key || `grade_${Date.now()}_${Math.random().toString(36).substring(2, 9)}_${Math.random().toString(36).substring(2, 9)}`,
+			}));
 		}
 		return [];
 	});
 
 	const [grades2nd, setGrades2nd] = useState<GradeInput[]>(() => {
 		if (!hasSubmitted && draft?.grades2nd) {
-			return draft.grades2nd;
+			return draft.grades2nd.map((g) => ({
+				...g,
+				_key: g._key || `grade_${Date.now()}_${Math.random().toString(36).substring(2, 9)}_${Math.random().toString(36).substring(2, 9)}`,
+			}));
 		}
 		return [];
 	});
