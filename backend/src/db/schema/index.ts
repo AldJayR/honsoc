@@ -9,3 +9,4 @@ export { terms } from "./terms.ts";
 export { applications, applicationsRelations } from "./applications.ts";
 export { grades, gradesRelations } from "./grades.ts";
 export { documents, documentsRelations } from "./documents.ts";
+export { applicationDrafts, applicationDraftsRelations } from "./application-drafts.ts";

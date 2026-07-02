@@ -1,6 +1,5 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { computeSchoolYearOffset } from "~/lib/format";
 import {
 	FileUpload,
 	FileUploadItem,
@@ -8,12 +7,19 @@ import {
 	FileUploadList,
 	FileUploadTrigger,
 } from "~/components/ui/file-upload";
+import { computeSchoolYearOffset } from "~/lib/format";
 
 interface DocType {
 	COR?: File;
 	COG_1ST?: File;
 	COG_2ND?: File;
 	GMC?: File;
+}
+
+interface FileMeta {
+	name: string;
+	size: number;
+	type: string;
 }
 
 interface PortalDocumentsStepProps {
@@ -24,6 +30,12 @@ interface PortalDocumentsStepProps {
 	onSubmit: () => void;
 	isPending: boolean;
 	schoolYear: string;
+	fileMetadata?: {
+		COR?: FileMeta | null;
+		COG_1ST?: FileMeta | null;
+		COG_2ND?: FileMeta | null;
+		GMC?: FileMeta | null;
+	} | null;
 }
 
 // computeSchoolYearOffset imported from ~/lib/format
@@ -36,8 +48,18 @@ export function PortalDocumentsStep({
 	onSubmit,
 	isPending,
 	schoolYear,
+	fileMetadata,
 }: PortalDocumentsStepProps) {
 	const hasFile = (type: keyof DocType) => !!files[type];
+
+	const hasMeta = (type: keyof DocType) =>
+		!!fileMetadata?.[type] && !files[type];
+
+	const formatSize = (bytes: number) => {
+		if (bytes < 1024) return `${bytes} B`;
+		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+	};
 
 	const handleSelect = (type: keyof DocType) => (accepted: File[]) => {
 		if (accepted[0]) onChange({ ...files, [type]: accepted[0] });
@@ -84,6 +106,18 @@ export function PortalDocumentsStep({
 									<FileUploadItemMetadata />
 								</FileUploadItem>
 							</FileUploadList>
+						) : hasMeta("COR") ? (
+							<div className="flex flex-col gap-1 w-full text-left">
+								<span className="text-sm font-semibold text-foreground">
+									Certificate of Registration (COR) - AY {computeSchoolYearOffset(schoolYear).replace(/\s*-\s*/, "–")}
+								</span>
+								<span className="text-xs text-muted-foreground">
+									Previous file: {fileMetadata?.COR?.name} ({formatSize(fileMetadata?.COR?.size ?? 0)})
+								</span>
+								<span className="text-xs text-muted-foreground">
+									Click or drag to re-upload
+								</span>
+							</div>
 						) : (
 							<div className="flex flex-col gap-1 w-full text-left">
 								<span className="text-sm font-semibold text-foreground">
@@ -120,6 +154,18 @@ export function PortalDocumentsStep({
 										<FileUploadItemMetadata />
 									</FileUploadItem>
 								</FileUploadList>
+							) : hasMeta("COG_1ST") ? (
+								<div className="flex flex-col gap-1 w-full text-left">
+									<span className="text-sm font-semibold text-foreground">
+										Certificate of Grades - 1st Sem AY {computeSchoolYearOffset(schoolYear, -1).replace(/\s*-\s*/, "–")}
+									</span>
+									<span className="text-xs text-muted-foreground">
+										Previous file: {fileMetadata?.COG_1ST?.name} ({formatSize(fileMetadata?.COG_1ST?.size ?? 0)})
+									</span>
+									<span className="text-xs text-muted-foreground">
+										Click or drag to re-upload
+									</span>
+								</div>
 							) : (
 								<div className="flex flex-col gap-1 w-full text-left">
 									<span className="text-sm font-semibold text-foreground">
@@ -157,6 +203,18 @@ export function PortalDocumentsStep({
 										<FileUploadItemMetadata />
 									</FileUploadItem>
 								</FileUploadList>
+							) : hasMeta("COG_2ND") ? (
+								<div className="flex flex-col gap-1 w-full text-left">
+									<span className="text-sm font-semibold text-foreground">
+										Certificate of Grades - 2nd Sem AY {computeSchoolYearOffset(schoolYear, -1).replace(/\s*-\s*/, "–")}
+									</span>
+									<span className="text-xs text-muted-foreground">
+										Previous file: {fileMetadata?.COG_2ND?.name} ({formatSize(fileMetadata?.COG_2ND?.size ?? 0)})
+									</span>
+									<span className="text-xs text-muted-foreground">
+										Click or drag to re-upload
+									</span>
+								</div>
 							) : (
 								<div className="flex flex-col gap-1 w-full text-left">
 									<span className="text-sm font-semibold text-foreground">
@@ -193,6 +251,18 @@ export function PortalDocumentsStep({
 									<FileUploadItemMetadata />
 								</FileUploadItem>
 							</FileUploadList>
+						) : hasMeta("GMC") ? (
+							<div className="flex flex-col gap-1 w-full text-left">
+								<span className="text-sm font-semibold text-foreground">
+									Certificate of Good Moral
+								</span>
+								<span className="text-xs text-muted-foreground">
+									Previous file: {fileMetadata?.GMC?.name} ({formatSize(fileMetadata?.GMC?.size ?? 0)})
+								</span>
+								<span className="text-xs text-muted-foreground">
+									Click or drag to re-upload
+								</span>
+							</div>
 						) : (
 							<div className="flex flex-col gap-1 w-full text-left">
 								<span className="text-sm font-semibold text-foreground">

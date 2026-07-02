@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PortalDocumentsStep } from "~/portal/components/PortalDocumentsStep";
 import { PortalGradesStep } from "~/portal/components/PortalGradesStep";
 import { PortalHeader } from "~/portal/components/PortalHeader";
@@ -6,17 +6,18 @@ import { PortalProfileStep } from "~/portal/components/PortalProfileStep";
 import { PortalSemestersStep } from "~/portal/components/PortalSemestersStep";
 import { PortalStatusStep } from "~/portal/components/PortalStatusStep";
 import { PortalStepsBar } from "~/portal/components/PortalStepsBar";
+import { useApplicationDraft } from "~/portal/hooks/useApplicationDraft";
 import { useApplicationSubmit } from "~/portal/hooks/useApplicationSubmit";
 import { LoadingFallback } from "~/shared/components/LoadingFallback";
 import type { ProfileFormValues } from "~/shared/lib/schemas/portal";
 import type {
 	ApplicationStatusItem,
-	GradeInput,
-	Term,
-	UserProfile,
 	Campus,
 	Department,
+	GradeInput,
 	Major,
+	Term,
+	UserProfile,
 } from "~/shared/services/auth.api";
 
 interface PortalPageProps {
@@ -42,11 +43,19 @@ export function PortalPage({
 		? Number.parseFloat(activeTerm.gwaThreshold)
 		: 1.75;
 
+	const hasSubmitted = initialApps && initialApps.length > 0;
+
+	const {
+		draft,
+		isSaving,
+		lastSaved,
+		saveDraft: saveDraftToServer,
+		clearDraft,
+	} = useApplicationDraft(!!hasSubmitted);
+
 	const [applications, setApplications] =
 		useState<ApplicationStatusItem[]>(initialApps);
-	const [step, setStep] = useState(
-		initialApps && initialApps.length > 0 ? 5 : 1,
-	);
+	const [step, setStep] = useState(hasSubmitted ? 5 : 1);
 
 	const [profile, setProfile] = useState<ProfileFormValues>({
 		campusId: "",
@@ -72,13 +81,74 @@ export function PortalPage({
 		GMC?: File;
 	}>({});
 
+	const draftRestoredRef = useRef(false);
+
+	useEffect(() => {
+		if (!draft || draftRestoredRef.current || hasSubmitted) return;
+		draftRestoredRef.current = true;
+
+		if (draft.currentStep) {
+			setStep(draft.currentStep);
+		}
+
+		if (draft.profile) {
+			setProfile({
+				campusId: draft.profile.campusId
+					? String(draft.profile.campusId)
+					: "",
+				departmentId: draft.profile.departmentId
+					? String(draft.profile.departmentId)
+					: "",
+				academicYear: draft.profile.academicYear || schoolYear,
+				yearLevel:
+					(draft.profile.yearLevel as ProfileFormValues["yearLevel"]) ||
+					"2ND_YEAR",
+				program: draft.profile.program || "",
+				majorId: draft.profile.majorId
+					? String(draft.profile.majorId)
+					: "",
+			});
+		}
+
+		if (draft.semesters) {
+			setSelectedSemesters(draft.semesters);
+		}
+
+		if (draft.grades1st) setGrades1st(draft.grades1st);
+		if (draft.grades2nd) setGrades2nd(draft.grades2nd);
+	}, [draft, hasSubmitted, schoolYear]);
+
+	useEffect(() => {
+		if (!draftRestoredRef.current || hasSubmitted) return;
+
+		saveDraftToServer({
+			profile: {
+				campusId: profile.campusId ? Number(profile.campusId) : 0,
+				departmentId: profile.departmentId
+					? Number(profile.departmentId)
+					: 0,
+				academicYear: profile.academicYear,
+				yearLevel: profile.yearLevel,
+				program: profile.program,
+				majorId: profile.majorId ? Number(profile.majorId) : null,
+			},
+			semesters: selectedSemesters,
+			grades1st,
+			grades2nd,
+			currentStep: step,
+		});
+	}, [profile, selectedSemesters, grades1st, grades2nd, step, saveDraftToServer, hasSubmitted]);
+
 	const { submit, isSubmitting, statusText } = useApplicationSubmit({
 		profile,
 		selectedSemesters,
 		grades1st,
 		grades2nd,
 		files,
-		onApplicationsChange: setApplications,
+		onApplicationsChange: (apps) => {
+			setApplications(apps);
+			clearDraft();
+		},
 		onStepChange: setStep,
 	});
 
@@ -91,6 +161,16 @@ export function PortalPage({
 			<div className="w-full max-w-[708px] flex flex-col gap-6 items-center">
 				<PortalHeader user={user} />
 				<PortalStepsBar currentStep={step} />
+
+				{!hasSubmitted && draftRestoredRef.current && (
+					<div className="w-full text-center text-xs text-muted-foreground">
+						{isSaving
+							? "Saving draft..."
+							: lastSaved
+								? `Draft saved at ${lastSaved.toLocaleTimeString()}`
+								: ""}
+					</div>
+				)}
 
 				<main className="w-full p-6 min-h-[300px] flex flex-col justify-start">
 					{step === 1 ? (
@@ -140,6 +220,7 @@ export function PortalPage({
 							onSubmit={submit}
 							isPending={isSubmitting}
 							schoolYear={schoolYear}
+							fileMetadata={draft?.files ?? null}
 						/>
 					) : null}
 

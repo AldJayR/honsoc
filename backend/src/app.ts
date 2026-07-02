@@ -20,6 +20,7 @@ import { termRoutes } from "@/modules/terms/term.routes.ts";
 import { applicationRoutes } from "@/modules/applications/application.routes.ts";
 import { documentRoutes } from "@/modules/documents/document.routes.ts";
 import { gradeRoutes } from "@/modules/grades/grade.routes.ts";
+import { draftRoutes } from "@/modules/applications/draft.routes.ts";
 import { AppError } from "@/lib/errors.ts";
 
 export async function buildApp() {
@@ -89,6 +90,7 @@ export async function buildApp() {
 	await app.register(applicationRoutes);
 	await app.register(documentRoutes);
 	await app.register(gradeRoutes);
+	await app.register(draftRoutes);
 
 	return app;
 }

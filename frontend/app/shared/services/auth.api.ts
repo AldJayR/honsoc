@@ -228,3 +228,73 @@ export async function uploadToR2(url: string, file: File): Promise<void> {
 		throw new Error(`R2 upload failed: ${response.statusText}`);
 	}
 }
+
+// ─── Draft Functions ────────────────────────────────────────────────────────
+
+export interface DraftFile {
+	name: string;
+	size: number;
+	type: string;
+}
+
+export interface DraftData {
+	profile?: {
+		campusId?: number;
+		departmentId?: number;
+		academicYear?: string;
+		yearLevel?: string;
+		program?: string;
+		majorId?: number | null;
+	};
+	semesters?: {
+		firstSem: boolean;
+		secondSem: boolean;
+	};
+	grades1st?: GradeInput[];
+	grades2nd?: GradeInput[];
+	files?: {
+		COR: DraftFile | null;
+		COG_1ST: DraftFile | null;
+		COG_2ND: DraftFile | null;
+		GMC: DraftFile | null;
+	};
+	currentStep?: number;
+}
+
+export interface DraftResponse {
+	id: string;
+	data: DraftData;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export async function getDraft(): Promise<DraftResponse | null> {
+	const response = await apiClientRaw("/applications/draft");
+	if (response.status === 404) return null;
+	if (!response.ok) throw new Error("Failed to fetch draft");
+	return response.json();
+}
+
+export async function saveDraft(
+	data: DraftData,
+): Promise<{ id: string; updatedAt: string }> {
+	const response = await apiClientRaw("/applications/draft", {
+		method: "PUT",
+		body: data,
+	});
+	if (!response.ok) {
+		const err = await response.json().catch(() => ({}));
+		throw new Error(err.error || "Failed to save draft");
+	}
+	return response.json();
+}
+
+export async function deleteDraft(): Promise<void> {
+	const response = await apiClientRaw("/applications/draft", {
+		method: "DELETE",
+	});
+	if (!response.ok) {
+		const err = await response.json().catch(() => ({}));
+		throw new Error(err.error || "Failed to delete draft");
+	}
+}
