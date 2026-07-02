@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DraftData } from "~/shared/services/auth.api";
 import { deleteDraft, saveDraft } from "~/shared/services/auth.api";
+import { queryClient } from "~/lib/query";
 
 const DEBOUNCE_MS = 2000;
 
@@ -33,6 +34,12 @@ export function useApplicationDraft(
 			const result = await saveDraft(data);
 			setLastSaved(new Date(result.updatedAt));
 			setDraft(data);
+			queryClient.setQueryData(["draft"], {
+				id: result.id,
+				data,
+				createdAt: new Date().toISOString(),
+				updatedAt: result.updatedAt,
+			});
 		} catch {
 			// silently fail — draft save is best-effort
 		} finally {
@@ -52,6 +59,7 @@ export function useApplicationDraft(
 		try {
 			await deleteDraft();
 			setDraft(null);
+			queryClient.setQueryData(["draft"], null);
 		} catch {}
 	}, []);
 

@@ -47,6 +47,7 @@ export async function buildApp() {
 		if (error instanceof AppError) {
 			return reply.status(error.statusCode).send({ error: error.message });
 		}
+		console.error("UNHANDLED ERROR:", error);
 		reply.status(500).send({ error: "Internal Server Error" });
 	});
 

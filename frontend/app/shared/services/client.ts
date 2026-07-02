@@ -12,13 +12,15 @@ export async function apiClientRaw(
 ): Promise<Response> {
 	const { method = "GET", body, headers = {} } = options;
 
+	const requestHeaders: Record<string, string> = { ...headers };
+	if (body !== undefined) {
+		requestHeaders["Content-Type"] = "application/json";
+	}
+
 	return fetch(`${API_BASE_URL}${path}`, {
 		method,
-		headers: {
-			"Content-Type": "application/json",
-			...headers,
-		},
-		body: body ? JSON.stringify(body) : undefined,
+		headers: requestHeaders,
+		body: body !== undefined ? JSON.stringify(body) : undefined,
 		credentials: "include",
 	});
 }

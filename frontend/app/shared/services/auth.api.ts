@@ -124,6 +124,16 @@ export async function signInEmail(
 	return data.user;
 }
 
+export async function signOut(): Promise<void> {
+	const response = await apiClientRaw("/auth/sign-out", {
+		method: "POST",
+	});
+
+	if (!response.ok) {
+		throw new Error("Failed to sign out");
+	}
+}
+
 // ─── Portal Functions ────────────────────────────────────────────────────────
 
 export async function getMe(): Promise<UserProfile> {
