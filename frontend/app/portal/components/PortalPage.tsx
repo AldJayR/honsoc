@@ -41,7 +41,6 @@ export function PortalPage({
 	majors,
 	draft: initialDraft,
 }: PortalPageProps) {
-	console.log("PortalPage: initialDraft =", initialDraft);
 	const schoolYear = activeTerm?.schoolYear || "2025 - 2026";
 	const openSemester = activeTerm?.semester || "BOTH";
 	const gwaThreshold = activeTerm
