@@ -119,7 +119,7 @@ export function PortalProfileStep({
 					</FieldLabel>
 					<Combobox
 						items={campusItems}
-						value={campusItems.find((c) => c.value === watchedCampusId)}
+						value={campusItems.find((c) => c.value === watchedCampusId) || null}
 						onValueChange={(val) => {
 							if (val) setValue("campusId", val.value, { shouldValidate: true });
 						}}
@@ -156,7 +156,7 @@ export function PortalProfileStep({
 					</FieldLabel>
 					<Combobox
 						items={departmentItems}
-						value={departmentItems.find((d) => d.value === watchedDepartmentId)}
+						value={departmentItems.find((d) => d.value === watchedDepartmentId) || null}
 						onValueChange={(val) => {
 							if (val) {
 								setValue("departmentId", val.value, { shouldValidate: true });
@@ -167,10 +167,7 @@ export function PortalProfileStep({
 										setValue("yearLevel", "1ST_YEAR", { shouldValidate: true });
 									}
 									// Reset program if not offered by new department
-									const validPrograms = programsByDepartment[selectedDept.code] || [];
-									if (!validPrograms.includes(watchedProgram)) {
-										setValue("program", validPrograms[0] || "", { shouldValidate: true });
-									}
+									setValue("program", "");
 								}
 							}
 						}}
@@ -263,6 +260,7 @@ export function PortalProfileStep({
 							if (val) setValue("program", val, { shouldValidate: true });
 						}}
 						items={filteredPrograms.map((p) => ({ value: p, label: p }))}
+						disabled={!watchedDepartmentId}
 					>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder="Select program" />

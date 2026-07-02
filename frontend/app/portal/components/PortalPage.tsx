@@ -72,7 +72,7 @@ export function PortalPage({
 				departmentId: draft.profile.departmentId ? String(draft.profile.departmentId) : "",
 				academicYear: draft.profile.academicYear || schoolYear,
 				yearLevel: (draft.profile.yearLevel as ProfileFormValues["yearLevel"]) || "2ND_YEAR",
-				program: draft.profile.program || "BS in Information Technology",
+				program: draft.profile.program || "",
 				majorId: draft.profile.majorId ? String(draft.profile.majorId) : "",
 			};
 		}
@@ -81,7 +81,7 @@ export function PortalPage({
 			departmentId: "",
 			academicYear: schoolYear,
 			yearLevel: "2ND_YEAR",
-			program: "BS in Information Technology",
+			program: "",
 			majorId: "",
 		};
 	});
@@ -155,7 +155,7 @@ export function PortalPage({
 				departmentId: profile.departmentId ? Number(profile.departmentId) : undefined,
 				academicYear: profile.academicYear,
 				yearLevel: profile.yearLevel,
-				program: profile.program,
+				program: profile.program || undefined,
 				majorId: profile.majorId ? Number(profile.majorId) : null,
 			},
 			semesters: selectedSemesters,
