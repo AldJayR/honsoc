@@ -5,6 +5,8 @@ import { registerWorker } from "@/lib/worker.ts";
 
 vi.mock("@/lib/queue.ts", () => ({
 	boss: {
+		on: vi.fn(),
+		createQueue: vi.fn(),
 		work: vi.fn(),
 	},
 }));

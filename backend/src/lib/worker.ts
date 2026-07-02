@@ -14,6 +14,7 @@ const templates: Record<EmailTemplate, (props: { userName: string; url: string }
 };
 
 export async function registerWorker() {
+	await boss.createQueue("emails");
 	await boss.work("emails", async ([job]) => {
 		if (!job) {
 			return;
