@@ -151,10 +151,8 @@ export function PortalPage({
 
 		saveDraftToServer({
 			profile: {
-				campusId: profile.campusId ? Number(profile.campusId) : 0,
-				departmentId: profile.departmentId
-					? Number(profile.departmentId)
-					: 0,
+				campusId: profile.campusId ? Number(profile.campusId) : undefined,
+				departmentId: profile.departmentId ? Number(profile.departmentId) : undefined,
 				academicYear: profile.academicYear,
 				yearLevel: profile.yearLevel,
 				program: profile.program,

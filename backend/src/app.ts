@@ -32,10 +32,16 @@ export async function buildApp() {
 	app.setSerializerCompiler(serializerCompiler);
 
 	app.setErrorHandler((error, _request, reply) => {
-		if (error instanceof ZodError) {
+		if (
+			error instanceof ZodError ||
+			(error &&
+				typeof error === "object" &&
+				"name" in error &&
+				error.name === "ZodError")
+		) {
 			return reply.status(422).send({
 				error: "Validation Error",
-				details: error.issues,
+				details: (error as ZodError).issues,
 			});
 		}
 		if (error instanceof AppError) {
@@ -76,6 +82,7 @@ export async function buildApp() {
 	await app.register(cors, {
 		origin: env.CORS_ORIGIN,
 		credentials: true,
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],
 	});
 
 	await app.register(cookie);
