@@ -1,4 +1,4 @@
-import { UserPlus } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 
@@ -23,7 +23,7 @@ export function HomePage() {
 				render={<Link to="/login" />}
 				className="w-full"
 			>
-				<UserPlus />
+				<LogIn />
 				Login to existing account
 			</Button>
 		</div>
