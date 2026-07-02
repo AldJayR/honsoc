@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
@@ -21,6 +22,7 @@ type LoginValues = z.infer<typeof loginSchema>;
 export function LoginPage() {
 	const navigate = useNavigate();
 	const signIn = useSignInEmail();
+	const [isRedirecting, setIsRedirecting] = useState(false);
 
 	const {
 		register,
@@ -36,22 +38,27 @@ export function LoginPage() {
 	});
 
 	const onSubmit = async (data: LoginValues) => {
-		await signIn.mutateAsync(
-			{
-				email: data.email,
-				password: data.password,
-			},
-			{
-				onSuccess: () => {
-					navigate("/portal", { replace: true });
+		try {
+			await signIn.mutateAsync(
+				{
+					email: data.email,
+					password: data.password,
 				},
-				onError: (err) => {
-					toast.error(
-						err.message || "Failed to log in. Please check your credentials.",
-					);
+				{
+					onSuccess: () => {
+						setIsRedirecting(true);
+						navigate("/portal", { replace: true });
+					},
+					onError: (err) => {
+						toast.error(
+							err.message || "Failed to log in. Please check your credentials.",
+						);
+					},
 				},
-			},
-		);
+			);
+		} catch (err) {
+			// Catch error to avoid unhandled rejection in promise
+		}
 	};
 
 	return (
@@ -119,8 +126,8 @@ export function LoginPage() {
 				</div>
 
 				<div className="flex flex-col items-center w-full gap-3 mt-4">
-					<Button type="submit" disabled={signIn.isPending} className="w-full">
-						{signIn.isPending ? "Logging in..." : "Login"}
+					<Button type="submit" disabled={signIn.isPending || isRedirecting} className="w-full">
+						{signIn.isPending || isRedirecting ? "Logging in..." : "Login"}
 					</Button>
 
 					<div className="mt-2 text-center">

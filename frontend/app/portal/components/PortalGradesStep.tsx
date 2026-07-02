@@ -1,7 +1,9 @@
-import { AlertTriangle, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, Info, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import {
 	Select,
 	SelectContent,
@@ -75,11 +77,19 @@ export function PortalGradesStep({
 	const handleAddGrade = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!subjectCode.trim() || !subjectName.trim()) return;
+
+		const codeUpper = subjectCode.toUpperCase().trim();
+		const nameUpper = subjectName.toUpperCase().trim();
+		if (codeUpper.includes("NSTP") || nameUpper.includes("NSTP")) {
+			toast.error("NSTP subjects are not included in the GWA computation. Please do not add them.");
+			return;
+		}
+
 		const unitsNum = Number.parseInt(units, 10);
 		if (Number.isNaN(unitsNum) || unitsNum < 1 || unitsNum > 6) return;
 
 		const newGrade: GradeInput = {
-			subjectCode: subjectCode.toUpperCase().trim(),
+			subjectCode: codeUpper,
 			subjectName: subjectName.trim(),
 			units: unitsNum,
 			grade,
@@ -99,10 +109,21 @@ export function PortalGradesStep({
 
 	return (
 		<div className="flex flex-col items-start w-full gap-6 animate-fade-in">
-			<p className="select-none type-body-small text-muted-foreground">
-				Enter each subject from your COG exactly as printed. GWA is computed
-				automatically.
-			</p>
+			<div className="flex flex-col gap-1 w-full">
+				<p className="select-none type-body-small text-muted-foreground">
+					Enter each subject from your COG exactly as printed. GWA is computed
+					automatically.
+				</p>
+			</div>
+
+			{/* Info banner about NSTP exclusion */}
+			<Alert>
+				<Info className="size-4" />
+				<AlertTitle>Important Guideline</AlertTitle>
+				<AlertDescription>
+					NSTP (National Service Training Program) subjects are not included in the GWA computation. Do not enter them here.
+				</AlertDescription>
+			</Alert>
 
 			{/* GWA Summary Panel */}
 			<div className="flex items-center justify-between w-full p-4 border shadow-sm bg-card border-border rounded-2xl">
@@ -290,6 +311,7 @@ export function PortalGradesStep({
 					(selectedSemesters.secondSem && grades2nd.length === 0)
 				}
 			/>
+
 		</div>
 	);
 }
