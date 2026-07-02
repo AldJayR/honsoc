@@ -5,6 +5,7 @@ import {
 	getActiveTerm,
 	getCampuses,
 	getDepartments,
+	getDraft,
 	getMajors,
 	getMe,
 	getMyApplications,
@@ -24,7 +25,7 @@ export function meta() {
 
 export async function clientLoader() {
 	try {
-		const [user, activeTerm, applications, campuses, departments, majors] = await Promise.all([
+		const [user, activeTerm, applications, campuses, departments, majors, draftRes] = await Promise.all([
 			queryClient.fetchQuery({ queryKey: ["user"], queryFn: getMe }),
 			queryClient.fetchQuery({ queryKey: ["activeTerm"], queryFn: getActiveTerm }),
 			queryClient.fetchQuery({
@@ -37,6 +38,7 @@ export async function clientLoader() {
 			queryClient.fetchQuery({ queryKey: ["campuses"], queryFn: getCampuses, staleTime: Infinity }),
 			queryClient.fetchQuery({ queryKey: ["departments"], queryFn: getDepartments, staleTime: Infinity }),
 			queryClient.fetchQuery({ queryKey: ["majors"], queryFn: getMajors, staleTime: Infinity }),
+			queryClient.fetchQuery({ queryKey: ["draft"], queryFn: getDraft }),
 		]);
 		return {
 			user,
@@ -45,6 +47,7 @@ export async function clientLoader() {
 			campuses,
 			departments,
 			majors,
+			draft: draftRes?.data || null,
 		};
 	} catch (_e) {
 		throw redirect("/");
@@ -57,7 +60,7 @@ export function HydrateFallback() {
 }
 
 export default function PortalRoute({ loaderData }: Route.ComponentProps) {
-	const { user, activeTerm, applications, campuses, departments, majors } = loaderData;
+	const { user, activeTerm, applications, campuses, departments, majors, draft } = loaderData;
 	return (
 		<PortalPage
 			user={user}
@@ -66,6 +69,7 @@ export default function PortalRoute({ loaderData }: Route.ComponentProps) {
 			campuses={campuses}
 			departments={departments}
 			majors={majors}
+			draft={draft}
 		/>
 	);
 }

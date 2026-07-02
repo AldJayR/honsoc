@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DraftData } from "~/shared/services/auth.api";
-import { deleteDraft, getDraft, saveDraft } from "~/shared/services/auth.api";
+import { deleteDraft, saveDraft } from "~/shared/services/auth.api";
 
 const DEBOUNCE_MS = 2000;
 
@@ -13,24 +13,13 @@ interface UseApplicationDraftReturn {
 }
 
 export function useApplicationDraft(
+	initialDraft: DraftData | null,
 	hasSubmitted: boolean,
 ): UseApplicationDraftReturn {
-	const [draft, setDraft] = useState<DraftData | null>(null);
+	const [draft, setDraft] = useState<DraftData | null>(initialDraft);
 	const [isSaving, setIsSaving] = useState(false);
 	const [lastSaved, setLastSaved] = useState<Date | null>(null);
-	const loadedRef = useRef(false);
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-	useEffect(() => {
-		if (hasSubmitted || loadedRef.current) return;
-		loadedRef.current = true;
-
-		getDraft()
-			.then((result) => {
-				if (result) setDraft(result.data);
-			})
-			.catch(() => {});
-	}, [hasSubmitted]);
 
 	useEffect(() => {
 		return () => {
@@ -43,6 +32,7 @@ export function useApplicationDraft(
 		try {
 			const result = await saveDraft(data);
 			setLastSaved(new Date(result.updatedAt));
+			setDraft(data);
 		} catch {
 			// silently fail — draft save is best-effort
 		} finally {
@@ -61,6 +51,7 @@ export function useApplicationDraft(
 	const clearDraft = useCallback(async () => {
 		try {
 			await deleteDraft();
+			setDraft(null);
 		} catch {}
 	}, []);
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PortalDocumentsStep } from "~/portal/components/PortalDocumentsStep";
 import { PortalGradesStep } from "~/portal/components/PortalGradesStep";
 import { PortalHeader } from "~/portal/components/PortalHeader";
@@ -14,6 +14,8 @@ import type {
 	ApplicationStatusItem,
 	Campus,
 	Department,
+	DraftData,
+	DraftFile,
 	GradeInput,
 	Major,
 	Term,
@@ -27,6 +29,7 @@ interface PortalPageProps {
 	campuses: Campus[];
 	departments: Department[];
 	majors: Major[];
+	draft: DraftData | null;
 }
 
 export function PortalPage({
@@ -36,6 +39,7 @@ export function PortalPage({
 	campuses,
 	departments,
 	majors,
+	draft: initialDraft,
 }: PortalPageProps) {
 	const schoolYear = activeTerm?.schoolYear || "2025 - 2026";
 	const openSemester = activeTerm?.semester || "BOTH";
@@ -51,28 +55,60 @@ export function PortalPage({
 		lastSaved,
 		saveDraft: saveDraftToServer,
 		clearDraft,
-	} = useApplicationDraft(!!hasSubmitted);
+	} = useApplicationDraft(initialDraft, !!hasSubmitted);
 
 	const [applications, setApplications] =
 		useState<ApplicationStatusItem[]>(initialApps);
-	const [step, setStep] = useState(hasSubmitted ? 5 : 1);
 
-	const [profile, setProfile] = useState<ProfileFormValues>({
-		campusId: "",
-		departmentId: "",
-		academicYear: schoolYear,
-		yearLevel: "2ND_YEAR",
-		program: "BS in Information Technology",
-		majorId: "",
+	const [step, setStep] = useState<number>(() => {
+		if (hasSubmitted) return 5;
+		return draft?.currentStep || 1;
 	});
 
-	const [selectedSemesters, setSelectedSemesters] = useState({
-		firstSem: openSemester === "1ST" || openSemester === "BOTH",
-		secondSem: openSemester === "2ND",
+	const [profile, setProfile] = useState<ProfileFormValues>(() => {
+		if (!hasSubmitted && draft?.profile) {
+			return {
+				campusId: draft.profile.campusId ? String(draft.profile.campusId) : "",
+				departmentId: draft.profile.departmentId ? String(draft.profile.departmentId) : "",
+				academicYear: draft.profile.academicYear || schoolYear,
+				yearLevel: (draft.profile.yearLevel as ProfileFormValues["yearLevel"]) || "2ND_YEAR",
+				program: draft.profile.program || "BS in Information Technology",
+				majorId: draft.profile.majorId ? String(draft.profile.majorId) : "",
+			};
+		}
+		return {
+			campusId: "",
+			departmentId: "",
+			academicYear: schoolYear,
+			yearLevel: "2ND_YEAR",
+			program: "BS in Information Technology",
+			majorId: "",
+		};
 	});
 
-	const [grades1st, setGrades1st] = useState<GradeInput[]>([]);
-	const [grades2nd, setGrades2nd] = useState<GradeInput[]>([]);
+	const [selectedSemesters, setSelectedSemesters] = useState(() => {
+		if (!hasSubmitted && draft?.semesters) {
+			return draft.semesters;
+		}
+		return {
+			firstSem: openSemester === "1ST" || openSemester === "BOTH",
+			secondSem: openSemester === "2ND",
+		};
+	});
+
+	const [grades1st, setGrades1st] = useState<GradeInput[]>(() => {
+		if (!hasSubmitted && draft?.grades1st) {
+			return draft.grades1st;
+		}
+		return [];
+	});
+
+	const [grades2nd, setGrades2nd] = useState<GradeInput[]>(() => {
+		if (!hasSubmitted && draft?.grades2nd) {
+			return draft.grades2nd;
+		}
+		return [];
+	});
 
 	const [files, setFiles] = useState<{
 		COR?: File;
@@ -81,45 +117,37 @@ export function PortalPage({
 		GMC?: File;
 	}>({});
 
-	const draftRestoredRef = useRef(false);
+	const [fileMetadata, setFileMetadata] = useState<{
+		COR: DraftFile | null;
+		COG_1ST: DraftFile | null;
+		COG_2ND: DraftFile | null;
+		GMC: DraftFile | null;
+	} | null>(() => {
+		if (!hasSubmitted && draft?.files) {
+			return {
+				COR: draft.files.COR ?? null,
+				COG_1ST: draft.files.COG_1ST ?? null,
+				COG_2ND: draft.files.COG_2ND ?? null,
+				GMC: draft.files.GMC ?? null,
+			};
+		}
+		return null;
+	});
+
+	const handleFilesChange = useCallback((newFiles: typeof files) => {
+		setFiles(newFiles);
+		setFileMetadata((prev) => {
+			return {
+				COR: newFiles.COR ? { name: newFiles.COR.name, size: newFiles.COR.size, type: newFiles.COR.type } : (prev?.COR ?? null),
+				COG_1ST: newFiles.COG_1ST ? { name: newFiles.COG_1ST.name, size: newFiles.COG_1ST.size, type: newFiles.COG_1ST.type } : (prev?.COG_1ST ?? null),
+				COG_2ND: newFiles.COG_2ND ? { name: newFiles.COG_2ND.name, size: newFiles.COG_2ND.size, type: newFiles.COG_2ND.type } : (prev?.COG_2ND ?? null),
+				GMC: newFiles.GMC ? { name: newFiles.GMC.name, size: newFiles.GMC.size, type: newFiles.GMC.type } : (prev?.GMC ?? null),
+			};
+		});
+	}, []);
 
 	useEffect(() => {
-		if (!draft || draftRestoredRef.current || hasSubmitted) return;
-		draftRestoredRef.current = true;
-
-		if (draft.currentStep) {
-			setStep(draft.currentStep);
-		}
-
-		if (draft.profile) {
-			setProfile({
-				campusId: draft.profile.campusId
-					? String(draft.profile.campusId)
-					: "",
-				departmentId: draft.profile.departmentId
-					? String(draft.profile.departmentId)
-					: "",
-				academicYear: draft.profile.academicYear || schoolYear,
-				yearLevel:
-					(draft.profile.yearLevel as ProfileFormValues["yearLevel"]) ||
-					"2ND_YEAR",
-				program: draft.profile.program || "",
-				majorId: draft.profile.majorId
-					? String(draft.profile.majorId)
-					: "",
-			});
-		}
-
-		if (draft.semesters) {
-			setSelectedSemesters(draft.semesters);
-		}
-
-		if (draft.grades1st) setGrades1st(draft.grades1st);
-		if (draft.grades2nd) setGrades2nd(draft.grades2nd);
-	}, [draft, hasSubmitted, schoolYear]);
-
-	useEffect(() => {
-		if (!draftRestoredRef.current || hasSubmitted) return;
+		if (hasSubmitted) return;
 
 		saveDraftToServer({
 			profile: {
@@ -135,9 +163,10 @@ export function PortalPage({
 			semesters: selectedSemesters,
 			grades1st,
 			grades2nd,
+			files: fileMetadata ?? undefined,
 			currentStep: step,
 		});
-	}, [profile, selectedSemesters, grades1st, grades2nd, step, saveDraftToServer, hasSubmitted]);
+	}, [profile, selectedSemesters, grades1st, grades2nd, fileMetadata, step, saveDraftToServer, hasSubmitted]);
 
 	const { submit, isSubmitting, statusText } = useApplicationSubmit({
 		profile,
@@ -162,8 +191,8 @@ export function PortalPage({
 				<PortalHeader user={user} />
 				<PortalStepsBar currentStep={step} />
 
-				{!hasSubmitted && draftRestoredRef.current && (
-					<div className="w-full text-center text-xs text-muted-foreground">
+				{!hasSubmitted && (
+					<div className="w-full text-center text-xs text-muted-foreground select-none">
 						{isSaving
 							? "Saving draft..."
 							: lastSaved
@@ -215,12 +244,12 @@ export function PortalPage({
 						<PortalDocumentsStep
 							selectedSemesters={selectedSemesters}
 							files={files}
-							onChange={setFiles}
+							onChange={handleFilesChange}
 							onBack={() => setStep((prev) => Math.max(1, prev - 1))}
 							onSubmit={submit}
 							isPending={isSubmitting}
 							schoolYear={schoolYear}
-							fileMetadata={draft?.files ?? null}
+							fileMetadata={fileMetadata}
 						/>
 					) : null}
 
