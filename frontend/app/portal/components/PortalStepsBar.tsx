@@ -17,7 +17,6 @@ interface PortalStepsBarProps {
 export function PortalStepsBar({ currentStep }: PortalStepsBarProps) {
 	return (
 		<Stepper
-			key={currentStep}
 			value={STEP_VALUES[currentStep - 1]}
 			nonInteractive
 			className="w-full flex items-center justify-between gap-2 px-4 py-2 select-none"
