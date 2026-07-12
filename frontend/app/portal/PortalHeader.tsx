@@ -30,7 +30,7 @@ export function PortalHeader({ user, onSwitchToAdmin }: PortalHeaderProps) {
 	};
 
 	return (
-		<div className="flex items-center justify-between w-full py-4 border-b select-none border-border">
+		<div className="flex w-full items-center justify-between border-b border-border py-4">
 			{/* Logo and Branding */}
 			<div className="flex items-center gap-2">
 				<div className="relative size-9 shrink-0">

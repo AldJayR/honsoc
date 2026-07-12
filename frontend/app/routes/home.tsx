@@ -14,7 +14,7 @@ export function meta() {
 
 export default function HomeRoute() {
 	return (
-		<div className="flex flex-col gap-2.5 items-center mx-auto w-[215px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+		<div className="mx-auto flex w-[215px] flex-col items-center gap-2.5">
 			<Button render={<Link to="/register" />} nativeButton={false} className="w-full">
 				<UserPlus />
 				Apply for membership

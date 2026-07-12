@@ -99,14 +99,14 @@ export function ApplicantQueue({ applications, onAuditClick }: ApplicantQueuePro
 	}, [applications, searchQuery, statusFilter, sortConfig]);
 
 	return (
-		<div className="w-full flex flex-col gap-6 select-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+		<div className="flex w-full flex-col gap-6">
 			{/* Header Section */}
 			<div className="flex flex-col gap-1">
 				<h1 className="text-2xl font-semibold text-foreground leading-[35px]">Applicant Queue</h1>
 			</div>
 
 			{/* Search and Filters */}
-			<div className="flex items-center justify-between gap-4">
+			<div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
 				<div className="relative flex-1 max-w-[352px]">
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
 					<Input
@@ -114,13 +114,13 @@ export function ApplicantQueue({ applications, onAuditClick }: ApplicantQueuePro
 						value={searchQuery}
 						onChange={handleSearchChange}
 						placeholder="Search by name or ID"
-						className="pl-9 h-9 border-border bg-white placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
+						className="h-9 border-border bg-card pl-9 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
 					/>
 				</div>
 
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-2 sm:justify-end">
 					<DropdownMenu>
-						<DropdownMenuTrigger className="inline-flex items-center gap-2 h-9 px-3 text-xs font-semibold border border-border rounded-lg bg-white hover:bg-muted/50 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20 outline-none select-none cursor-pointer">
+						<DropdownMenuTrigger className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-md border border-border bg-card px-3 text-xs font-semibold outline-none hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary/20">
 							<Filter className="w-4 h-4" />
 							<span>Status: {statusFilter === "ALL" ? "All" : statusFilter.replace("_", " ")}</span>
 						</DropdownMenuTrigger>
@@ -147,7 +147,7 @@ export function ApplicantQueue({ applications, onAuditClick }: ApplicantQueuePro
 			</div>
 
 			{/* Table Card */}
-			<div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+			<div className="overflow-x-auto rounded-lg border border-border bg-card">
 				<Table>
 					<TableHeader className="bg-muted/40">
 						<TableRow>

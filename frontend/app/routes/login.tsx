@@ -72,10 +72,10 @@ export default function LoginRoute() {
 	};
 
 	return (
-		<div className="w-full max-w-[512px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+		<div className="mx-auto w-full max-w-[512px]">
 			<form
 				onSubmit={handleSubmit(onSubmit)}
-				className="flex flex-col items-start w-full gap-6"
+				className="flex w-full flex-col items-start gap-6"
 			>
 				<h2 className="w-full mb-2 text-center select-none type-h4">
 					Login to your account

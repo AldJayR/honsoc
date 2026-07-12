@@ -14,8 +14,8 @@ export function RegistrationLayout({ children }: RegistrationLayoutProps) {
 	const [imgFailed, setImgFailed] = useState(false);
 
 	return (
-		<div className="flex flex-col items-center justify-center min-h-screen p-6 transition-colors duration-300 bg-background">
-			<div className="w-full max-w-[512px] flex flex-col gap-12 items-center animate-fade-in">
+		<div className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
+			<div className="flex w-full max-w-[512px] flex-col items-center gap-10">
 				{/* Header Branding */}
 				<header className="flex flex-col items-center gap-4 text-center">
 					<Link

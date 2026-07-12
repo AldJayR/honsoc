@@ -46,7 +46,7 @@ export default function RegisterStep1({ loaderData }: Route.ComponentProps) {
 		<form
 			onSubmit={handleSubmit(onSubmit)}
 			aria-labelledby="step1-heading"
-			className="w-full max-w-[512px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start gap-8"
+			className="mx-auto flex w-full max-w-[512px] flex-col items-start gap-8"
 		>
 			<FormHeader
 				id="step1-heading"

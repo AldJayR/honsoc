@@ -101,7 +101,7 @@ export function PortalProfileStep({
 	return (
 		<form
 			onSubmit={handleSubmit(handleFormSubmit)}
-			className="flex flex-col items-start w-full gap-6 animate-fade-in"
+			className="flex w-full flex-col items-start gap-6"
 		>
 			<p className="select-none type-body-small text-muted-foreground">
 				Confirm your student details. These will be cross-checked against your

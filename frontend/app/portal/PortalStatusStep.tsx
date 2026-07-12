@@ -66,8 +66,8 @@ export function PortalStatusStep({
 
 	if (!applications || applications.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center w-full p-8 text-center border bg-card border-border rounded-2xl">
-				<Clock className="mb-2 size-8 text-primary animate-pulse" />
+			<div className="flex w-full flex-col items-center justify-center rounded-lg border border-border bg-card p-8 text-center">
+				<Clock className="mb-2 size-8 text-primary" />
 				<span className="type-label">
 					No Application Found
 				</span>
@@ -96,16 +96,16 @@ export function PortalStatusStep({
 	const formattedTime = formatTime(app.submittedAt);
 
 	return (
-		<div className="flex flex-col items-start w-full gap-6 animate-fade-in">
+		<div className="flex w-full flex-col items-start gap-6">
 			{/* Application Tabs if multiple applications exist */}
 			{applications.length > 1 ? (
-				<div className="flex bg-muted p-0.5 rounded-lg select-none">
+				<div className="flex rounded-md bg-muted p-0.5">
 					{applications.map((a, idx) => (
 						<button
 							key={a.id}
 							type="button"
 							onClick={() => setActiveAppIdx(idx)}
-							className={`px-3 py-1 text-xs font-semibold rounded-md transition-all select-none cursor-pointer ${
+							className={`cursor-pointer rounded px-3 py-1 text-xs font-semibold ${
 								activeAppIdx === idx
 									? "bg-card text-foreground shadow-sm"
 									: "text-muted-foreground hover:text-foreground"
@@ -119,7 +119,7 @@ export function PortalStatusStep({
 			) : null}
 
 			{/* Submission Success Banner */}
-			<div className="flex flex-col items-center justify-center w-full gap-3 p-5 text-center border shadow-sm bg-card border-border rounded-2xl">
+			<div className="flex w-full flex-col items-center justify-center gap-3 rounded-lg border border-border bg-card p-5 text-center">
 				<span className="font-sans text-base font-semibold leading-6 select-none text-amber-600">
 					{app.status === "FLAGGED"
 						? "Action Required"
@@ -153,7 +153,7 @@ export function PortalStatusStep({
 			</div>
 
 			{/* Split Timeline & Summary */}
-			<div className="grid w-full grid-cols-1 gap-8 mt-2 md:grid-cols-2">
+			<div className="mt-2 grid w-full grid-cols-1 gap-8 md:grid-cols-2">
 				{/* Timeline Pane */}
 				<div className="flex flex-col items-start w-full gap-4">
 					<h3 className="type-label">
@@ -239,7 +239,7 @@ export function PortalStatusStep({
 								<span
 									className={`font-sans font-semibold text-sm ${
 										verifyStep.error
-											? "text-destructive animate-pulse-subtle"
+											? "text-destructive"
 											: "text-foreground"
 									}`}
 								>
@@ -289,7 +289,7 @@ export function PortalStatusStep({
 						Summary
 					</h3>
 
-					<div className="flex flex-col w-full gap-2 p-4 border border-border rounded-xl bg-muted/10">
+					<div className="flex w-full flex-col gap-2 rounded-lg border border-border bg-muted/10 p-4">
 						{/* SY */}
 						<div className="flex items-center justify-between pb-2 text-xs border-b border-border/50">
 							<span className="text-muted-foreground">Academic Year</span>

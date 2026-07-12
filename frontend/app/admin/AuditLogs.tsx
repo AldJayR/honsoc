@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
-import { Search, Calendar, Shield, CheckSquare, Flag } from "lucide-react";
+import { Search, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardHeader, CardDescription, CardContent } from "@/components/ui/card";
 import type { AuditLogEntry } from "@/shared/services/representative.api";
+import { MetricCard } from "./MetricCard";
 
 interface AuditLogsProps {
 	auditLogs: AuditLogEntry[];
@@ -56,29 +56,20 @@ export function AuditLogs({ auditLogs }: AuditLogsProps) {
 	const flagsCount = auditLogs.filter((log) => log.action === "FLAGGED").length;
 
 	return (
-		<div className="w-full flex flex-col gap-6 select-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+		<div className="flex w-full flex-col gap-6">
 			{/* Title */}
 			<div className="flex flex-col gap-1">
 				<h1 className="text-2xl font-semibold text-foreground leading-[35px]">Audit Logs</h1>
 			</div>
 
 			{/* Stats Cards */}
-			<div className="flex gap-6 overflow-x-auto pb-1">
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 				{[
-					{ label: "Decisions", value: totalDecisions, icon: Shield },
-					{ label: "Verifications", value: verificationsCount, icon: CheckSquare },
-					{ label: "Flags Issued", value: flagsCount, icon: Flag },
-				].map((card, i) => (
-					<Card key={i} className="flex-1 min-w-[200px] shadow-sm">
-						<CardHeader className="pb-2">
-							<CardDescription className="text-sm font-semibold text-muted-foreground">
-								{card.label}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="pb-4">
-							<p className="text-4xl font-bold text-foreground tracking-tight">{card.value}</p>
-						</CardContent>
-					</Card>
+					{ label: "Decisions", value: totalDecisions },
+					{ label: "Verifications", value: verificationsCount },
+					{ label: "Flags Issued", value: flagsCount },
+				].map((card) => (
+					<MetricCard key={card.label} label={card.label} value={card.value} />
 				))}
 			</div>
 
@@ -91,13 +82,13 @@ export function AuditLogs({ auditLogs }: AuditLogsProps) {
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 						placeholder="Search by action, name, or reference #"
-						className="pl-9 h-9 border-border bg-white placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
+						className="h-9 border-border bg-card pl-9 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
 					/>
 				</div>
 			</div>
 
 			{/* Table Card */}
-			<div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+			<div className="overflow-x-auto rounded-lg border border-border bg-card">
 				<Table>
 					<TableHeader className="bg-muted/40">
 						<TableRow>

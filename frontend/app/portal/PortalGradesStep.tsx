@@ -108,7 +108,7 @@ export function PortalGradesStep({
 	};
 
 	return (
-		<div className="flex flex-col items-start w-full gap-6 animate-fade-in">
+		<div className="flex w-full flex-col items-start gap-6">
 			<div className="flex flex-col gap-1 w-full">
 				<p className="select-none type-body-small text-muted-foreground">
 					Enter each subject from your COG exactly as printed. GWA is computed
@@ -126,7 +126,7 @@ export function PortalGradesStep({
 			</Alert>
 
 			{/* GWA Summary Panel */}
-			<div className="flex items-center justify-between w-full p-4 border shadow-sm bg-card border-border rounded-2xl">
+			<div className="flex w-full items-center justify-between rounded-lg border border-border bg-card p-4">
 				{/* 1st Sem GWA */}
 				{selectedSemesters.firstSem ? (
 					<div className="flex flex-col items-center justify-center flex-1 text-center">
@@ -160,7 +160,7 @@ export function PortalGradesStep({
 			{/* Disqualification Banners */}
 			{((activeTab === "1st" && is1stDisqualified) ||
 				(activeTab === "2nd" && is2ndDisqualified)) ? (
-				<div className="flex items-start w-full gap-2 p-3 text-red-700 border border-red-200 bg-red-500/10 rounded-xl animate-pulse-subtle">
+				<div className="flex w-full items-start gap-2 rounded-lg border border-red-200 bg-red-500/10 p-3 text-red-700">
 					<AlertTriangle className="size-5 shrink-0 text-red-500 mt-0.5" />
 					<div className="flex flex-col text-xs leading-normal">
 						<span className="font-semibold">
@@ -209,7 +209,7 @@ export function PortalGradesStep({
 
 			{/* Table of Grades */}
 			{activeGrades.length === 0 ? (
-				<p className="w-full p-8 text-sm text-center text-muted-foreground border border-dashed rounded-xl select-none">
+				<p className="w-full rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
 					No grades added yet. Enter a subject below to start.
 				</p>
 			) : (

@@ -38,7 +38,7 @@ export default function RegisterVerify({ loaderData }: Route.ComponentProps) {
 	};
 
 	return (
-		<div className="w-full max-w-[521px] mx-auto flex flex-col items-center gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+		<div className="mx-auto flex w-full max-w-[521px] flex-col items-center gap-8">
 			<div
 				className="bg-success border border-success-foreground text-success-foreground flex items-center justify-center rounded-[32.5px] size-[65px] transition-transform duration-300 hover:scale-105 shadow-sm"
 				aria-hidden="true"

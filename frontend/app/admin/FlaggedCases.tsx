@@ -3,10 +3,10 @@ import { Search, Eye, Calendar, Clock, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardDescription, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useApplicationFlags } from "@/shared/services/queries/representative";
 import type { RepresentativeApplication } from "@/shared/services/representative.api";
+import { MetricCard } from "./MetricCard";
 
 interface FlaggedCasesProps {
 	applications: RepresentativeApplication[];
@@ -124,29 +124,20 @@ export function FlaggedCases({ applications, onAuditClick }: FlaggedCasesProps) 
 	const resubmittedCount = applications.filter((app) => (app.status === "SUBMITTED" || app.status === "UNDER_REVIEW") && app.gwa !== null).length;
 
 	return (
-		<div className="w-full flex flex-col gap-6 select-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+		<div className="flex w-full flex-col gap-6">
 			{/* Title */}
 			<div className="flex flex-col gap-1">
 				<h1 className="text-2xl font-semibold text-foreground leading-[35px]">Flagged Cases</h1>
 			</div>
 
 			{/* Stat Cards */}
-			<div className="flex gap-6 overflow-x-auto pb-1">
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 				{[
 					{ label: "Total Flagged", value: totalFlagged },
 					{ label: "Awaiting Student", value: totalFlagged },
 					{ label: "Re-submitted", value: resubmittedCount },
-				].map((card, i) => (
-					<Card key={i} className="flex-1 min-w-[200px] shadow-sm">
-						<CardHeader className="pb-2">
-							<CardDescription className="text-sm font-semibold text-muted-foreground">
-								{card.label}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="pb-4">
-							<p className="text-4xl font-bold text-foreground tracking-tight">{card.value}</p>
-						</CardContent>
-					</Card>
+				].map((card) => (
+					<MetricCard key={card.label} label={card.label} value={card.value} />
 				))}
 			</div>
 
@@ -159,13 +150,13 @@ export function FlaggedCases({ applications, onAuditClick }: FlaggedCasesProps) 
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 						placeholder="Search by name or ID"
-						className="pl-9 h-9 border-border bg-white placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
+						className="h-9 border-border bg-card pl-9 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
 					/>
 				</div>
 			</div>
 
 			{/* Table Card */}
-			<div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+			<div className="overflow-x-auto rounded-lg border border-border bg-card">
 				<Table>
 					<TableHeader className="bg-muted/40">
 						<TableRow>

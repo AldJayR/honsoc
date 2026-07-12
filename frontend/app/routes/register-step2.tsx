@@ -81,7 +81,7 @@ export default function RegisterStep2({ loaderData }: Route.ComponentProps) {
 		<form
 			onSubmit={handleSubmit(onSubmit)}
 			aria-labelledby="step2-heading"
-			className="w-full max-w-[512px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start gap-8"
+			className="mx-auto flex w-full max-w-[512px] flex-col items-start gap-8"
 		>
 			<FormHeader
 				id="step2-heading"
@@ -90,7 +90,7 @@ export default function RegisterStep2({ loaderData }: Route.ComponentProps) {
 			/>
 
 			{errors.root?.message ? (
-				<div className="w-full p-3 text-sm text-red-700 border border-red-200 bg-red-500/10 rounded-xl">
+				<div className="w-full rounded-lg border border-red-200 bg-red-500/10 p-3 text-sm text-red-700">
 					{errors.root.message}
 				</div>
 			) : null}

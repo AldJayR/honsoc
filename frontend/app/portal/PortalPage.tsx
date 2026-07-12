@@ -192,13 +192,13 @@ export function PortalPage({
 	}
 
 	return (
-		<div className="flex flex-col items-center min-h-screen p-6 bg-background">
-			<div className="w-full max-w-[708px] flex flex-col gap-6 items-center">
+		<div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-6">
+			<div className="flex w-full max-w-[708px] flex-col items-center gap-6">
 				<PortalHeader user={user} onSwitchToAdmin={onSwitchToAdmin} />
 				<PortalStepsBar currentStep={step} />
 
 				{!hasSubmitted && (
-					<div className="w-full text-center text-xs text-muted-foreground select-none">
+					<div className="w-full text-center text-xs text-muted-foreground">
 						{isSaving
 							? "Saving draft..."
 							: lastSaved
@@ -207,7 +207,7 @@ export function PortalPage({
 					</div>
 				)}
 
-				<main className="w-full p-6 min-h-[300px] flex flex-col justify-start">
+				<main className="flex min-h-[300px] w-full flex-col justify-start px-1 py-2 sm:px-6">
 					{step === 1 ? (
 						<PortalProfileStep
 							defaultValues={profile}

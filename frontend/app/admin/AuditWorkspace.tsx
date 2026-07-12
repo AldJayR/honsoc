@@ -2,8 +2,15 @@ import { useState } from "react";
 import { AlertCircle, FileText, Check, Flag, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import {
 	Dialog,
 	DialogContent,
@@ -93,7 +100,7 @@ export function AuditWorkspace({
 		let typeToFind = "COG_1ST";
 		if (activeDocTab === "COR") {
 			typeToFind = "COR";
-		} else if (activeDocTab === "CGM") {
+		} else if (activeDocTab === "GMC") {
 			typeToFind = "GMC";
 		} else {
 			// COG
@@ -107,10 +114,10 @@ export function AuditWorkspace({
 	const activeDocUrl = getActiveDocUrl();
 
 	return (
-		<div className="w-full flex h-[770px] border border-border rounded-xl bg-white overflow-hidden shadow-sm select-none">
+		<div className="flex h-[calc(100vh-8rem)] min-h-[640px] max-h-[900px] w-full flex-col overflow-hidden rounded-lg border border-border bg-card lg:flex-row">
 			{/* Left Column: Applicants list */}
-			<div className="w-[258px] border-r border-border flex flex-col h-full bg-slate-50/50">
-				<div className="p-4 border-b border-border bg-white flex items-center justify-between shrink-0">
+			<div className="flex max-h-[220px] w-full flex-col border-b border-border bg-muted/20 lg:h-full lg:max-h-none lg:w-[258px] lg:border-b-0 lg:border-r">
+				<div className="flex shrink-0 items-center justify-between border-b border-border bg-card p-4">
 					<h3 className="font-semibold text-sm text-foreground">Queue</h3>
 					<span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
 						{applications.length}
@@ -122,16 +129,21 @@ export function AuditWorkspace({
 						return (
 							<button
 								key={app.id}
+								type="button"
 								onClick={() => onSelectApp(app.id)}
-								className={`flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
-									isSelected ? "bg-primary/10 border border-primary/20" : "hover:bg-muted/50 border border-transparent"
+								className={`flex items-center gap-3 rounded-md border p-3 text-left ${
+									isSelected
+										? "border-primary/20 bg-primary/10"
+										: "border-transparent hover:bg-muted/50"
 								}`}
 							>
 								<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xs shrink-0">
 									{getInitials(app.student.name)}
 								</div>
 								<div className="min-w-0 flex-1">
-									<h4 className="font-semibold text-xs text-foreground truncate">{app.student.name}</h4>
+									<h4 className="font-semibold text-xs text-foreground truncate">
+										{app.student.name}
+									</h4>
 									<p className="text-[10px] text-muted-foreground truncate">
 										{app.program} · {formatYearLevel(app.yearLevel)}
 									</p>
@@ -155,20 +167,26 @@ export function AuditWorkspace({
 			</div>
 
 			{/* Right Column: Work space */}
-			<div className="flex-1 flex flex-col h-full bg-white relative">
+			<div className="relative flex min-h-0 flex-1 flex-col bg-card">
 				{isAppLoading ? (
 					<div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-muted-foreground select-none">
 						<div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin mb-4" />
-						<p className="text-sm font-semibold">Loading applicant details...</p>
+						<p className="text-sm font-semibold">
+							Loading applicant details...
+						</p>
 					</div>
 				) : selectedAppId && selectedApp ? (
 					<>
 						{/* Audit Workspace Header */}
-						<div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-white z-10">
+						<div className="z-10 flex shrink-0 items-center justify-between border-b border-border bg-card p-4">
 							<div>
-								<h3 className="font-semibold text-sm text-foreground">{selectedApp.student.name}</h3>
+								<h3 className="font-semibold text-sm text-foreground">
+									{selectedApp.student.name}
+								</h3>
 								<p className="text-xs text-muted-foreground">
-									{selectedApp.program} · {formatYearLevel(selectedApp.yearLevel)} · {selectedApp.referenceNo}
+									{selectedApp.program} ·{" "}
+									{formatYearLevel(selectedApp.yearLevel)} ·{" "}
+									{selectedApp.referenceNo}
 								</p>
 							</div>
 
@@ -205,9 +223,9 @@ export function AuditWorkspace({
 						</div>
 
 						{/* Audit Workspace Content */}
-						<div className="flex-1 flex overflow-hidden">
+						<div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
 							{/* Column 1: Document Scan */}
-							<div className="w-[384px] border-r border-border flex flex-col h-full bg-slate-50/50 p-4">
+							<div className="flex h-full w-full flex-col border-b border-border bg-muted/20 p-4 lg:w-[384px] lg:border-b-0 lg:border-r">
 								<div className="flex justify-between items-center mb-3">
 									<h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
 										Document Scan
@@ -215,14 +233,33 @@ export function AuditWorkspace({
 								</div>
 
 								{/* Document Tabs */}
-								<Tabs value={activeDocTab} onValueChange={setActiveDocTab} className="w-full flex-1 flex flex-col">
+								<Tabs
+									value={activeDocTab}
+									onValueChange={setActiveDocTab}
+									className="w-full flex-1 flex flex-col"
+								>
 									<TabsList className="grid grid-cols-3 h-8 p-0.5 bg-muted mb-3 rounded-lg">
-										<TabsTrigger value="COG" className="text-[11px] font-semibold h-7 rounded-md">COG</TabsTrigger>
-										<TabsTrigger value="COR" className="text-[11px] font-semibold h-7 rounded-md">COR</TabsTrigger>
-										<TabsTrigger value="CGM" className="text-[11px] font-semibold h-7 rounded-md">CGM</TabsTrigger>
+										<TabsTrigger
+											value="COG"
+											className="text-[11px] font-semibold h-7 rounded-md"
+										>
+											COG
+										</TabsTrigger>
+										<TabsTrigger
+											value="COR"
+											className="text-[11px] font-semibold h-7 rounded-md"
+										>
+											COR
+										</TabsTrigger>
+										<TabsTrigger
+											value="GMC"
+											className="h-7 rounded-md text-[11px] font-semibold"
+										>
+											GMC
+										</TabsTrigger>
 									</TabsList>
 
-									<div className="flex-1 border border-border bg-white rounded-lg overflow-hidden relative min-h-[300px]">
+									<div className="relative min-h-[300px] flex-1 overflow-hidden rounded-md border border-border bg-background">
 										{activeDocUrl ? (
 											<iframe
 												src={activeDocUrl}
@@ -233,8 +270,12 @@ export function AuditWorkspace({
 											<div className="w-full h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground gap-2">
 												<FileText className="w-12 h-12 text-muted-foreground/30 stroke-[1.5]" />
 												<div>
-													<p className="text-xs font-semibold">No Document Uploaded</p>
-													<p className="text-[10px] mt-0.5">Applicant has not uploaded this document type yet.</p>
+													<p className="text-xs font-semibold">
+														No Document Uploaded
+													</p>
+													<p className="text-[10px] mt-0.5">
+														Applicant has not uploaded this document type yet.
+													</p>
 												</div>
 											</div>
 										)}
@@ -243,26 +284,31 @@ export function AuditWorkspace({
 							</div>
 
 							{/* Column 2: Computed Data */}
-							<div className="flex-1 flex flex-col h-full p-4 overflow-y-auto">
+							<div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto p-4">
 								<h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
 									Computed Data
 								</h4>
 
 								{/* GWA Card */}
-								<div className="bg-success border border-success/30 p-4 rounded-xl flex items-center justify-between mb-4">
+								<div className="mb-4 flex items-center justify-between rounded-lg border border-success/30 bg-success p-4">
 									<div>
-										<p className="text-xs text-success-foreground font-medium">System GWA</p>
+										<p className="text-xs text-success-foreground font-medium">
+											System GWA
+										</p>
 										<p className="text-3xl font-bold text-success-foreground mt-1">
 											{gwaData?.gwa ? gwaData.gwa.toFixed(2) : "N/A"}
 										</p>
 									</div>
-									{gwaData?.disqualifiers && gwaData.disqualifiers.length > 0 ? (
+									{gwaData?.disqualifiers &&
+									gwaData.disqualifiers.length > 0 ? (
 										<div className="flex items-center gap-1.5 text-xs text-destructive bg-destructive/10 border border-destructive/20 px-2.5 py-1.5 rounded-lg max-w-[200px] font-medium">
 											<AlertCircle className="w-4 h-4 shrink-0" />
-											<span className="leading-tight text-[11px]">Disqualifiers detected!</span>
+											<span className="leading-tight text-[11px]">
+												Disqualifiers detected!
+											</span>
 										</div>
 									) : (
-										<div className="text-xs text-success-foreground bg-white border border-success/50 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 font-medium shadow-sm">
+										<div className="flex items-center gap-1.5 rounded-md border border-success/50 bg-card px-2.5 py-1.5 text-xs font-medium text-success-foreground">
 											<Check className="w-4 h-4" />
 											<span>Meets GWA Requirements</span>
 										</div>
@@ -270,30 +316,57 @@ export function AuditWorkspace({
 								</div>
 
 								{/* Semester Tabs */}
-								<Tabs value={activeGradeSemTab} onValueChange={setActiveGradeSemTab} className="w-full">
-									<TabsList className="w-fit h-8 p-0.5 bg-muted mb-3 rounded-lg">
-										<TabsTrigger value="1ST" className="text-[11px] font-semibold h-7 px-3 rounded-md">1st Semester</TabsTrigger>
-										<TabsTrigger value="2ND" className="text-[11px] font-semibold h-7 px-3 rounded-md">2nd Semester</TabsTrigger>
+								<Tabs
+									value={activeGradeSemTab}
+									onValueChange={setActiveGradeSemTab}
+									className="w-full"
+								>
+									<TabsList className="mb-3 h-8 w-fit rounded-md bg-muted p-0.5">
+										<TabsTrigger
+											value="1ST"
+											className="text-[11px] font-semibold h-7 px-3 rounded-md"
+										>
+											1st Semester
+										</TabsTrigger>
+										<TabsTrigger
+											value="2ND"
+											className="text-[11px] font-semibold h-7 px-3 rounded-md"
+										>
+											2nd Semester
+										</TabsTrigger>
 									</TabsList>
 
 									{/* Grades Table */}
-									<div className="border border-border rounded-lg overflow-hidden">
+									<div className="overflow-hidden rounded-md border border-border">
 										<Table>
 											<TableHeader className="bg-muted/40">
 												<TableRow>
-													<TableHead className="font-semibold text-[11px] text-muted-foreground py-2 h-8">Subject</TableHead>
-													<TableHead className="font-semibold text-[11px] text-muted-foreground py-2 h-8 text-right">Units</TableHead>
-													<TableHead className="font-semibold text-[11px] text-muted-foreground py-2 h-8 text-right">Grade</TableHead>
+													<TableHead className="font-semibold text-[11px] text-muted-foreground py-2 h-8">
+														Subject
+													</TableHead>
+													<TableHead className="font-semibold text-[11px] text-muted-foreground py-2 h-8 text-right">
+														Units
+													</TableHead>
+													<TableHead className="font-semibold text-[11px] text-muted-foreground py-2 h-8 text-right">
+														Grade
+													</TableHead>
 												</TableRow>
 											</TableHeader>
 											<TableBody>
 												{filteredGrades.length > 0 ? (
-													filteredGrades.map((g, idx) => (
-														<TableRow key={idx} className="hover:bg-muted/20 border-b border-border/50">
+													filteredGrades.map((g) => (
+														<TableRow
+															key={g._key ?? g.subjectCode}
+															className="border-b border-border/50 hover:bg-muted/20"
+														>
 															<TableCell className="py-2 h-10">
 																<div className="flex flex-col">
-																	<span className="font-medium text-xs text-foreground">{g.subjectCode}</span>
-																	<span className="text-[10px] text-muted-foreground truncate max-w-[180px]">{g.subjectName}</span>
+																	<span className="font-medium text-xs text-foreground">
+																		{g.subjectCode}
+																	</span>
+																	<span className="text-[10px] text-muted-foreground truncate max-w-[180px]">
+																		{g.subjectName}
+																	</span>
 																</div>
 															</TableCell>
 															<TableCell className="py-2 h-10 text-right text-xs text-foreground font-mono">
@@ -306,7 +379,10 @@ export function AuditWorkspace({
 													))
 												) : (
 													<TableRow>
-														<TableCell colSpan={3} className="text-center py-6 text-xs text-muted-foreground">
+														<TableCell
+															colSpan={3}
+															className="text-center py-6 text-xs text-muted-foreground"
+														>
 															No grades records for this semester.
 														</TableCell>
 													</TableRow>
@@ -322,9 +398,12 @@ export function AuditWorkspace({
 					<div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-muted-foreground gap-3">
 						<FileText className="w-16 h-16 text-muted-foreground/20 stroke-[1.2]" />
 						<div>
-							<h3 className="font-semibold text-sm text-foreground">Select an Applicant</h3>
+							<h3 className="font-semibold text-sm text-foreground">
+								Select an Applicant
+							</h3>
 							<p className="text-xs text-muted-foreground mt-0.5">
-								Choose a student application from the queue sidebar to start auditing.
+								Choose a student application from the queue sidebar to start
+								auditing.
 							</p>
 						</div>
 					</div>
@@ -332,8 +411,8 @@ export function AuditWorkspace({
 
 				{/* Design System Dialog for Flagging */}
 				<Dialog open={isFlagDialogOpen} onOpenChange={setIsFlagDialogOpen}>
-					<DialogContent className="sm:max-w-[440px] gap-0 p-0 overflow-hidden border border-border bg-popover rounded-2xl shadow-xl">
-						<DialogHeader className="p-5 border-b border-border bg-white flex flex-row items-center justify-between">
+					<DialogContent className="gap-0 overflow-hidden rounded-lg border border-border bg-popover p-0 shadow-lg sm:max-w-[440px]">
+						<DialogHeader className="flex flex-row items-center justify-between border-b border-border bg-card p-5">
 							<DialogTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
 								<Flag className="w-4 h-4 text-red-600 fill-red-600/10" />
 								<span>Flag Application</span>
@@ -341,35 +420,49 @@ export function AuditWorkspace({
 						</DialogHeader>
 
 						<form onSubmit={handleFlagSubmit} className="flex flex-col">
-							<div className="p-5 flex flex-col gap-4">
+							<div className="flex flex-col gap-4 p-5">
 								<div className="flex flex-col gap-1.5">
-									<label className="text-xs font-semibold text-foreground">Reason Code</label>
+									<label
+										htmlFor="flagReason"
+										className="text-xs font-semibold text-foreground"
+									>
+										Reason Code
+									</label>
 									<select
+										id="flagReason"
 										value={flagReason}
 										onChange={(e) => setFlagReason(e.target.value)}
-										className="w-full h-9 rounded-lg border border-border bg-white text-xs px-3 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+										className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
 									>
 										<option value="INCORRECT_GRADE">Incorrect Grade</option>
 										<option value="BLURRY_DOCUMENTS">Blurry Documents</option>
-										<option value="INCOMPLETE_SUBMISSION">Incomplete Submission</option>
+										<option value="INCOMPLETE_SUBMISSION">
+											Incomplete Submission
+										</option>
 										<option value="OTHER">Other Reason</option>
 									</select>
 								</div>
 
 								<div className="flex flex-col gap-1.5">
-									<label className="text-xs font-semibold text-foreground">Detailed Note</label>
+									<label
+										htmlFor="flagNote"
+										className="text-xs font-semibold text-foreground"
+									>
+										Detailed Note
+									</label>
 									<Textarea
+										id="flagNote"
 										rows={3}
 										value={flagNote}
 										onChange={(e) => setFlagNote(e.target.value)}
 										required
 										placeholder="Specify which subject grade is incorrect, or which documents are blurry..."
-										className="text-xs border-border bg-white placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20 resize-none rounded-lg p-2.5"
+										className="resize-none rounded-md border-border bg-card p-2.5 text-xs placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
 									/>
 								</div>
 							</div>
 
-							<DialogFooter className="p-4 border-t border-border bg-slate-50/50 flex justify-end gap-2 shrink-0">
+							<DialogFooter className="flex shrink-0 justify-end gap-2 border-t border-border bg-muted/30 p-4">
 								<Button
 									type="button"
 									variant="ghost"

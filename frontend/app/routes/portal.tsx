@@ -82,8 +82,8 @@ export default function PortalRoute({ loaderData }: Route.ComponentProps) {
 
 	if (isAdminRole && !activeWorkspace) {
 		return (
-			<div className="fixed inset-0 bg-background/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-				<div className="bg-card border border-border rounded-2xl shadow-xl w-[440px] max-w-full p-6 flex flex-col gap-6 select-none animate-in zoom-in-95 duration-200">
+			<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-4">
+				<div className="flex w-[440px] max-w-full flex-col gap-6 rounded-xl border border-border bg-card p-6 shadow-lg">
 					<div className="text-center flex flex-col gap-2">
 						<h2 className="text-lg font-semibold text-foreground leading-tight">Welcome, {user.name}</h2>
 						<p className="text-xs text-muted-foreground leading-relaxed">
@@ -94,9 +94,9 @@ export default function PortalRoute({ loaderData }: Route.ComponentProps) {
 					<div className="flex flex-col gap-3">
 						<button
 							onClick={() => handleSelectWorkspace("student")}
-							className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:bg-muted/50 hover:border-emerald-500/30 transition-all text-left group cursor-pointer"
+							className="group flex w-full cursor-pointer items-center gap-4 rounded-lg border border-border p-4 text-left hover:bg-muted/50 hover:border-emerald-500/30"
 						>
-							<div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
+							<div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-500/20">
 								<User className="w-5 h-5" />
 							</div>
 							<div className="flex-1">
@@ -111,9 +111,9 @@ export default function PortalRoute({ loaderData }: Route.ComponentProps) {
 
 						<button
 							onClick={() => handleSelectWorkspace("admin")}
-							className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:bg-muted/50 hover:border-primary/30 transition-all text-left group cursor-pointer"
+							className="group flex w-full cursor-pointer items-center gap-4 rounded-lg border border-border p-4 text-left hover:bg-muted/50 hover:border-primary/30"
 						>
-							<div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+							<div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary group-hover:bg-primary/20">
 								<Shield className="w-5 h-5" />
 							</div>
 							<div className="flex-1">

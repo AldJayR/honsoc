@@ -1,8 +1,9 @@
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, CartesianGrid } from "recharts";
 import type { RepresentativeApplication, AuditLogEntry } from "@/shared/services/representative.api";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
+import { MetricCard } from "./MetricCard";
 
 interface DashboardProps {
 	applications: RepresentativeApplication[];
@@ -15,13 +16,11 @@ export function Dashboard({
 	auditLogs,
 	onViewApplication,
 }: DashboardProps) {
-	// 1. Calculate stats from applications
 	const totalApplicants = applications.length;
 	const pendingCount = applications.filter((app) => app.status === "SUBMITTED" || app.status === "UNDER_REVIEW").length;
 	const verifiedCount = applications.filter((app) => app.status === "VERIFIED").length;
 	const flaggedCount = applications.filter((app) => app.status === "FLAGGED").length;
 
-	// 2. Breakdown counts
 	const underReviewCount = applications.filter((app) => app.status === "UNDER_REVIEW").length;
 
 	// Donut chart config and data
@@ -54,13 +53,20 @@ export function Dashboard({
 		},
 	} satisfies ChartConfig;
 
-	// Bar chart config and data
-	const barData = [
-		{ label: "BSBA", verified: Math.min(verifiedCount, 12), pending: Math.min(pendingCount, 8) },
-		{ label: "BSIT", verified: Math.min(verifiedCount, 10), pending: Math.min(pendingCount, 6) },
-		{ label: "BSHM", verified: Math.min(verifiedCount, 4), pending: Math.min(pendingCount, 5) },
-		{ label: "BSTM", verified: Math.min(verifiedCount, 6), pending: Math.min(pendingCount, 4) },
-	];
+	const programCounts = applications.reduce<Map<string, { verified: number; pending: number }>>(
+		(counts, app) => {
+			const current = counts.get(app.program) ?? { verified: 0, pending: 0 };
+			if (app.status === "VERIFIED") current.verified += 1;
+			if (app.status === "SUBMITTED" || app.status === "UNDER_REVIEW") current.pending += 1;
+			counts.set(app.program, current);
+			return counts;
+		},
+		new Map(),
+	);
+	const barData = [...programCounts.entries()]
+		.sort(([a], [b]) => a.localeCompare(b))
+		.slice(0, 6)
+		.map(([label, counts]) => ({ label, ...counts }));
 
 	const barConfig = {
 		verified: {
@@ -73,7 +79,6 @@ export function Dashboard({
 		},
 	} satisfies ChartConfig;
 
-	// 3. Recent activity list from audit logs
 	const recentActivities = auditLogs.slice(0, 5);
 
 	const formatTimeAgo = (dateStr: string) => {
@@ -88,37 +93,28 @@ export function Dashboard({
 	};
 
 	return (
-		<div className="w-full flex flex-col gap-8 select-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+		<div className="flex w-full flex-col gap-8">
 			{/* Page Title */}
 			<div>
 				<h1 className="text-2xl font-semibold text-foreground leading-[35px]">Dashboard</h1>
 			</div>
 
 			{/* Stat Cards */}
-			<div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+			<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
 				{[
 					{ label: "Total Applicants", value: totalApplicants },
 					{ label: "Pending Review", value: pendingCount },
 					{ label: "Verified", value: verifiedCount },
 					{ label: "Flagged", value: flaggedCount },
-				].map((card, i) => (
-					<Card key={i} className="shadow-sm">
-						<CardHeader className="pb-2">
-							<CardDescription className="text-sm font-semibold text-muted-foreground">
-								{card.label}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="pb-4">
-							<p className="text-4xl font-bold text-foreground tracking-tight">{card.value}</p>
-						</CardContent>
-					</Card>
+				].map((card) => (
+					<MetricCard key={card.label} label={card.label} value={card.value} />
 				))}
 			</div>
 
 			{/* Breakdown and Insights row */}
-			<div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+			<div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12">
 				{/* Circular Application Breakdown */}
-				<Card className="lg:col-span-5 shadow-sm h-[290px] flex flex-col">
+				<Card className="flex h-[290px] flex-col lg:col-span-5">
 					<CardHeader className="pb-0">
 						<CardTitle className="text-base font-semibold text-foreground">Application Breakdown</CardTitle>
 					</CardHeader>
@@ -170,7 +166,7 @@ export function Dashboard({
 				</Card>
 
 				{/* Column Chart Insights */}
-				<Card className="lg:col-span-7 shadow-sm h-[290px] flex flex-col">
+				<Card className="flex h-[290px] flex-col lg:col-span-7">
 					<CardHeader className="pb-0">
 						<CardTitle className="text-base font-semibold text-foreground">Application Insights</CardTitle>
 					</CardHeader>
@@ -188,8 +184,8 @@ export function Dashboard({
 										tick={{ fill: "var(--muted-foreground)" }}
 									/>
 									<ChartTooltip content={<ChartTooltipContent />} />
-									<Bar dataKey="verified" fill="var(--color-verified)" radius={[4, 4, 0, 0]} maxBarSize={28} />
-									<Bar dataKey="pending" fill="var(--color-pending)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+									<Bar dataKey="verified" fill="var(--color-verified)" radius={[2, 2, 0, 0]} maxBarSize={28} />
+									<Bar dataKey="pending" fill="var(--color-pending)" radius={[2, 2, 0, 0]} maxBarSize={28} />
 								</BarChart>
 							</ChartContainer>
 						</div>
@@ -208,7 +204,7 @@ export function Dashboard({
 			</div>
 
 			{/* Recent Activity Card */}
-			<Card className="shadow-sm">
+			<Card>
 				<CardHeader>
 					<CardTitle className="text-base font-semibold text-foreground">Recent Activity</CardTitle>
 				</CardHeader>

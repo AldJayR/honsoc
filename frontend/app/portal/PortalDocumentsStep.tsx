@@ -1,5 +1,3 @@
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
 	FileUpload,
 	FileUploadItem,
@@ -8,6 +6,7 @@ import {
 	FileUploadTrigger,
 } from "@/components/ui/file-upload";
 import { computeSchoolYearOffset } from "@/lib/format";
+import { StepNavigation } from "@/portal/StepNavigation";
 
 interface DocType {
 	COR?: File;
@@ -72,14 +71,14 @@ export function PortalDocumentsStep({
 		(selectedSemesters.secondSem && !files.COG_2ND);
 
 	const cardClass = (has: boolean) =>
-		`rounded-2xl p-4 flex flex-col items-start gap-2 w-full text-left transition-all duration-200 ${
+		`flex w-full flex-col items-start gap-2 rounded-lg border p-4 text-left ${
 			has
-				? "bg-green-500/10 border border-green-500 shadow-sm"
-				: "border-2 border-dashed border-border hover:border-muted-foreground"
+				? "border-green-500 bg-green-500/10"
+				: "border-dashed border-border hover:border-muted-foreground"
 		}`;
 
 	return (
-		<div className="flex flex-col items-start w-full gap-6 animate-fade-in">
+		<div className="flex w-full flex-col items-start gap-6">
 			<p className="select-none type-body-small text-muted-foreground">
 				Upload sealed scans for each required document. All uploads must be
 				clearly legible – blurry or cropped scans will be flagged during admin
@@ -281,25 +280,13 @@ export function PortalDocumentsStep({
 			</div>
 
 			{/* Navigation Buttons */}
-			<div className="flex items-center justify-end w-full gap-3 mt-4 select-none">
-				<Button
-					type="button"
-					variant="outline"
-					onClick={onBack}
-					disabled={isPending}
-				>
-					<ArrowLeft />
-					Back
-				</Button>
-				<Button
-					type="button"
-					onClick={onSubmit}
-					disabled={isSubmitDisabled || isPending}
-				>
-					{isPending ? "Submitting..." : "Submit Application"}
-					<ArrowRight />
-				</Button>
-			</div>
+			<StepNavigation
+				onBack={onBack}
+				onContinue={onSubmit}
+				continueLabel={isPending ? "Submitting..." : "Submit Application"}
+				disabled={isSubmitDisabled}
+				isPending={isPending}
+			/>
 		</div>
 	);
 }

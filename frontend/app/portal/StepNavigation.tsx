@@ -17,7 +17,7 @@ export function StepNavigation({
 	isPending,
 }: StepNavigationProps) {
 	return (
-		<div className="flex items-center justify-end w-full gap-3 mt-4 select-none">
+		<div className="mt-6 flex w-full items-center justify-end gap-3">
 			<Button
 				type="button"
 				variant="outline"

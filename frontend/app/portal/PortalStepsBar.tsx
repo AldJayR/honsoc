@@ -20,7 +20,7 @@ export function PortalStepsBar({ currentStep }: PortalStepsBarProps) {
 			key={currentStep}
 			value={STEP_VALUES[currentStep - 1]}
 			nonInteractive
-			className="w-full flex items-center justify-between gap-2 px-4 py-2 select-none"
+			className="flex w-full items-center justify-between gap-2 px-1 py-2 sm:px-4"
 		>
 			<StepperList className="flex flex-row items-center w-full gap-0">
 				{STEP_VALUES.map((value, idx) => {
@@ -41,7 +41,7 @@ export function PortalStepsBar({ currentStep }: PortalStepsBarProps) {
 										isCompleted
 											? "bg-primary text-white"
 											: isActive
-												? "bg-primary text-white shadow-sm ring-2 ring-primary/50 scale-105"
+												? "bg-primary text-white"
 												: "bg-muted-foreground/20 text-muted-foreground"
 									}`}
 								>
