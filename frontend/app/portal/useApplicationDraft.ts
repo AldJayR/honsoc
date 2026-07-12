@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { DraftData } from "~/shared/services/auth.api";
-import { deleteDraft, saveDraft } from "~/shared/services/auth.api";
-import { queryClient } from "~/lib/query";
+import type { DraftData } from "@/shared/services/auth.api";
+import { deleteDraft, saveDraft } from "@/shared/services/auth.api";
+import { queryClient } from "@/lib/query";
 
 const DEBOUNCE_MS = 2000;
 
@@ -71,3 +71,4 @@ export function useApplicationDraft(
 		clearDraft,
 	};
 }
+

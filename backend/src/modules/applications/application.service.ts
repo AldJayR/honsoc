@@ -5,7 +5,7 @@ import {
 	terms,
 	users,
 } from "@/db/schema/index.ts";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { UnprocessableError, NotFoundError, ConflictError } from "@/lib/errors.ts";
 import type { CreateApplicationInput } from "@/modules/applications/application.schema.ts";
 import type { GradeInput } from "@/modules/grades/grade.schema.ts";
@@ -42,33 +42,73 @@ export async function updateApplicationStatus(
 		}
 	}
 
-	const [updated] = await db
-		.update(applications)
-		.set({
-			status: newStatus,
-			reviewedBy: newStatus === "VERIFIED" ? actorId : undefined,
-		})
-		.where(eq(applications.id, applicationId))
-		.returning({ id: applications.id, status: applications.status });
+	return db.transaction(async (tx) => {
+		const [updated] = await tx
+			.update(applications)
+			.set({
+				status: newStatus as "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED" | "VERIFIED" | "REJECTED",
+				reviewedBy: newStatus === "VERIFIED" ? actorId : undefined,
+			})
+			.where(eq(applications.id, applicationId))
+			.returning({ id: applications.id, status: applications.status });
 
-	if (!updated) throw new NotFoundError("Application not found");
+		if (!updated) throw new NotFoundError("Application not found");
 
-	const auditAction = newStatus === "VERIFIED" ? "VERIFIED"
-		: newStatus === "FLAGGED" ? "FLAGGED"
-		: newStatus === "REJECTED" ? "REJECTED"
-		: "REVIEWED";
-	await logAction(actorId, applicationId, auditAction);
+		const auditAction = newStatus === "VERIFIED" ? "VERIFIED"
+			: newStatus === "FLAGGED" ? "FLAGGED"
+			: newStatus === "REJECTED" ? "REJECTED"
+			: "REVIEWED";
+		await logAction(actorId, applicationId, auditAction, null, tx);
 
-	return updated;
+		return updated;
+	});
 }
 
 export async function getAllApplications(role: string) {
-	return db.query.applications.findMany({
+	const apps = await db.query.applications.findMany({
 		with: {
 			student: { columns: { id: true, name: true, student_number: true } },
 			term: { columns: { id: true, schoolYear: true, semester: true } },
 		},
 		orderBy: (a, { desc }) => [desc(a.submittedAt)],
+	});
+
+	if (apps.length === 0) return [];
+
+	const appIds = apps.map((a) => a.id);
+	const allGrades = await db
+		.select()
+		.from(grades)
+		.where(inArray(grades.applicationId, appIds));
+
+	const gradesByApp = allGrades.reduce((acc, g) => {
+		const appId = g.applicationId;
+		if (!appId) return acc;
+		let list = acc[appId];
+		if (!list) {
+			list = [];
+			acc[appId] = list;
+		}
+		list.push(g);
+		return acc;
+	}, {} as Record<string, typeof allGrades>);
+
+	return apps.map((app) => {
+		const rows = gradesByApp[app.id] || [];
+		const numericGrades = rows.filter((g) => /^[0-9.]+$/.test(g.grade));
+		let gwa: number | null = null;
+		if (numericGrades.length > 0) {
+			const totalWeighted = numericGrades.reduce(
+				(sum, g) => sum + Number.parseFloat(g.grade) * g.units,
+				0,
+			);
+			const totalUnits = numericGrades.reduce((sum, g) => sum + g.units, 0);
+			gwa = Math.round((totalWeighted / totalUnits) * 100) / 100;
+		}
+		return {
+			...app,
+			gwa,
+		};
 	});
 }
 
@@ -197,27 +237,53 @@ export async function createApplication(
 export async function getStudentApplications(studentId: string) {
 	const apps = await db.query.applications.findMany({
 		where: eq(applications.studentId, studentId),
-	 orderBy: (a, { desc }) => [desc(a.submittedAt)],
+		orderBy: (a, { desc }) => [desc(a.submittedAt)],
 	});
 
-		const results = await Promise.all(
-		apps.map(async (app) => {
-			const gwa = await computeGWA(app.id);
-			return {
-				id: app.id,
-				semester: app.semester,
-				yearLevel: app.yearLevel,
-				program: app.program,
-				majorId: app.majorId,
-				status: app.status,
-				referenceNo: app.referenceNo,
-				gwa,
-				submittedAt: app.submittedAt,
-			};
-		}),
-	);
+	if (apps.length === 0) return [];
 
-	return results;
+	const appIds = apps.map((a) => a.id);
+	const allGrades = await db
+		.select()
+		.from(grades)
+		.where(inArray(grades.applicationId, appIds));
+
+	const gradesByApp = allGrades.reduce((acc, g) => {
+		const appId = g.applicationId;
+		if (!appId) return acc;
+		let list = acc[appId];
+		if (!list) {
+			list = [];
+			acc[appId] = list;
+		}
+		list.push(g);
+		return acc;
+	}, {} as Record<string, typeof allGrades>);
+
+	return apps.map((app) => {
+		const rows = gradesByApp[app.id] || [];
+		const numericGrades = rows.filter((g) => /^[0-9.]+$/.test(g.grade));
+		let gwa: number | null = null;
+		if (numericGrades.length > 0) {
+			const totalWeighted = numericGrades.reduce(
+				(sum, g) => sum + Number.parseFloat(g.grade) * g.units,
+				0,
+			);
+			const totalUnits = numericGrades.reduce((sum, g) => sum + g.units, 0);
+			gwa = Math.round((totalWeighted / totalUnits) * 100) / 100;
+		}
+		return {
+			id: app.id,
+			semester: app.semester,
+			yearLevel: app.yearLevel,
+			program: app.program,
+			majorId: app.majorId,
+			status: app.status,
+			referenceNo: app.referenceNo,
+			gwa,
+			submittedAt: app.submittedAt,
+		};
+	});
 }
 
 export async function getApplicationById(

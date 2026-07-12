@@ -1,16 +1,16 @@
 import { AlertTriangle, Info, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "~/components/ui/select";
+} from "@/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -18,14 +18,14 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "~/components/ui/table";
-import { StepNavigation } from "~/portal/components/StepNavigation";
-import type { GradeInput } from "~/shared/services/auth.api";
+} from "@/components/ui/table";
+import { StepNavigation } from "@/portal/StepNavigation";
+import type { GradeInput } from "@/shared/services/auth.api";
 import {
 	calculateGWA,
 	hasDisqualifyingGrade,
 	isDisqualifiedByGWA,
-} from "~/shared/lib/grades";
+} from "@/shared/lib/grades";
 
 interface PortalGradesStepProps {
 	selectedSemesters: {
@@ -315,3 +315,5 @@ export function PortalGradesStep({
 		</div>
 	);
 }
+
+

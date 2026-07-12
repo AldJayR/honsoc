@@ -1,8 +1,8 @@
 import { AlertTriangle, Award, Check, Clock, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { ApplicationStatusItem } from "~/shared/services/auth.api";
-import { formatDate, formatTime } from "~/lib/format";
+import type { ApplicationStatusItem } from "@/shared/services/auth.api";
+import { formatDate, formatTime } from "@/lib/format";
 
 type ApplicationStatus = ApplicationStatusItem["status"];
 type StepName = "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED_VERIFIED" | "HONOR_ROLL";
@@ -335,3 +335,4 @@ export function PortalStatusStep({
 		</div>
 	);
 }
+

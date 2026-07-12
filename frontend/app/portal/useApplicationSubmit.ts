@@ -1,19 +1,19 @@
 import { useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { queryClient } from "~/lib/query";
-import type { ProfileFormValues } from "~/shared/lib/schemas/portal";
+import { queryClient } from "@/lib/query";
+import type { ProfileFormValues } from "@/shared/lib/schemas/portal";
 import type {
 	ApplicationResponseItem,
 	ApplicationStatusItem,
 	GradeInput,
-} from "~/shared/services/auth.api";
+} from "@/shared/services/auth.api";
 import {
 	getMyApplications,
 	linkDocument,
 	presignDocument,
 	submitApplication,
 	uploadToR2,
-} from "~/shared/services/auth.api";
+} from "@/shared/services/auth.api";
 
 type DocType = "COR" | "COG_1ST" | "COG_2ND" | "GMC";
 
@@ -174,3 +174,4 @@ export function useApplicationSubmit({
 
 	return { submit, isSubmitting: isPending, statusText };
 }
+

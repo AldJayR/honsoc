@@ -115,6 +115,27 @@ async function main() {
 		.onConflictDoNothing();
 	console.log("  Inserted active term");
 
+	console.log("Fetching Sumacab Campus and CICT Department references...");
+	const sumacab = (
+		await db
+			.select()
+			.from(campus)
+			.where(eq(campus.name, "Sumacab Campus"))
+			.limit(1)
+	)[0];
+
+	const cict = (
+		await db
+			.select()
+			.from(departments)
+			.where(eq(departments.code, "CICT"))
+			.limit(1)
+	)[0];
+
+	if (!sumacab || !cict) {
+		throw new Error("Could not find Sumacab Campus or CICT department after seeding");
+	}
+
 	const seedUsers = [
 		{
 			name: "Verified User",
@@ -122,6 +143,9 @@ async function main() {
 			first_name: "Verified",
 			last_name: "User",
 			student_number: "SUM2023-00123",
+			role: "STUDENT",
+			campus_id: null as number | null,
+			department_id: null as number | null,
 		},
 		{
 			name: "Alice Santos",
@@ -129,6 +153,9 @@ async function main() {
 			first_name: "Alice",
 			last_name: "Santos",
 			student_number: "SUM2023-00124",
+			role: "STUDENT",
+			campus_id: null as number | null,
+			department_id: null as number | null,
 		},
 		{
 			name: "Bob Reyes",
@@ -136,6 +163,9 @@ async function main() {
 			first_name: "Bob",
 			last_name: "Reyes",
 			student_number: "SUM2023-00125",
+			role: "STUDENT",
+			campus_id: null as number | null,
+			department_id: null as number | null,
 		},
 		{
 			name: "Carla Gomez",
@@ -143,6 +173,19 @@ async function main() {
 			first_name: "Carla",
 			last_name: "Gomez",
 			student_number: "SUM2023-00126",
+			role: "STUDENT",
+			campus_id: null as number | null,
+			department_id: null as number | null,
+		},
+		{
+			name: "College Representative",
+			email: "rep@example.com",
+			first_name: "College",
+			last_name: "Representative",
+			student_number: null,
+			role: "COLLEGE_ADMIN",
+			campus_id: sumacab.id,
+			department_id: cict.id,
 		},
 	];
 
@@ -164,18 +207,25 @@ async function main() {
 				.values({
 					...user,
 					emailVerified: true,
-					role: "STUDENT",
 					status: "ACTIVE",
 				})
 				.returning();
 			existingUser = results[0];
-		} else if (existingUser.student_number !== user.student_number) {
+		} else {
 			await db
 				.update(users)
-				.set({ student_number: user.student_number })
+				.set({
+					student_number: user.student_number,
+					role: user.role,
+					campus_id: user.campus_id,
+					department_id: user.department_id,
+				})
 				.where(eq(users.id, existingUser.id));
 			existingUser.student_number = user.student_number;
-			console.log(`  Updated student number for ${user.email}`);
+			existingUser.role = user.role;
+			existingUser.campus_id = user.campus_id;
+			existingUser.department_id = user.department_id;
+			console.log(`  Synchronized details for ${user.email}`);
 		}
 
 		if (!existingUser) {
@@ -197,9 +247,9 @@ async function main() {
 				userId: existingUser.id,
 				password: passwordHash,
 			});
-			console.log(`  Inserted user: ${user.email}`);
+			console.log(`  Inserted account: ${user.email}`);
 		} else {
-			console.log(`  User already exists: ${user.email}`);
+			console.log(`  User account already exists: ${user.email}`);
 		}
 	}
 

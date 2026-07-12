@@ -1,13 +1,13 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
 	FileUpload,
 	FileUploadItem,
 	FileUploadItemMetadata,
 	FileUploadList,
 	FileUploadTrigger,
-} from "~/components/ui/file-upload";
-import { computeSchoolYearOffset } from "~/lib/format";
+} from "@/components/ui/file-upload";
+import { computeSchoolYearOffset } from "@/lib/format";
 
 interface DocType {
 	COR?: File;
@@ -303,3 +303,4 @@ export function PortalDocumentsStep({
 		</div>
 	);
 }
+

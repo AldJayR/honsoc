@@ -1,5 +1,5 @@
-import type { UserProfile } from "~/shared/services/auth.api";
-import { getInitials } from "~/lib/format";
+import type { UserProfile } from "@/shared/services/auth.api";
+import { getInitials } from "@/lib/format";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -8,15 +8,16 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { LogOut } from "lucide-react";
-import { signOut } from "~/shared/services/auth.api";
+} from "@/components/ui/dropdown-menu";
+import { LogOut, Shield } from "lucide-react";
+import { signOut } from "@/shared/services/auth.api";
 
 interface PortalHeaderProps {
 	user: UserProfile;
+	onSwitchToAdmin?: () => void;
 }
 
-export function PortalHeader({ user }: PortalHeaderProps) {
+export function PortalHeader({ user, onSwitchToAdmin }: PortalHeaderProps) {
 	const initials = getInitials(user.name);
 
 	const handleLogout = async () => {
@@ -66,6 +67,15 @@ export function PortalHeader({ user }: PortalHeaderProps) {
 						<DropdownMenuLabel className="font-normal text-xs text-muted-foreground">
 							Student Account
 						</DropdownMenuLabel>
+						{onSwitchToAdmin && (
+							<DropdownMenuItem
+								onClick={onSwitchToAdmin}
+								className="cursor-pointer"
+							>
+								<Shield className="size-4 mr-2" />
+								Admin Dashboard
+							</DropdownMenuItem>
+						)}
 					</DropdownMenuGroup>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
@@ -80,3 +90,4 @@ export function PortalHeader({ user }: PortalHeaderProps) {
 		</div>
 	);
 }
+

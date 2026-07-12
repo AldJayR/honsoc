@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "~/shared/lib/constants";
+import { API_BASE_URL } from "@/shared/lib/constants";
 
 interface RequestOptions {
 	method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -23,4 +23,30 @@ export async function apiClientRaw(
 		body: body !== undefined ? JSON.stringify(body) : undefined,
 		credentials: "include",
 	});
+}
+
+export async function apiClient<T>(
+	path: string,
+	options: RequestOptions = {},
+	defaultErrorMessage = "An unexpected error occurred",
+): Promise<T> {
+	const response = await apiClientRaw(path, options);
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(
+			errorData.message || errorData.error || defaultErrorMessage,
+		);
+	}
+
+	const text = await response.text();
+	if (!text) {
+		return undefined as T;
+	}
+
+	try {
+		return JSON.parse(text) as T;
+	} catch (e) {
+		return text as unknown as T;
+	}
 }

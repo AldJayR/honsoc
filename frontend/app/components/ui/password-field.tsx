@@ -1,8 +1,8 @@
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import type { UseFormRegisterReturn } from "react-hook-form";
-import { Field, FieldError, FieldLabel } from "~/components/ui/field";
-import { Input } from "~/components/ui/input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 interface PasswordFieldProps {
 	id: string;
@@ -52,7 +52,7 @@ export function PasswordField({
 				</button>
 			</div>
 			{error ? (
-				<FieldError className="type-caption">{error}</FieldError>
+				<FieldError className="type-caption mt-0.5">{error}</FieldError>
 			) : null}
 		</Field>
 	);

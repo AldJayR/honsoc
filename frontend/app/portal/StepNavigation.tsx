@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 
 interface StepNavigationProps {
 	onBack: () => void;
@@ -38,3 +38,4 @@ export function StepNavigation({
 		</div>
 	);
 }
+

@@ -18,7 +18,7 @@ export async function applicationRoutes(fastify: FastifyInstance) {
 	fastify.post(
 		"/api/applications",
 		{
-			preHandler: requireRole("STUDENT"),
+			preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "OFFICER", "PRESIDENT"),
 			schema: {
 				summary: "Submit an application",
 				description: "Submit a single-semester or both-semester application. 'Both' splits into two independent records.",
@@ -59,7 +59,7 @@ export async function applicationRoutes(fastify: FastifyInstance) {
 	fastify.get(
 		"/api/applications/mine",
 		{
-			preHandler: requireRole("STUDENT"),
+			preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "OFFICER", "PRESIDENT"),
 			schema: {
 				summary: "Get my applications",
 				tags: ["Applications"],
@@ -174,6 +174,9 @@ export async function applicationRoutes(fastify: FastifyInstance) {
 										properties: {
 											id: { type: "string" },
 											semester: { type: "string" },
+											yearLevel: { type: "string" },
+											program: { type: "string" },
+											gwa: { type: ["number", "null"] },
 											status: { type: "string" },
 											referenceNo: { type: "string" },
 											submittedAt: { type: "string", format: "date-time" },

@@ -24,29 +24,31 @@ export async function createFlag(
 ) {
 	await verifyApplicationAccess(applicationId, flaggedBy, "COLLEGE_ADMIN");
 
-	const [flag] = await db
-		.insert(flags)
-		.values({
+	return db.transaction(async (tx) => {
+		const [flag] = await tx
+			.insert(flags)
+			.values({
+				applicationId,
+				reasonCode: input.reasonCode,
+				note: input.note,
+				flaggedBy,
+			})
+			.returning();
+
+		await tx
+			.update(applications)
+			.set({ status: "FLAGGED" })
+			.where(eq(applications.id, applicationId));
+
+		await tx.insert(auditLog).values({
+			actorId: flaggedBy,
 			applicationId,
-			reasonCode: input.reasonCode,
-			note: input.note,
-			flaggedBy,
-		})
-		.returning();
+			action: "FLAGGED",
+			note: `${input.reasonCode}: ${input.note}`,
+		});
 
-	await db
-		.update(applications)
-		.set({ status: "FLAGGED" })
-		.where(eq(applications.id, applicationId));
-
-	await db.insert(auditLog).values({
-		actorId: flaggedBy,
-		applicationId,
-		action: "FLAGGED",
-		note: `${input.reasonCode}: ${input.note}`,
+		return flag;
 	});
-
-	return flag;
 }
 
 export async function getFlags(

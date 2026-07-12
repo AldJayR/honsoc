@@ -12,7 +12,7 @@ export async function draftRoutes(fastify: FastifyInstance) {
 	fastify.get(
 		"/api/applications/draft",
 		{
-			preHandler: requireRole("STUDENT"),
+			preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "OFFICER", "PRESIDENT"),
 			schema: {
 				summary: "Get my application draft",
 				description:
@@ -71,7 +71,7 @@ export async function draftRoutes(fastify: FastifyInstance) {
 	fastify.put(
 		"/api/applications/draft",
 		{
-			preHandler: requireRole("STUDENT"),
+			preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "OFFICER", "PRESIDENT"),
 			schema: {
 				summary: "Save my application draft",
 				description:
@@ -109,7 +109,7 @@ export async function draftRoutes(fastify: FastifyInstance) {
 	fastify.delete(
 		"/api/applications/draft",
 		{
-			preHandler: requireRole("STUDENT"),
+			preHandler: requireRole("STUDENT", "COLLEGE_ADMIN", "OFFICER", "PRESIDENT"),
 			schema: {
 				summary: "Delete my application draft",
 				description:

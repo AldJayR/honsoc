@@ -5,7 +5,7 @@ import {
 	StepperList,
 	StepperTitle,
 	StepperTrigger,
-} from "~/components/ui/stepper";
+} from "@/components/ui/stepper";
 
 const STEP_VALUES = ["profile", "semesters", "grades", "documents", "status"];
 const STEP_LABELS = ["Profile", "Semesters", "Grades", "Documents", "Status"];
@@ -75,3 +75,4 @@ export function PortalStepsBar({ currentStep }: PortalStepsBarProps) {
 		</Stepper>
 	);
 }
+

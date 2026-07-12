@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
-import { StepNavigation } from "~/portal/components/StepNavigation";
-import { formatSchoolYear } from "~/lib/format";
+import { StepNavigation } from "@/portal/StepNavigation";
+import { formatSchoolYear } from "@/lib/format";
 
 interface PortalSemestersStepProps {
 	selectedSemesters: {
@@ -125,3 +125,5 @@ export function PortalSemestersStep({
 		</div>
 	);
 }
+
+

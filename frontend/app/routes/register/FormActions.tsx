@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router";
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 
 interface FormActionsProps {
 	to?: string;
@@ -14,7 +14,6 @@ export function FormActions({
 	isPending = false,
 }: FormActionsProps) {
 	return (
-		// biome-ignore lint/a11y/useSemanticElements: <fieldset> requires <legend> and is for form controls, not navigation
 		<div
 			role="group"
 			aria-label="Form navigation"

@@ -10,11 +10,11 @@ import {
 	ScrollRestoration,
 	useNavigation,
 } from "react-router";
-import { queryClient } from "~/lib/query";
+import { queryClient } from "@/lib/query";
 import type { Route } from "./+types/root";
 import "./app.css";
-import { ThemeProvider } from "~/components/ThemeProvider";
-import { Toaster } from "~/components/ui/sonner";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const links: Route.LinksFunction = () => [
 	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -116,3 +116,4 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 		</main>
 	);
 }
+

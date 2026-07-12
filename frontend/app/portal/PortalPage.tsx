@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { PortalDocumentsStep } from "~/portal/components/PortalDocumentsStep";
-import { PortalGradesStep } from "~/portal/components/PortalGradesStep";
-import { PortalHeader } from "~/portal/components/PortalHeader";
-import { PortalProfileStep } from "~/portal/components/PortalProfileStep";
-import { PortalSemestersStep } from "~/portal/components/PortalSemestersStep";
-import { PortalStatusStep } from "~/portal/components/PortalStatusStep";
-import { PortalStepsBar } from "~/portal/components/PortalStepsBar";
-import { useApplicationDraft } from "~/portal/hooks/useApplicationDraft";
-import { useApplicationSubmit } from "~/portal/hooks/useApplicationSubmit";
-import { LoadingFallback } from "~/shared/components/LoadingFallback";
-import type { ProfileFormValues } from "~/shared/lib/schemas/portal";
+import { PortalDocumentsStep } from "@/portal/PortalDocumentsStep";
+import { PortalGradesStep } from "@/portal/PortalGradesStep";
+import { PortalHeader } from "@/portal/PortalHeader";
+import { PortalProfileStep } from "@/portal/PortalProfileStep";
+import { PortalSemestersStep } from "@/portal/PortalSemestersStep";
+import { PortalStatusStep } from "@/portal/PortalStatusStep";
+import { PortalStepsBar } from "@/portal/PortalStepsBar";
+import { useApplicationDraft } from "@/portal/useApplicationDraft";
+import { useApplicationSubmit } from "@/portal/useApplicationSubmit";
+import { LoadingFallback } from "@/shared/components/LoadingFallback";
+import type { ProfileFormValues } from "@/shared/lib/schemas/portal";
 import type {
 	ApplicationStatusItem,
 	Campus,
@@ -20,7 +20,7 @@ import type {
 	Major,
 	Term,
 	UserProfile,
-} from "~/shared/services/auth.api";
+} from "@/shared/services/auth.api";
 
 interface PortalPageProps {
 	user: UserProfile;
@@ -30,6 +30,7 @@ interface PortalPageProps {
 	departments: Department[];
 	majors: Major[];
 	draft: DraftData | null;
+	onSwitchToAdmin?: () => void;
 }
 
 export function PortalPage({
@@ -40,6 +41,7 @@ export function PortalPage({
 	departments,
 	majors,
 	draft: initialDraft,
+	onSwitchToAdmin,
 }: PortalPageProps) {
 	const schoolYear = activeTerm?.schoolYear || "2025 - 2026";
 	const openSemester = activeTerm?.semester || "BOTH";
@@ -192,7 +194,7 @@ export function PortalPage({
 	return (
 		<div className="flex flex-col items-center min-h-screen p-6 bg-background">
 			<div className="w-full max-w-[708px] flex flex-col gap-6 items-center">
-				<PortalHeader user={user} />
+				<PortalHeader user={user} onSwitchToAdmin={onSwitchToAdmin} />
 				<PortalStepsBar currentStep={step} />
 
 				{!hasSubmitted && (
@@ -268,3 +270,5 @@ export function PortalPage({
 		</div>
 	);
 }
+
+

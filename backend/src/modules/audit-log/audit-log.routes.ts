@@ -40,6 +40,15 @@ export async function auditLogRoutes(fastify: FastifyInstance) {
 													id: { type: "string" },
 													referenceNo: { type: "string" },
 													semester: { type: "string" },
+													program: { type: "string" },
+													yearLevel: { type: "string" },
+													student: {
+														type: "object",
+														properties: {
+															name: { type: "string" },
+															student_number: { type: ["string", "null"] },
+														},
+													},
 												},
 											},
 										},

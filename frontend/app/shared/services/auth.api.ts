@@ -1,4 +1,4 @@
-import { apiClientRaw } from "~/shared/services/client";
+import { apiClient, apiClientRaw } from "@/shared/services/client";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -87,17 +87,14 @@ interface SignUpPayload {
 }
 
 export async function signUpEmail(payload: SignUpPayload): Promise<void> {
-	const response = await apiClientRaw("/auth/sign-up/email", {
-		method: "POST",
-		body: payload,
-	});
-
-	if (!response.ok) {
-		const errorData = await response.json().catch(() => ({}));
-		throw new Error(
-			errorData.message || errorData.error || "Failed to create account",
-		);
-	}
+	return apiClient<void>(
+		"/auth/sign-up/email",
+		{
+			method: "POST",
+			body: payload,
+		},
+		"Failed to create account",
+	);
 }
 
 interface SignInPayload {
@@ -108,58 +105,37 @@ interface SignInPayload {
 export async function signInEmail(
 	payload: SignInPayload,
 ): Promise<{ id: string; email: string; name: string; role: string }> {
-	const response = await apiClientRaw("/auth/sign-in/email", {
-		method: "POST",
-		body: payload,
-	});
-
-	if (!response.ok) {
-		const errorData = await response.json().catch(() => ({}));
-		throw new Error(
-			errorData.message || errorData.error || "Invalid email or password",
-		);
-	}
-
-	const data = await response.json();
+	const data = await apiClient<{ user: { id: string; email: string; name: string; role: string } }>(
+		"/auth/sign-in/email",
+		{
+			method: "POST",
+			body: payload,
+		},
+		"Invalid email or password",
+	);
 	return data.user;
 }
 
 export async function signOut(): Promise<void> {
-	const response = await apiClientRaw("/auth/sign-out", {
-		method: "POST",
-	});
-
-	if (!response.ok) {
-		throw new Error("Failed to sign out");
-	}
+	return apiClient<void>("/auth/sign-out", { method: "POST" }, "Failed to sign out");
 }
 
 // ─── Portal Functions ────────────────────────────────────────────────────────
 
 export async function getMe(): Promise<UserProfile> {
-	const response = await apiClientRaw("/me");
-	if (!response.ok) {
-		throw new Error("Unauthorized");
-	}
-	return response.json();
+	return apiClient<UserProfile>("/me", {}, "Unauthorized");
 }
 
 export async function getCampuses(): Promise<Campus[]> {
-	const response = await apiClientRaw("/campus");
-	if (!response.ok) throw new Error("Failed to fetch campuses");
-	return response.json();
+	return apiClient<Campus[]>("/campus", {}, "Failed to fetch campuses");
 }
 
 export async function getDepartments(): Promise<Department[]> {
-	const response = await apiClientRaw("/departments");
-	if (!response.ok) throw new Error("Failed to fetch departments");
-	return response.json();
+	return apiClient<Department[]>("/departments", {}, "Failed to fetch departments");
 }
 
 export async function getMajors(): Promise<Major[]> {
-	const response = await apiClientRaw("/majors");
-	if (!response.ok) throw new Error("Failed to fetch majors");
-	return response.json();
+	return apiClient<Major[]>("/majors", {}, "Failed to fetch majors");
 }
 
 export async function getActiveTerm(): Promise<Term | null> {
@@ -174,23 +150,24 @@ export async function getActiveTerm(): Promise<Term | null> {
 export async function submitApplication(
 	payload: ApplicationPayload,
 ): Promise<ApplicationResponseItem[]> {
-	const response = await apiClientRaw("/applications", {
-		method: "POST",
-		body: payload,
-	});
-	if (!response.ok) {
-		const err = await response.json().catch(() => ({}));
-		throw new Error(err.error || "Failed to submit application");
-	}
-	return response.json();
+	return apiClient<ApplicationResponseItem[]>(
+		"/applications",
+		{
+			method: "POST",
+			body: payload,
+		},
+		"Failed to submit application",
+	);
 }
 
 export async function getMyApplications(): Promise<{
 	applications: ApplicationStatusItem[];
 }> {
-	const response = await apiClientRaw("/applications/mine");
-	if (!response.ok) throw new Error("Failed to fetch applications");
-	return response.json();
+	return apiClient<{ applications: ApplicationStatusItem[] }>(
+		"/applications/mine",
+		{},
+		"Failed to fetch applications",
+	);
 }
 
 export async function presignDocument(payload: {
@@ -198,15 +175,14 @@ export async function presignDocument(payload: {
 	docType: "COR" | "COG_1ST" | "COG_2ND" | "GMC";
 	fileName: string;
 }): Promise<{ url: string; objectKey: string }> {
-	const response = await apiClientRaw("/documents/presign", {
-		method: "POST",
-		body: payload,
-	});
-	if (!response.ok) {
-		const err = await response.json().catch(() => ({}));
-		throw new Error(err.error || "Failed to get upload URL");
-	}
-	return response.json();
+	return apiClient<{ url: string; objectKey: string }>(
+		"/documents/presign",
+		{
+			method: "POST",
+			body: payload,
+		},
+		"Failed to get upload URL",
+	);
 }
 
 export async function linkDocument(payload: {
@@ -215,15 +191,14 @@ export async function linkDocument(payload: {
 	objectKey: string;
 	fileSizeKb?: number;
 }): Promise<{ id: number; docType: string; objectKey: string }> {
-	const response = await apiClientRaw("/documents/link", {
-		method: "POST",
-		body: payload,
-	});
-	if (!response.ok) {
-		const err = await response.json().catch(() => ({}));
-		throw new Error(err.error || "Failed to link document");
-	}
-	return response.json();
+	return apiClient<{ id: number; docType: string; objectKey: string }>(
+		"/documents/link",
+		{
+			method: "POST",
+			body: payload,
+		},
+		"Failed to link document",
+	);
 }
 
 export async function uploadToR2(url: string, file: File): Promise<void> {
@@ -288,23 +263,23 @@ export async function getDraft(): Promise<DraftResponse | null> {
 export async function saveDraft(
 	data: DraftData,
 ): Promise<{ id: string; updatedAt: string }> {
-	const response = await apiClientRaw("/applications/draft", {
-		method: "PUT",
-		body: data,
-	});
-	if (!response.ok) {
-		const err = await response.json().catch(() => ({}));
-		throw new Error(err.error || "Failed to save draft");
-	}
-	return response.json();
+	return apiClient<{ id: string; updatedAt: string }>(
+		"/applications/draft",
+		{
+			method: "PUT",
+			body: data,
+		},
+		"Failed to save draft",
+	);
 }
 
 export async function deleteDraft(): Promise<void> {
-	const response = await apiClientRaw("/applications/draft", {
-		method: "DELETE",
-	});
-	if (!response.ok) {
-		const err = await response.json().catch(() => ({}));
-		throw new Error(err.error || "Failed to delete draft");
-	}
+	return apiClient<void>(
+		"/applications/draft",
+		{
+			method: "DELETE",
+		},
+		"Failed to delete draft",
+	);
 }
+

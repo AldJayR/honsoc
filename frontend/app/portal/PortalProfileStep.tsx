@@ -2,16 +2,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Button } from "~/components/ui/button";
-import { Field, FieldError, FieldLabel } from "~/components/ui/field";
-import { Input } from "~/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "~/components/ui/select";
+} from "@/components/ui/select";
 import {
 	Combobox,
 	ComboboxContent,
@@ -19,15 +19,15 @@ import {
 	ComboboxInput,
 	ComboboxItem,
 	ComboboxList,
-} from "~/components/ui/combobox";
+} from "@/components/ui/combobox";
 import {
 	type ProfileFormValues,
 	getRefinedProfileSchema,
 	programsByDepartment,
-} from "~/shared/lib/schemas/portal";
-import type { Campus, Department, Major } from "~/shared/services/auth.api";
+} from "@/shared/lib/schemas/portal";
+import type { Campus, Department, Major } from "@/shared/services/auth.api";
 
-export type { ProfileFormValues } from "~/shared/lib/schemas/portal";
+export type { ProfileFormValues } from "@/shared/lib/schemas/portal";
 
 interface PortalProfileStepProps {
 	defaultValues: ProfileFormValues;
@@ -316,3 +316,4 @@ export function PortalProfileStep({
 		</form>
 	);
 }
+

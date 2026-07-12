@@ -1,4 +1,4 @@
-import type { GradeInput } from "~/shared/services/auth.api";
+import type { GradeInput } from "@/shared/services/auth.api";
 
 /**
  * Calculates the Grade Weighted Average (GWA) from a list of grades.
@@ -35,3 +35,4 @@ export function hasDisqualifyingGrade(grades: GradeInput[]): boolean {
 export function isDisqualifiedByGWA(gwa: number, threshold: number): boolean {
 	return gwa > 0 && gwa > threshold;
 }
+

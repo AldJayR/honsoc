@@ -1,4 +1,4 @@
-import { STORAGE_KEYS } from "~/shared/lib/constants";
+import { STORAGE_KEYS } from "@/shared/lib/constants";
 
 export function readRegistration(): Record<string, string> {
 	try {
@@ -21,3 +21,4 @@ export function writeRegistration(data: Record<string, unknown>): void {
 		// sessionStorage unavailable or corrupted — silently fail
 	}
 }
+

@@ -1,7 +1,7 @@
 import type { ClientLoaderFunctionArgs } from "react-router";
 import { Outlet, redirect } from "react-router";
-import { RegistrationLayout } from "~/components/RegistrationLayout";
-import { getMe } from "~/shared/services/auth.api";
+import { RegistrationLayout } from "@/components/RegistrationLayout";
+import { getMe } from "@/shared/services/auth.api";
 
 export async function clientLoader({ request }: ClientLoaderFunctionArgs) {
 	const url = new URL(request.url);
@@ -38,3 +38,4 @@ export default function RegistrationLayoutRoute() {
 		</RegistrationLayout>
 	);
 }
+

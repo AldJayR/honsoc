@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { redirect } from "react-router";
-import { PortalPage } from "~/portal/components/PortalPage";
-import { LoadingFallback } from "~/shared/components/LoadingFallback";
+import { PortalPage } from "@/portal/PortalPage";
+import { LoadingFallback } from "@/shared/components/LoadingFallback";
 import {
 	getActiveTerm,
 	getCampuses,
@@ -9,9 +10,11 @@ import {
 	getMajors,
 	getMe,
 	getMyApplications,
-} from "~/shared/services/auth.api";
-import { queryClient } from "~/lib/query";
+} from "@/shared/services/auth.api";
+import { queryClient } from "@/lib/query";
 import type { Route } from "./+types/portal";
+import { AdminWorkspace } from "@/admin/AdminWorkspace";
+import { Shield, User } from "lucide-react";
 
 export function meta() {
 	return [
@@ -25,8 +28,9 @@ export function meta() {
 
 export async function clientLoader() {
 	try {
-		const [user, activeTerm, applications, campuses, departments, majors, draftRes] = await Promise.all([
-			queryClient.fetchQuery({ queryKey: ["user"], queryFn: getMe }),
+		const user = await queryClient.fetchQuery({ queryKey: ["user"], queryFn: getMe });
+
+		const [activeTerm, applications, campuses, departments, majors, draftRes] = await Promise.all([
 			queryClient.fetchQuery({ queryKey: ["activeTerm"], queryFn: getActiveTerm }),
 			queryClient.fetchQuery({
 				queryKey: ["applications"],
@@ -61,6 +65,81 @@ export function HydrateFallback() {
 
 export default function PortalRoute({ loaderData }: Route.ComponentProps) {
 	const { user, activeTerm, applications, campuses, departments, majors, draft } = loaderData;
+
+	const [activeWorkspace, setActiveWorkspace] = useState<"student" | "admin" | null>(() => {
+		if (typeof window !== "undefined") {
+			return sessionStorage.getItem("activeWorkspace") as "student" | "admin" | null;
+		}
+		return null;
+	});
+
+	const handleSelectWorkspace = (mode: "student" | "admin") => {
+		setActiveWorkspace(mode);
+		sessionStorage.setItem("activeWorkspace", mode);
+	};
+
+	const isAdminRole = user.role === "COLLEGE_ADMIN" || user.role === "OFFICER" || user.role === "PRESIDENT";
+
+	if (isAdminRole && !activeWorkspace) {
+		return (
+			<div className="fixed inset-0 bg-background/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+				<div className="bg-card border border-border rounded-2xl shadow-xl w-[440px] max-w-full p-6 flex flex-col gap-6 select-none animate-in zoom-in-95 duration-200">
+					<div className="text-center flex flex-col gap-2">
+						<h2 className="text-lg font-semibold text-foreground leading-tight">Welcome, {user.name}</h2>
+						<p className="text-xs text-muted-foreground leading-relaxed">
+							You have administrative privileges. Choose a workspace below to get started:
+						</p>
+					</div>
+
+					<div className="flex flex-col gap-3">
+						<button
+							onClick={() => handleSelectWorkspace("student")}
+							className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:bg-muted/50 hover:border-emerald-500/30 transition-all text-left group cursor-pointer"
+						>
+							<div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
+								<User className="w-5 h-5" />
+							</div>
+							<div className="flex-1">
+								<h3 className="font-semibold text-xs text-foreground group-hover:text-emerald-600 transition-colors">
+									Student Application Portal
+								</h3>
+								<p className="text-[10px] text-muted-foreground mt-0.5 leading-normal">
+									Apply for membership, upload transcripts, and track your active application.
+								</p>
+							</div>
+						</button>
+
+						<button
+							onClick={() => handleSelectWorkspace("admin")}
+							className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:bg-muted/50 hover:border-primary/30 transition-all text-left group cursor-pointer"
+						>
+							<div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+								<Shield className="w-5 h-5" />
+							</div>
+							<div className="flex-1">
+								<h3 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
+									Administrative Dashboard
+								</h3>
+								<p className="text-[10px] text-muted-foreground mt-0.5 leading-normal">
+									Audit student applications, check grades, issue flags, and review audit logs.
+								</p>
+							</div>
+						</button>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	if (isAdminRole && activeWorkspace === "admin") {
+		return (
+			<AdminWorkspace
+				user={user}
+				onSwitchToStudent={() => handleSelectWorkspace("student")}
+			/>
+		);
+	}
+
 	return (
 		<PortalPage
 			user={user}
@@ -70,6 +149,8 @@ export default function PortalRoute({ loaderData }: Route.ComponentProps) {
 			departments={departments}
 			majors={majors}
 			draft={draft}
+			onSwitchToAdmin={() => handleSelectWorkspace("admin")}
 		/>
 	);
 }
+
