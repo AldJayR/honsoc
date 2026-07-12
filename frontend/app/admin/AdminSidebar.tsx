@@ -1,23 +1,39 @@
-import { ChevronDown, LogOut, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarGroupLabel,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import type { UserProfile } from "@/shared/services/auth.api";
 
-export interface AdminSidebarMenuItem {
-	id: string;
+export interface AdminSidebarMenuItem<Tab extends string = string> {
+	id: Tab;
 	label: string;
 	icon: React.ComponentType<{ className?: string }>;
 }
 
-interface AdminSidebarProps {
+interface AdminSidebarProps<Tab extends string> {
 	user: UserProfile;
-	activeTab: string;
-	onTabChange: (tab: any) => void;
+	activeTab: Tab;
+	onTabChange: (tab: Tab) => void;
 	onLogout: () => void;
 	onSwitchToStudent?: () => void;
-	menuItems: readonly AdminSidebarMenuItem[] | AdminSidebarMenuItem[];
-	managementItems?: readonly AdminSidebarMenuItem[] | AdminSidebarMenuItem[];
+	menuItems: readonly AdminSidebarMenuItem<Tab>[];
+	managementItems?: readonly AdminSidebarMenuItem<Tab>[];
 }
 
 const getInitials = (name: string) => {
@@ -42,7 +58,44 @@ const getRoleLabel = (role: string) => {
 	}
 };
 
-export function AdminSidebar({
+function AdminNavGroup<Tab extends string>({
+	label,
+	items,
+	activeTab,
+	onTabChange,
+}: {
+	label: string;
+	items: readonly AdminSidebarMenuItem<Tab>[];
+	activeTab: Tab;
+	onTabChange: (tab: Tab) => void;
+}) {
+	return (
+		<SidebarGroup className="px-3 py-3">
+			<SidebarGroupLabel>{label}</SidebarGroupLabel>
+			<SidebarGroupContent>
+				<SidebarMenu>
+					{items.map((item) => {
+						const Icon = item.icon;
+						return (
+							<SidebarMenuItem key={item.id}>
+								<SidebarMenuButton
+									isActive={activeTab === item.id}
+									tooltip={item.label}
+									onClick={() => onTabChange(item.id)}
+								>
+									<Icon />
+									<span>{item.label}</span>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						);
+					})}
+				</SidebarMenu>
+			</SidebarGroupContent>
+		</SidebarGroup>
+	);
+}
+
+export function AdminSidebar<Tab extends string>({
 	user,
 	activeTab,
 	onTabChange,
@@ -50,111 +103,77 @@ export function AdminSidebar({
 	onSwitchToStudent,
 	menuItems,
 	managementItems = [],
-}: AdminSidebarProps) {
+}: AdminSidebarProps<Tab>) {
 	return (
-		<aside className="w-[255px] bg-sidebar border-r border-sidebar-border h-screen flex flex-col justify-between select-none shrink-0">
-			<div className="flex flex-col flex-1 py-4">
-				{/* Header Branding */}
-				<div className="px-6 py-2 flex items-center gap-3">
-					<div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">
+		<Sidebar collapsible="icon" className="border-sidebar-border">
+			<SidebarHeader className="p-3">
+				<div className="flex items-center gap-3 rounded-lg px-2 py-1.5 group-data-[collapsible=icon]:justify-center">
+					<div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
 						NHS
 					</div>
-					<div>
-						<h1 className="font-semibold text-sm leading-tight text-sidebar-foreground">NEUST</h1>
-						<p className="text-xs text-muted-foreground leading-tight">Honor Society</p>
-					</div>
-				</div>
-
-				{/* Main Menu Navigation */}
-				<div className="mt-6 px-3 flex flex-col gap-1">
-					<p className="px-3 py-1.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-						Main Menu
-					</p>
-					{menuItems.map((item) => {
-						const Icon = item.icon;
-						const isActive = activeTab === item.id;
-						return (
-							<Button
-								key={item.id}
-								variant={isActive ? "secondary" : "ghost"}
-								className={`w-full justify-start gap-3 h-9 px-3 text-xs font-normal ${
-									isActive
-										? "bg-muted text-sidebar-foreground font-medium"
-										: "text-muted-foreground hover:text-sidebar-foreground"
-								}`}
-								onClick={() => onTabChange(item.id)}
-							>
-								<Icon className="w-4 h-4" />
-								{item.label}
-							</Button>
-						);
-					})}
-				</div>
-
-				{/* Management Menu */}
-				{managementItems.length > 0 && (
-					<div className="mt-4 px-3 flex flex-col gap-1">
-						<p className="px-3 py-1.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-							Management
+					<div className="min-w-0 group-data-[collapsible=icon]:hidden">
+						<p className="truncate text-sm font-semibold leading-tight text-sidebar-foreground">
+							NEUST
 						</p>
-						{managementItems.map((item) => {
-							const Icon = item.icon;
-							const isActive = activeTab === item.id;
-							return (
-								<Button
-									key={item.id}
-									variant={isActive ? "secondary" : "ghost"}
-									className={`w-full justify-start gap-3 h-9 px-3 text-xs font-normal ${
-										isActive
-											? "bg-muted text-sidebar-foreground font-medium"
-											: "text-muted-foreground hover:text-sidebar-foreground"
-									}`}
-									onClick={() => onTabChange(item.id)}
-								>
-									<Icon className="w-4 h-4" />
-									{item.label}
-								</Button>
-							);
-						})}
+						<p className="truncate text-xs leading-tight text-muted-foreground">
+							Honor Society
+						</p>
 					</div>
-				)}
-			</div>
+				</div>
+			</SidebarHeader>
 
-			{/* User Profile Footer */}
-			<div className="p-4 border-t border-sidebar-border">
+			<SidebarContent>
+				<AdminNavGroup
+					label="Workspace"
+					items={menuItems}
+					activeTab={activeTab}
+					onTabChange={onTabChange}
+				/>
+				{managementItems.length > 0 && (
+					<AdminNavGroup
+						label="Management"
+						items={managementItems}
+						activeTab={activeTab}
+						onTabChange={onTabChange}
+					/>
+				)}
+			</SidebarContent>
+
+			<SidebarFooter className="p-3">
 				<DropdownMenu>
-					<DropdownMenuTrigger className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors text-left outline-none cursor-pointer">
-						<div className="flex items-center gap-3">
-							<Avatar className="w-8 h-8 rounded-lg">
-								<AvatarFallback className="bg-primary/10 text-primary rounded-lg text-xs font-semibold">
-									{getInitials(user.name)}
-								</AvatarFallback>
-							</Avatar>
-							<div className="flex flex-col min-w-0">
-								<span className="text-xs font-semibold text-sidebar-foreground truncate block">
-									{user.name}
-								</span>
-								<span className="text-[10px] text-muted-foreground truncate block">
-									{getRoleLabel(user.role)}
-								</span>
-							</div>
+					<DropdownMenuTrigger
+						className="flex w-full items-center gap-3 rounded-lg p-2 text-left outline-hidden transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-0"
+						aria-label={`Open account menu for ${user.name}`}
+					>
+						<Avatar className="size-8 shrink-0 rounded-lg">
+							<AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary">
+								{getInitials(user.name)}
+							</AvatarFallback>
+						</Avatar>
+						<div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+							<p className="truncate text-xs font-semibold text-sidebar-foreground">
+								{user.name}
+							</p>
+							<p className="truncate text-[10px] text-muted-foreground">
+								{getRoleLabel(user.role)}
+							</p>
 						</div>
-						<ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 ml-1" />
+						<ChevronDown className="ml-auto size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden" />
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end" className="w-[223px]">
+					<DropdownMenuContent side="right" align="end" className="w-56">
 						{onSwitchToStudent && (
-							<DropdownMenuItem onClick={onSwitchToStudent} className="cursor-pointer gap-2">
-								<User className="w-4 h-4" />
+							<DropdownMenuItem onClick={onSwitchToStudent}>
+								<UserRound />
 								Switch to Student Portal
 							</DropdownMenuItem>
 						)}
-						<DropdownMenuItem onClick={onLogout} className="text-destructive cursor-pointer gap-2">
-							<LogOut className="w-4 h-4" />
+						<DropdownMenuItem onClick={onLogout} variant="destructive">
+							<LogOut />
 							Sign out
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-			</div>
-		</aside>
+			</SidebarFooter>
+		</Sidebar>
 	);
 }

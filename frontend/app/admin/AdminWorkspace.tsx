@@ -1,13 +1,14 @@
-import { LayoutDashboard, Users, BookOpen, Flag, History } from "lucide-react";
-import { AdminSidebar } from "./AdminSidebar";
-import { AdminHeader } from "./AdminHeader";
-import { Dashboard } from "./Dashboard";
-import { ApplicantQueue } from "./ApplicantQueue";
-import { AuditWorkspace } from "./AuditWorkspace";
-import { FlaggedCases } from "./FlaggedCases";
-import { AuditLogs } from "./AuditLogs";
-import { useAdminWorkspace } from "./useAdminWorkspace";
+import { BookOpen, Flag, History, LayoutDashboard, Users } from "lucide-react";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import type { UserProfile } from "@/shared/services/auth.api";
+import { AdminHeader } from "./AdminHeader";
+import { AdminSidebar } from "./AdminSidebar";
+import { ApplicantQueue } from "./ApplicantQueue";
+import { AuditLogs } from "./AuditLogs";
+import { AuditWorkspace } from "./AuditWorkspace";
+import { Dashboard } from "./Dashboard";
+import { FlaggedCases } from "./FlaggedCases";
+import { useAdminWorkspace } from "./useAdminWorkspace";
 
 interface AdminWorkspaceProps {
 	user: UserProfile;
@@ -25,7 +26,10 @@ const managementItems = [
 	{ id: "logs", label: "Audit Logs", icon: History },
 ] as const;
 
-export function AdminWorkspace({ user, onSwitchToStudent }: AdminWorkspaceProps) {
+export function AdminWorkspace({
+	user,
+	onSwitchToStudent,
+}: AdminWorkspaceProps) {
 	const {
 		activeTab,
 		selectedAuditAppId,
@@ -64,8 +68,12 @@ export function AdminWorkspace({ user, onSwitchToStudent }: AdminWorkspaceProps)
 		if (appsError || logsError) {
 			return (
 				<div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-muted-foreground select-none">
-					<p className="text-sm font-semibold text-red-600">Failed to load system data.</p>
-					<p className="text-xs mt-1 text-muted-foreground">Please verify your authorization or connection.</p>
+					<p className="text-sm font-semibold text-red-600">
+						Failed to load system data.
+					</p>
+					<p className="text-xs mt-1 text-muted-foreground">
+						Please verify your authorization or connection.
+					</p>
 				</div>
 			);
 		}
@@ -105,7 +113,6 @@ export function AdminWorkspace({ user, onSwitchToStudent }: AdminWorkspaceProps)
 				);
 			case "logs":
 				return <AuditLogs auditLogs={auditLogs} />;
-			case "dashboard":
 			default:
 				return (
 					<Dashboard
@@ -117,25 +124,8 @@ export function AdminWorkspace({ user, onSwitchToStudent }: AdminWorkspaceProps)
 		}
 	};
 
-	const getPageHeaderTitle = () => {
-		switch (activeTab) {
-			case "queue":
-				return "Applicant Queue";
-			case "audit":
-				return "Audit Workspace";
-			case "flagged":
-				return "Flagged Cases";
-			case "logs":
-				return "Audit Logs";
-			case "dashboard":
-			default:
-				return "Dashboard";
-		}
-	};
-
 	return (
-		<div className="flex w-screen h-screen overflow-hidden bg-background">
-			{/* Left navigation sidebar */}
+		<SidebarProvider className="min-h-svh bg-background">
 			<AdminSidebar
 				user={user}
 				activeTab={activeTab}
@@ -146,15 +136,14 @@ export function AdminWorkspace({ user, onSwitchToStudent }: AdminWorkspaceProps)
 				managementItems={managementItems}
 			/>
 
-			{/* Main layout contents area */}
-			<div className="flex-1 flex flex-col overflow-hidden h-full">
-				<AdminHeader title={getPageHeaderTitle()} />
-				<main className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
-					<div className="max-w-[1025px] mx-auto w-full h-full">
+			<SidebarInset className="min-w-0">
+				<AdminHeader />
+				<main className="flex-1 overflow-y-auto bg-muted/30 p-4 sm:p-6">
+					<div className="mx-auto flex min-h-full w-full max-w-7xl flex-col">
 						{renderContent()}
 					</div>
 				</main>
-			</div>
-		</div>
+			</SidebarInset>
+		</SidebarProvider>
 	);
 }

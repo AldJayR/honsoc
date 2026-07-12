@@ -1,37 +1,37 @@
-import { Bell, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface AdminHeaderProps {
-	title: string;
 	onBackClick?: () => void;
 }
 
-export function AdminHeader({ title, onBackClick }: AdminHeaderProps) {
+export function AdminHeader({ onBackClick }: AdminHeaderProps) {
 	return (
-		<header className="h-[64px] border-b border-border flex items-center justify-between px-6 bg-white shrink-0 select-none">
-			<div className="flex items-center gap-3">
+		<header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur-sm sm:px-6">
+			<div className="flex items-center gap-2">
+				<SidebarTrigger aria-label="Toggle admin navigation" />
 				{onBackClick ? (
 					<Button
 						variant="ghost"
 						size="icon"
-						className="w-8 h-8 rounded-lg"
+						className="rounded-lg"
 						onClick={onBackClick}
+						aria-label="Go back"
 					>
-						<ArrowLeft className="w-4 h-4" />
+						<ArrowLeft />
 					</Button>
 				) : null}
-				<h2 className="text-sm font-medium text-foreground tracking-wide">{title}</h2>
 			</div>
 
-			<div className="flex items-center gap-2">
-				<Button
-					variant="ghost"
-					size="icon"
-					className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground"
-				>
-					<Bell className="w-4 h-4" />
-				</Button>
-			</div>
+			<Button
+				variant="ghost"
+				size="icon"
+				className="rounded-lg text-muted-foreground hover:text-foreground"
+				aria-label="Notifications"
+			>
+				<Bell />
+			</Button>
 		</header>
 	);
 }
