@@ -4,11 +4,14 @@ import { requireRole } from "@/auth/guards.ts";
 import { createApplicationSchema } from "@/modules/applications/application.schema.ts";
 import {
 	applicationIdParamSchema,
+	updateStatusSchema,
 } from "@/modules/applications/application.schema.ts";
 import {
 	createApplication,
 	getStudentApplications,
 	getApplicationById,
+	updateApplicationStatus,
+	getAllApplications,
 } from "@/modules/applications/application.service.ts";
 
 export async function applicationRoutes(fastify: FastifyInstance) {
@@ -148,6 +151,101 @@ export async function applicationRoutes(fastify: FastifyInstance) {
 				request.user!.role,
 			);
 			return reply.send(app);
+		},
+	);
+
+	fastify.get(
+		"/api/applications",
+		{
+			preHandler: requireRole("COLLEGE_ADMIN", "PRESIDENT"),
+			schema: {
+				summary: "Get all applications",
+				description: "Returns all applications with student and term data. Available to COLLEGE_ADMIN and PRESIDENT.",
+				tags: ["Applications"],
+				security: [{ cookieAuth: [] }],
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "array",
+									items: {
+										type: "object",
+										properties: {
+											id: { type: "string" },
+											semester: { type: "string" },
+											status: { type: "string" },
+											referenceNo: { type: "string" },
+											submittedAt: { type: "string", format: "date-time" },
+											student: {
+												type: "object",
+												properties: {
+													id: { type: "string" },
+													name: { type: "string" },
+													student_number: { type: ["string", "null"] },
+												},
+											},
+											term: {
+												type: "object",
+												properties: {
+													id: { type: "integer" },
+													schoolYear: { type: "string" },
+													semester: { type: "string" },
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
+		async (request, reply) => {
+			const applications = await getAllApplications(request.user!.role);
+			return reply.send(applications);
+		},
+	);
+
+	fastify.patch(
+		"/api/applications/:id/status",
+		{
+			preHandler: requireRole("COLLEGE_ADMIN", "PRESIDENT"),
+			schema: {
+				summary: "Update application status",
+				description: "Update application status. VERIFY is hard-blocked if disqualifiers exist (422). Records audit entry.",
+				tags: ["Applications"],
+				security: [{ cookieAuth: [] }],
+				params: applicationIdParamSchema,
+				body: updateStatusSchema,
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "object",
+									properties: {
+										id: { type: "string" },
+										status: { type: "string" },
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
+		async (request, reply) => {
+			const { id } = request.params as { id: string };
+			const { status } = updateStatusSchema.parse(request.body);
+			const result = await updateApplicationStatus(
+				id,
+				request.user!.id,
+				request.user!.role,
+				status,
+			);
+			return reply.send(result);
 		},
 	);
 }

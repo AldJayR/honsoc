@@ -4,6 +4,8 @@ import {
 	createApplication,
 	getStudentApplications,
 	getApplicationById,
+	updateApplicationStatus,
+	getAllApplications,
 } from "./application.service.ts";
 import { UnprocessableError, NotFoundError, ConflictError } from "@/lib/errors.ts";
 
@@ -25,12 +27,17 @@ vi.mock("@/db", () => ({
 			},
 		},
 		insert: vi.fn(),
+		update: vi.fn(),
 		transaction: vi.fn(),
 	},
 }));
 
 vi.mock("@/modules/grades/gwa.service.ts", () => ({
 	computeGWA: vi.fn().mockResolvedValue(1.5),
+}));
+
+vi.mock("@/modules/audit-log/audit-log.service.ts", () => ({
+	logAction: vi.fn().mockResolvedValue(undefined),
 }));
 
 beforeEach(() => {
@@ -333,5 +340,141 @@ describe("getApplicationById", () => {
 		await expect(
 			getApplicationById("nonexistent", "student-1", "STUDENT"),
 		).rejects.toThrow(NotFoundError);
+	});
+});
+
+describe("updateApplicationStatus", () => {
+	function mockApplicationWithGrades(
+		overrides: Partial<{
+			status: string;
+			studentId: string;
+			grades: Array<{ grade: string; units: number }>;
+		}> = {},
+	) {
+		const defaults = {
+			id: "app-1",
+			studentId: "student-1",
+			termId: 1,
+			semester: "1ST",
+			status: "SUBMITTED",
+			grades: [{ grade: "1.50", units: 3 }],
+		};
+		const merged = { ...defaults, ...overrides };
+		vi.mocked(db.query.applications.findFirst).mockResolvedValue(merged as never);
+		return merged;
+	}
+
+	function mockTerm(gwaThreshold = "1.75") {
+		vi.mocked(db.query.terms.findFirst).mockResolvedValue({
+			id: 1,
+			schoolYear: "2025-2026",
+			semester: "1ST",
+			gwaThreshold,
+		} as never);
+	}
+
+	function mockUpdateSuccess(returnValue = { id: "app-1", status: "VERIFIED" }) {
+		const mockReturning = vi.fn().mockResolvedValue([returnValue]);
+		const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
+		const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
+		vi.mocked(db.update).mockReturnValue({ set: mockSet } as never);
+		return { mockSet, mockWhere, mockReturning };
+	}
+
+	it("throws UnprocessableError when VERIFY is attempted with disqualifying grade", async () => {
+		mockApplicationWithGrades({
+			grades: [{ grade: "INC", units: 3 }],
+		});
+		mockTerm("1.75");
+
+		await expect(
+			updateApplicationStatus("app-1", "admin-1", "COLLEGE_ADMIN", "VERIFIED"),
+		).rejects.toThrow(UnprocessableError);
+	});
+
+	it("throws UnprocessableError when VERIFY is attempted with GWA above threshold", async () => {
+		mockApplicationWithGrades({
+			grades: [{ grade: "2.00", units: 3 }],
+		});
+		mockTerm("1.75");
+		const { computeGWA } = await import("@/modules/grades/gwa.service.ts");
+		vi.mocked(computeGWA).mockResolvedValue(2.5);
+
+		await expect(
+			updateApplicationStatus("app-1", "admin-1", "COLLEGE_ADMIN", "VERIFIED"),
+		).rejects.toThrow(UnprocessableError);
+	});
+
+	it("VERIFY succeeds when no disqualifiers exist", async () => {
+		const { computeGWA } = await import("@/modules/grades/gwa.service.ts");
+		vi.mocked(computeGWA).mockResolvedValue(1.5);
+		mockApplicationWithGrades({
+			grades: [{ grade: "1.50", units: 3 }],
+		});
+		mockTerm("1.75");
+		mockUpdateSuccess({ id: "app-1", status: "VERIFIED" });
+
+		const result = await updateApplicationStatus(
+			"app-1",
+			"admin-1",
+			"COLLEGE_ADMIN",
+			"VERIFIED",
+		);
+
+		expect(result.status).toBe("VERIFIED");
+	});
+
+	it("REJECTED sets status without disqualifier check", async () => {
+		mockApplicationWithGrades({
+			grades: [{ grade: "INC", units: 3 }],
+		});
+		mockUpdateSuccess({ id: "app-1", status: "REJECTED" });
+
+		const result = await updateApplicationStatus(
+			"app-1",
+			"admin-1",
+			"COLLEGE_ADMIN",
+			"REJECTED",
+		);
+
+		expect(result.status).toBe("REJECTED");
+	});
+
+	it("throws NotFoundError for non-existent application", async () => {
+		vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined);
+
+		await expect(
+			updateApplicationStatus("nonexistent", "admin-1", "COLLEGE_ADMIN", "VERIFIED"),
+		).rejects.toThrow(NotFoundError);
+	});
+});
+
+describe("getAllApplications", () => {
+	it("returns all applications with student and term data", async () => {
+		vi.mocked(db.query.applications.findMany).mockResolvedValue([
+			{
+				id: "app-1",
+				semester: "1ST",
+				status: "SUBMITTED",
+				referenceNo: "HS-251-2012345",
+				submittedAt: new Date(),
+				student: { id: "student-1", name: "John Doe", student_number: "2012345" },
+				term: { id: 1, schoolYear: "2025-2026", semester: "1ST" },
+			},
+		] as never);
+
+		const result = await getAllApplications("COLLEGE_ADMIN");
+
+		expect(result).toHaveLength(1);
+		expect(result[0]?.referenceNo).toBe("HS-251-2012345");
+		expect(result[0]?.student?.name).toBe("John Doe");
+	});
+
+	it("returns empty array when no applications exist", async () => {
+		vi.mocked(db.query.applications.findMany).mockResolvedValue([]);
+
+		const result = await getAllApplications("COLLEGE_ADMIN");
+
+		expect(result).toEqual([]);
 	});
 });

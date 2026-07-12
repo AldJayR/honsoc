@@ -31,4 +31,30 @@ export const provisionAdminSchema = z.object({
 	}),
 }).meta({ id: "ProvisionAdmin" });
 
+export const officerIdParamSchema = z.object({
+	id: z.string().meta({
+		description: "Officer ID",
+		example: "550e8400-e29b-41d4-a716-446655440000",
+	}),
+});
+
+export const resendInviteParamSchema = z.object({
+	id: z.string().meta({
+		description: "Officer ID",
+		example: "550e8400-e29b-41d4-a716-446655440000",
+	}),
+});
+
+export const editOfficerSchema = z.object({
+	role: z.enum(["COLLEGE_ADMIN", "OFFICER", "PRESIDENT"]).optional(),
+	campus_id: z.number().int().positive().optional(),
+	department_id: z.number().int().positive().optional(),
+}).meta({ id: "EditOfficer" });
+
+export const resendInviteParamsSchema = z.object({
+	id: z.string(),
+	redirectTo: z.string().url().optional().default("http://localhost:5173/auth/reset-password"),
+});
+
 export type ProvisionAdminInput = z.infer<typeof provisionAdminSchema>;
+export type EditOfficerInput = z.infer<typeof editOfficerSchema>;

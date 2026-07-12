@@ -10,6 +10,67 @@ import { UnprocessableError, NotFoundError, ConflictError } from "@/lib/errors.t
 import type { CreateApplicationInput } from "@/modules/applications/application.schema.ts";
 import type { GradeInput } from "@/modules/grades/grade.schema.ts";
 import { computeGWA } from "@/modules/grades/gwa.service.ts";
+import { checkDisqualifiers } from "@/modules/grades/grade.schema.ts";
+import { logAction } from "@/modules/audit-log/audit-log.service.ts";
+
+export async function updateApplicationStatus(
+	applicationId: string,
+	actorId: string,
+	actorRole: string,
+	newStatus: string,
+): Promise<{ id: string; status: string }> {
+	const app = await db.query.applications.findFirst({
+		where: eq(applications.id, applicationId),
+		with: { grades: true },
+	});
+	if (!app) throw new NotFoundError("Application not found");
+
+	if (newStatus === "VERIFIED") {
+		const term = await db.query.terms.findFirst({
+			where: eq(terms.id, app.termId),
+		});
+		const gwa = await computeGWA(applicationId);
+		const disq = checkDisqualifiers(
+			app.grades.map((g) => ({ grade: g.grade, units: g.units })),
+			gwa,
+			Number(term?.gwaThreshold ?? 1.75),
+		);
+		if (disq.hasDisqualifier) {
+			throw new UnprocessableError(
+				`Cannot verify: ${disq.reasons.map((r) => r.message).join("; ")}`,
+			);
+		}
+	}
+
+	const [updated] = await db
+		.update(applications)
+		.set({
+			status: newStatus,
+			reviewedBy: newStatus === "VERIFIED" ? actorId : undefined,
+		})
+		.where(eq(applications.id, applicationId))
+		.returning({ id: applications.id, status: applications.status });
+
+	if (!updated) throw new NotFoundError("Application not found");
+
+	const auditAction = newStatus === "VERIFIED" ? "VERIFIED"
+		: newStatus === "FLAGGED" ? "FLAGGED"
+		: newStatus === "REJECTED" ? "REJECTED"
+		: "REVIEWED";
+	await logAction(actorId, applicationId, auditAction);
+
+	return updated;
+}
+
+export async function getAllApplications(role: string) {
+	return db.query.applications.findMany({
+		with: {
+			student: { columns: { id: true, name: true, student_number: true } },
+			term: { columns: { id: true, schoolYear: true, semester: true } },
+		},
+		orderBy: (a, { desc }) => [desc(a.submittedAt)],
+	});
+}
 
 function generateReferenceNo(
 	schoolYear: string,

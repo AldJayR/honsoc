@@ -38,4 +38,10 @@ export const applicationIdParamSchema = z.object({
 	}),
 });
 
+export const updateStatusSchema = z.object({
+	status: z.enum(["SUBMITTED", "UNDER_REVIEW", "FLAGGED", "VERIFIED", "REJECTED"]),
+}).meta({ id: "UpdateStatus" });
+
+export type UpdateStatusInput = z.infer<typeof updateStatusSchema>;
+
 export type CreateApplicationInput = z.infer<typeof createApplicationSchema>;

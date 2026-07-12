@@ -21,6 +21,8 @@ import { applicationRoutes } from "@/modules/applications/application.routes.ts"
 import { documentRoutes } from "@/modules/documents/document.routes.ts";
 import { gradeRoutes } from "@/modules/grades/grade.routes.ts";
 import { draftRoutes } from "@/modules/applications/draft.routes.ts";
+import { flagRoutes } from "@/modules/flags/flags.routes.ts";
+import { auditLogRoutes } from "@/modules/audit-log/audit-log.routes.ts";
 import { AppError } from "@/lib/errors.ts";
 
 export async function buildApp() {
@@ -99,6 +101,8 @@ export async function buildApp() {
 	await app.register(documentRoutes);
 	await app.register(gradeRoutes);
 	await app.register(draftRoutes);
+	await app.register(flagRoutes);
+	await app.register(auditLogRoutes);
 
 	return app;
 }

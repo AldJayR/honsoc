@@ -3,8 +3,18 @@ import type { FastifyZodOpenApiSchema } from "fastify-zod-openapi";
 import { requireRole } from "@/auth/guards.ts";
 import { auth } from "@/auth/index.ts";
 import { env } from "@/config/env.ts";
-import { provisionAdminSchema } from "@/modules/users/user.schema.ts";
-import { provisionAdmin } from "@/modules/users/user.service.ts";
+import {
+	provisionAdminSchema,
+	editOfficerSchema,
+	officerIdParamSchema,
+	resendInviteParamSchema,
+} from "@/modules/users/user.schema.ts";
+import {
+	provisionAdmin,
+	editOfficer,
+	deactivateOfficer,
+	resendInvite,
+} from "@/modules/users/user.service.ts";
 
 export async function userRoutes(fastify: FastifyInstance) {
 	fastify.get(
@@ -71,8 +81,6 @@ export async function userRoutes(fastify: FastifyInstance) {
 			const input = provisionAdminSchema.parse(request.body);
 			const result = await provisionAdmin(input);
 			try {
-				// Generates a password reset token and fires sendResetPassword callback
-				// which checks user.status and sends the invite-officer template
 				await auth.api.requestPasswordReset({
 					body: {
 						email: input.email,
@@ -87,6 +95,111 @@ export async function userRoutes(fastify: FastifyInstance) {
 				});
 			}
 			return reply.status(201).send(result);
+		},
+	);
+
+	fastify.put(
+		"/api/admin/officers/:id",
+		{
+			preHandler: requireRole("PRESIDENT"),
+			schema: {
+				summary: "Edit officer",
+				description: "Update officer role, campus, or department.",
+				tags: ["Admin"],
+				security: [{ cookieAuth: [] }],
+				params: officerIdParamSchema,
+				body: editOfficerSchema,
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "object",
+									properties: {
+										id: { type: "string" },
+										email: { type: "string" },
+										role: { type: "string" },
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
+		async (request, reply) => {
+			const { id } = request.params as { id: string };
+			const input = editOfficerSchema.parse(request.body);
+			const result = await editOfficer(id, input);
+			return reply.send(result);
+		},
+	);
+
+	fastify.delete(
+		"/api/admin/officers/:id",
+		{
+			preHandler: requireRole("PRESIDENT"),
+			schema: {
+				summary: "Deactivate officer",
+				description: "Set officer status to INACTIVE (soft delete).",
+				tags: ["Admin"],
+				security: [{ cookieAuth: [] }],
+				params: officerIdParamSchema,
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "object",
+									properties: {
+										id: { type: "string" },
+										email: { type: "string" },
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
+		async (request, reply) => {
+			const { id } = request.params as { id: string };
+			const result = await deactivateOfficer(id);
+			return reply.send(result);
+		},
+	);
+
+	fastify.post(
+		"/api/admin/officers/:id/resend-invite",
+		{
+			preHandler: requireRole("PRESIDENT"),
+			schema: {
+				summary: "Resend officer invite",
+				description: "Resend password-setup invite for INVITE_PENDING officers.",
+				tags: ["Admin"],
+				security: [{ cookieAuth: [] }],
+				params: resendInviteParamSchema,
+				response: {
+					200: {
+						content: {
+							"application/json": {
+								schema: {
+									type: "object",
+									properties: {
+										email: { type: "string" },
+									},
+								},
+							},
+						},
+					},
+				},
+			} satisfies FastifyZodOpenApiSchema,
+		},
+		async (request, reply) => {
+			const { id } = request.params as { id: string };
+			const redirectTo = `${env.BETTER_AUTH_URL}/auth/reset-password`;
+			const result = await resendInvite(id, redirectTo);
+			return reply.send(result);
 		},
 	);
 }
