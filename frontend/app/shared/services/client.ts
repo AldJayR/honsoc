@@ -33,10 +33,9 @@ export async function apiClient<T>(
 	const response = await apiClientRaw(path, options);
 
 	if (!response.ok) {
-		const errorData = await response.json().catch(() => ({}));
-		throw new Error(
-			errorData.message || errorData.error || defaultErrorMessage,
-		);
+		const errorData: unknown = await response.json().catch(() => null);
+		const errorMessage = getErrorMessage(errorData);
+		throw new Error(errorMessage ?? defaultErrorMessage);
 	}
 
 	const text = await response.text();
@@ -45,8 +44,20 @@ export async function apiClient<T>(
 	}
 
 	try {
-		return JSON.parse(text) as T;
-	} catch (e) {
+		const parsed: unknown = JSON.parse(text);
+		return parsed as T;
+	} catch {
 		return text as unknown as T;
 	}
+}
+
+function getErrorMessage(data: unknown): string | undefined {
+	if (typeof data !== "object" || data === null) return undefined;
+	if ("message" in data && typeof data.message === "string") {
+		return data.message;
+	}
+	if ("error" in data && typeof data.error === "string") {
+		return data.error;
+	}
+	return undefined;
 }

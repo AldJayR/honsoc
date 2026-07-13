@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { db } from "@/db";
 import { createFlag, getFlags } from "./flags.service.ts";
 import { NotFoundError } from "@/lib/errors.ts";
+import type { DbTransaction, DbTransactionCallback } from "@/test-utils/db-types.ts";
 
 vi.mock("@/db", () => ({
 	db: {
@@ -15,6 +16,7 @@ vi.mock("@/db", () => ({
 		},
 		insert: vi.fn(),
 		update: vi.fn(),
+		transaction: vi.fn(),
 	},
 }));
 
@@ -45,6 +47,11 @@ describe("createFlag", () => {
 		const mockWhere = vi.fn().mockResolvedValue(undefined);
 		const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
 		vi.mocked(db.update).mockReturnValue({ set: mockSet } as never);
+		const mockTx = {
+			insert: vi.mocked(db.insert),
+			update: vi.mocked(db.update),
+		} as unknown as DbTransaction;
+		vi.mocked(db.transaction).mockImplementation(async (fn: DbTransactionCallback) => fn(mockTx));
 		return { mockSet, mockWhere };
 	}
 
@@ -63,9 +70,7 @@ describe("createFlag", () => {
 	it("throws NotFoundError when application does not exist", async () => {
 		vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined);
 
-		await expect(
-			createFlag("nonexistent", "admin-1", validInput),
-		).rejects.toThrow(NotFoundError);
+		await expect(createFlag("nonexistent", "admin-1", validInput)).rejects.toThrow(NotFoundError);
 
 		expect(db.insert).not.toHaveBeenCalled();
 	});
@@ -100,8 +105,8 @@ describe("getFlags", () => {
 	it("throws NotFoundError when application does not exist", async () => {
 		vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined);
 
-		await expect(
-			getFlags("nonexistent", "admin-1", "COLLEGE_ADMIN"),
-		).rejects.toThrow(NotFoundError);
+		await expect(getFlags("nonexistent", "admin-1", "COLLEGE_ADMIN")).rejects.toThrow(
+			NotFoundError,
+		);
 	});
 });

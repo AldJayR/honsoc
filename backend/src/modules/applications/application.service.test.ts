@@ -8,6 +8,11 @@ import {
 	getAllApplications,
 } from "./application.service.ts";
 import { UnprocessableError, NotFoundError, ConflictError } from "@/lib/errors.ts";
+import type {
+	DbTransaction,
+	DbTransactionCallback,
+	DbSelectResult,
+} from "@/test-utils/db-types.ts";
 
 vi.mock("@/db", () => ({
 	db: {
@@ -28,6 +33,7 @@ vi.mock("@/db", () => ({
 		},
 		insert: vi.fn(),
 		update: vi.fn(),
+		select: vi.fn(),
 		transaction: vi.fn(),
 	},
 }));
@@ -65,6 +71,12 @@ function mockNoExistingApplication() {
 	vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined);
 }
 
+function mockGrades(rows: Array<{ applicationId?: string; grade: string; units: number }> = []) {
+	const mockWhere = vi.fn().mockResolvedValue(rows);
+	const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
+	vi.mocked(db.select).mockReturnValue({ from: mockFrom } as unknown as DbSelectResult);
+}
+
 describe("createApplication", () => {
 	const grades1st = [
 		{ subjectCode: "MATH101", subjectName: "Math 101", units: 3, grade: "1.50" as const },
@@ -77,19 +89,17 @@ describe("createApplication", () => {
 		mockActiveTerm({ semester: "1ST" });
 		mockStudent();
 		mockNoExistingApplication();
+		mockGrades();
 
 		const mockApp = { id: "app-1", referenceNo: "HS-251-1-2012345" };
 		const mockReturning = vi.fn().mockResolvedValue([mockApp]);
 		const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
 		const mockGradesInsert = vi.fn().mockResolvedValue([]);
-		const mockTx = {
-			insert: vi.fn().mockReturnValue({ values: mockGradesInsert }),
-		};
-		mockTx.insert.mockReturnValueOnce({ values: mockValues });
-		mockTx.insert.mockReturnValueOnce({ values: mockGradesInsert });
-		vi.mocked(db.transaction).mockImplementation(
-			async (fn: any) => fn(mockTx),
-		);
+		const mockInsert = vi.fn().mockReturnValue({ values: mockGradesInsert });
+		const mockTx = { insert: mockInsert } as unknown as DbTransaction;
+		mockInsert.mockReturnValueOnce({ values: mockValues });
+		mockInsert.mockReturnValueOnce({ values: mockGradesInsert });
+		vi.mocked(db.transaction).mockImplementation(async (fn: DbTransactionCallback) => fn(mockTx));
 
 		const result = await createApplication("student-1", {
 			semester: "1ST",
@@ -107,6 +117,7 @@ describe("createApplication", () => {
 		mockActiveTerm({ semester: "BOTH" });
 		mockStudent();
 		mockNoExistingApplication();
+		mockGrades();
 
 		const mockReturning = vi.fn().mockResolvedValue([
 			{ id: "app-1", referenceNo: "HS-251-1-2012345" },
@@ -114,16 +125,13 @@ describe("createApplication", () => {
 		]);
 		const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
 		const mockGradesInsert = vi.fn().mockResolvedValue([]);
-		const mockTx = {
-			insert: vi.fn().mockReturnValue({ values: mockGradesInsert }),
-		};
-		mockTx.insert.mockReturnValueOnce({ values: mockValues });
-		mockTx.insert.mockReturnValueOnce({ values: mockGradesInsert });
-		mockTx.insert.mockReturnValueOnce({ values: mockValues });
-		mockTx.insert.mockReturnValueOnce({ values: mockGradesInsert });
-		vi.mocked(db.transaction).mockImplementation(
-			async (fn: any) => fn(mockTx),
-		);
+		const mockInsert = vi.fn().mockReturnValue({ values: mockGradesInsert });
+		const mockTx = { insert: mockInsert } as unknown as DbTransaction;
+		mockInsert.mockReturnValueOnce({ values: mockValues });
+		mockInsert.mockReturnValueOnce({ values: mockGradesInsert });
+		mockInsert.mockReturnValueOnce({ values: mockValues });
+		mockInsert.mockReturnValueOnce({ values: mockGradesInsert });
+		vi.mocked(db.transaction).mockImplementation(async (fn: DbTransactionCallback) => fn(mockTx));
 
 		const result = await createApplication("student-1", {
 			semester: "BOTH",
@@ -173,19 +181,17 @@ describe("createApplication", () => {
 		mockActiveTerm({ semester: "BOTH" });
 		mockStudent();
 		mockNoExistingApplication();
+		mockGrades();
 
 		const mockApp = { id: "app-1", referenceNo: "HS-251-1-2012345" };
 		const mockReturning = vi.fn().mockResolvedValue([mockApp]);
 		const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
 		const mockGradesInsert = vi.fn().mockResolvedValue([]);
-		const mockTx = {
-			insert: vi.fn().mockReturnValue({ values: mockGradesInsert }),
-		};
-		mockTx.insert.mockReturnValueOnce({ values: mockValues });
-		mockTx.insert.mockReturnValueOnce({ values: mockGradesInsert });
-		vi.mocked(db.transaction).mockImplementation(
-			async (fn: any) => fn(mockTx),
-		);
+		const mockInsert = vi.fn().mockReturnValue({ values: mockGradesInsert });
+		const mockTx = { insert: mockInsert } as unknown as DbTransaction;
+		mockInsert.mockReturnValueOnce({ values: mockValues });
+		mockInsert.mockReturnValueOnce({ values: mockGradesInsert });
+		vi.mocked(db.transaction).mockImplementation(async (fn: DbTransactionCallback) => fn(mockTx));
 
 		const result = await createApplication("student-1", {
 			semester: "1ST",
@@ -250,6 +256,7 @@ describe("getStudentApplications", () => {
 				submittedAt: new Date(),
 			},
 		] as never);
+		mockGrades([{ applicationId: "app-1", grade: "1.50", units: 3 }]);
 
 		const result = await getStudentApplications("student-1");
 
@@ -286,11 +293,7 @@ describe("getApplicationById", () => {
 			schoolYear: "2025-2026",
 		} as never);
 
-		const result = await getApplicationById(
-			"app-1",
-			"student-1",
-			"STUDENT",
-		);
+		const result = await getApplicationById("app-1", "student-1", "STUDENT");
 
 		expect(result.id).toBe("app-1");
 		expect(result.gwa).toBe(1.5);
@@ -302,9 +305,9 @@ describe("getApplicationById", () => {
 			studentId: "other-student",
 		} as never);
 
-		await expect(
-			getApplicationById("app-1", "student-1", "STUDENT"),
-		).rejects.toThrow(NotFoundError);
+		await expect(getApplicationById("app-1", "student-1", "STUDENT")).rejects.toThrow(
+			NotFoundError,
+		);
 	});
 
 	it("allows PRESIDENT to view any application", async () => {
@@ -325,11 +328,7 @@ describe("getApplicationById", () => {
 			schoolYear: "2025-2026",
 		} as never);
 
-		const result = await getApplicationById(
-			"app-1",
-			"president-1",
-			"PRESIDENT",
-		);
+		const result = await getApplicationById("app-1", "president-1", "PRESIDENT");
 
 		expect(result.id).toBe("app-1");
 	});
@@ -337,9 +336,9 @@ describe("getApplicationById", () => {
 	it("throws NotFoundError when application does not exist", async () => {
 		vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined);
 
-		await expect(
-			getApplicationById("nonexistent", "student-1", "STUDENT"),
-		).rejects.toThrow(NotFoundError);
+		await expect(getApplicationById("nonexistent", "student-1", "STUDENT")).rejects.toThrow(
+			NotFoundError,
+		);
 	});
 });
 
@@ -378,6 +377,10 @@ describe("updateApplicationStatus", () => {
 		const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
 		const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
 		vi.mocked(db.update).mockReturnValue({ set: mockSet } as never);
+		const mockTx = {
+			update: vi.mocked(db.update),
+		} as unknown as DbTransaction;
+		vi.mocked(db.transaction).mockImplementation(async (fn: DbTransactionCallback) => fn(mockTx));
 		return { mockSet, mockWhere, mockReturning };
 	}
 
@@ -414,12 +417,7 @@ describe("updateApplicationStatus", () => {
 		mockTerm("1.75");
 		mockUpdateSuccess({ id: "app-1", status: "VERIFIED" });
 
-		const result = await updateApplicationStatus(
-			"app-1",
-			"admin-1",
-			"COLLEGE_ADMIN",
-			"VERIFIED",
-		);
+		const result = await updateApplicationStatus("app-1", "admin-1", "COLLEGE_ADMIN", "VERIFIED");
 
 		expect(result.status).toBe("VERIFIED");
 	});
@@ -430,12 +428,7 @@ describe("updateApplicationStatus", () => {
 		});
 		mockUpdateSuccess({ id: "app-1", status: "REJECTED" });
 
-		const result = await updateApplicationStatus(
-			"app-1",
-			"admin-1",
-			"COLLEGE_ADMIN",
-			"REJECTED",
-		);
+		const result = await updateApplicationStatus("app-1", "admin-1", "COLLEGE_ADMIN", "REJECTED");
 
 		expect(result.status).toBe("REJECTED");
 	});
@@ -462,6 +455,7 @@ describe("getAllApplications", () => {
 				term: { id: 1, schoolYear: "2025-2026", semester: "1ST" },
 			},
 		] as never);
+		mockGrades();
 
 		const result = await getAllApplications("COLLEGE_ADMIN");
 

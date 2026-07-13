@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { db } from "@/db";
 import { provisionAdmin, editOfficer, deactivateOfficer, resendInvite } from "./user.service.ts";
 import { ConflictError, NotFoundError, UnprocessableError } from "@/lib/errors.ts";
+import type {
+	DbInsertResult,
+	DbTransaction,
+	DbTransactionCallback,
+} from "@/test-utils/db-types.ts";
 
 vi.mock("@/db", () => ({
 	db: {
@@ -12,6 +17,7 @@ vi.mock("@/db", () => ({
 		},
 		insert: vi.fn(),
 		update: vi.fn(),
+		transaction: vi.fn(),
 	},
 }));
 
@@ -33,7 +39,11 @@ describe("provisionAdmin", () => {
 	function mockInsertSuccess(result: { id: string; email: string }) {
 		const mockReturning = vi.fn().mockResolvedValue([result]);
 		const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
-		vi.mocked(db.insert).mockReturnValue({ values: mockValues } as any);
+		vi.mocked(db.insert).mockReturnValue({ values: mockValues } as unknown as DbInsertResult);
+		const mockTx = {
+			insert: vi.mocked(db.insert),
+		} as unknown as DbTransaction;
+		vi.mocked(db.transaction).mockImplementation(async (fn: DbTransactionCallback) => fn(mockTx));
 		return { mockValues, mockReturning };
 	}
 
@@ -82,9 +92,7 @@ describe("provisionAdmin", () => {
 
 		await provisionAdmin(adminInput);
 
-		expect(mockValues).toHaveBeenCalledWith(
-			expect.objectContaining({ role: "COLLEGE_ADMIN" }),
-		);
+		expect(mockValues).toHaveBeenCalledWith(expect.objectContaining({ role: "COLLEGE_ADMIN" }));
 	});
 });
 
@@ -99,7 +107,9 @@ describe("editOfficer", () => {
 
 	it("updates officer role", async () => {
 		const { mockSet } = mockUpdateSuccess({
-			id: "officer-1", email: "officer@email.com", role: "COLLEGE_ADMIN",
+			id: "officer-1",
+			email: "officer@email.com",
+			role: "COLLEGE_ADMIN",
 		});
 
 		const result = await editOfficer("officer-1", { role: "COLLEGE_ADMIN" });
@@ -114,17 +124,17 @@ describe("editOfficer", () => {
 		const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
 		vi.mocked(db.update).mockReturnValue({ set: mockSet } as never);
 
-		await expect(
-			editOfficer("nonexistent", { role: "COLLEGE_ADMIN" }),
-		).rejects.toThrow(NotFoundError);
+		await expect(editOfficer("nonexistent", { role: "COLLEGE_ADMIN" })).rejects.toThrow(
+			NotFoundError,
+		);
 	});
 });
 
 describe("deactivateOfficer", () => {
 	it("sets officer status to INACTIVE", async () => {
-		const mockReturning = vi.fn().mockResolvedValue([
-			{ id: "officer-1", email: "officer@email.com" },
-		]);
+		const mockReturning = vi
+			.fn()
+			.mockResolvedValue([{ id: "officer-1", email: "officer@email.com" }]);
 		const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
 		const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
 		vi.mocked(db.update).mockReturnValue({ set: mockSet } as never);
@@ -149,9 +159,9 @@ describe("resendInvite", () => {
 	it("throws NotFoundError when officer does not exist", async () => {
 		vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
 
-		await expect(
-			resendInvite("nonexistent", "http://example.com/reset"),
-		).rejects.toThrow(NotFoundError);
+		await expect(resendInvite("nonexistent", "http://example.com/reset")).rejects.toThrow(
+			NotFoundError,
+		);
 	});
 
 	it("throws UnprocessableError when officer is not INVITE_PENDING", async () => {
@@ -161,8 +171,8 @@ describe("resendInvite", () => {
 			status: "ACTIVE",
 		} as never);
 
-		await expect(
-			resendInvite("officer-1", "http://example.com/reset"),
-		).rejects.toThrow(UnprocessableError);
+		await expect(resendInvite("officer-1", "http://example.com/reset")).rejects.toThrow(
+			UnprocessableError,
+		);
 	});
 });

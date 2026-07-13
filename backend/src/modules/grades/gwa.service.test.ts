@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { db } from "@/db";
 import { computeGWA } from "./gwa.service.ts";
+import type { DbSelectResult } from "@/test-utils/db-types.ts";
 
 vi.mock("@/db", () => ({
 	db: {
@@ -15,7 +16,7 @@ beforeEach(() => {
 function mockGradesQuery(rows: Array<{ grade: string; units: number }>) {
 	const mockWhere = vi.fn().mockResolvedValue(rows);
 	const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
-	vi.mocked(db.select).mockReturnValue({ from: mockFrom } as any);
+	vi.mocked(db.select).mockReturnValue({ from: mockFrom } as unknown as DbSelectResult);
 }
 
 describe("computeGWA", () => {

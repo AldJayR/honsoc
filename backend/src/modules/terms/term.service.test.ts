@@ -1,12 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { db } from "@/db";
-import {
-	createTerm,
-	listTerms,
-	getActiveTerm,
-	updateTerm,
-} from "./term.service.ts";
+import { createTerm, listTerms, getActiveTerm, updateTerm } from "./term.service.ts";
 import { NotFoundError } from "@/lib/errors.ts";
+import type { DbInsertResult, DbSelectResult, DbUpdateResult } from "@/test-utils/db-types.ts";
 
 vi.mock("@/db", () => ({
 	db: {
@@ -36,7 +32,7 @@ describe("createTerm", () => {
 
 		const mockReturning = vi.fn().mockResolvedValue([expected]);
 		const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
-		vi.mocked(db.insert).mockReturnValue({ values: mockValues } as any);
+		vi.mocked(db.insert).mockReturnValue({ values: mockValues } as unknown as DbInsertResult);
 
 		const result = await createTerm(input);
 
@@ -54,7 +50,7 @@ describe("listTerms", () => {
 		];
 		const mockOrderBy = vi.fn().mockResolvedValue(expected);
 		const mockFrom = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
-		vi.mocked(db.select).mockReturnValue({ from: mockFrom } as any);
+		vi.mocked(db.select).mockReturnValue({ from: mockFrom } as unknown as DbSelectResult);
 
 		const result = await listTerms();
 
@@ -92,7 +88,7 @@ describe("updateTerm", () => {
 		const mockReturning = vi.fn().mockResolvedValue([updated]);
 		const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
 		const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
-		vi.mocked(db.update).mockReturnValue({ set: mockSet } as any);
+		vi.mocked(db.update).mockReturnValue({ set: mockSet } as unknown as DbUpdateResult);
 
 		const result = await updateTerm(1, input);
 
@@ -102,8 +98,6 @@ describe("updateTerm", () => {
 	it("throws NotFoundError when term does not exist", async () => {
 		vi.mocked(db.query.terms.findFirst).mockResolvedValue(undefined);
 
-		await expect(
-			updateTerm(999, { gwaThreshold: "1.50" }),
-		).rejects.toThrow(NotFoundError);
+		await expect(updateTerm(999, { gwaThreshold: "1.50" })).rejects.toThrow(NotFoundError);
 	});
 });

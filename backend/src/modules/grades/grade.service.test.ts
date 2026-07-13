@@ -1,12 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { db } from "@/db";
 import { computeGWA } from "@/modules/grades/gwa.service.ts";
-import {
-	submitGrades,
-	getGrades,
-	getGwaWithDisqualifiers,
-} from "./grade.service.ts";
+import { submitGrades, getGrades, getGwaWithDisqualifiers } from "./grade.service.ts";
 import { NotFoundError, UnprocessableError } from "@/lib/errors.ts";
+import type { DbTransaction, DbTransactionCallback } from "@/test-utils/db-types.ts";
 
 vi.mock("@/db", () => ({
 	db: {
@@ -35,9 +32,7 @@ beforeEach(() => {
 	vi.mocked(computeGWA).mockResolvedValue(1.5);
 });
 
-function mockApplication(
-	overrides = {},
-) {
+function mockApplication(overrides = {}) {
 	vi.mocked(db.query.applications.findFirst).mockResolvedValue({
 		id: "app-1",
 		studentId: "student-1",
@@ -47,7 +42,7 @@ function mockApplication(
 		referenceNo: "HS-261-12345",
 		submittedAt: new Date(),
 		...overrides,
-	} as any);
+	} as never);
 }
 
 function mockTerm(overrides = {}) {
@@ -58,25 +53,22 @@ function mockTerm(overrides = {}) {
 		gwaThreshold: "1.75",
 		isActive: true,
 		...overrides,
-	} as any);
+	} as never);
 }
 
 describe("submitGrades", () => {
 	it("submits grades successfully for SUBMITTED application", async () => {
 		mockApplication();
 		mockTerm();
-		vi.mocked(db.transaction).mockImplementation(async (fn: any) => {
-			await fn({
-				delete: vi.fn().mockReturnValue({ where: vi.fn() }),
-				insert: vi.fn().mockReturnValue({
-					values: vi.fn().mockResolvedValue([]),
-				}),
-			});
-		});
+		const mockTx = {
+			delete: vi.fn().mockReturnValue({ where: vi.fn() }),
+			insert: vi.fn().mockReturnValue({
+				values: vi.fn().mockResolvedValue([]),
+			}),
+		} as unknown as DbTransaction;
+		vi.mocked(db.transaction).mockImplementation(async (fn: DbTransactionCallback) => fn(mockTx));
 
-		const input = [
-			{ subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "1.50" },
-		];
+		const input = [{ subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "1.50" }];
 
 		const result = await submitGrades("app-1", "student-1", input);
 
@@ -88,18 +80,15 @@ describe("submitGrades", () => {
 	it("allows submission for FLAGGED application", async () => {
 		mockApplication({ status: "FLAGGED" });
 		mockTerm();
-		vi.mocked(db.transaction).mockImplementation(async (fn: any) => {
-			await fn({
-				delete: vi.fn().mockReturnValue({ where: vi.fn() }),
-				insert: vi.fn().mockReturnValue({
-					values: vi.fn().mockResolvedValue([]),
-				}),
-			});
-		});
+		const mockTx = {
+			delete: vi.fn().mockReturnValue({ where: vi.fn() }),
+			insert: vi.fn().mockReturnValue({
+				values: vi.fn().mockResolvedValue([]),
+			}),
+		} as unknown as DbTransaction;
+		vi.mocked(db.transaction).mockImplementation(async (fn: DbTransactionCallback) => fn(mockTx));
 
-		const input = [
-			{ subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "1.50" },
-		];
+		const input = [{ subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "1.50" }];
 
 		const result = await submitGrades("app-1", "student-1", input);
 
@@ -107,7 +96,7 @@ describe("submitGrades", () => {
 	});
 
 	it("throws NotFoundError when application not found", async () => {
-		vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined as any);
+		vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined);
 
 		await expect(
 			submitGrades("app-1", "student-1", [
@@ -139,18 +128,15 @@ describe("submitGrades", () => {
 	it("returns disqualifiers when grades have INC", async () => {
 		mockApplication();
 		mockTerm();
-		vi.mocked(db.transaction).mockImplementation(async (fn: any) => {
-			await fn({
-				delete: vi.fn().mockReturnValue({ where: vi.fn() }),
-				insert: vi.fn().mockReturnValue({
-					values: vi.fn().mockResolvedValue([]),
-				}),
-			});
-		});
+		const mockTx = {
+			delete: vi.fn().mockReturnValue({ where: vi.fn() }),
+			insert: vi.fn().mockReturnValue({
+				values: vi.fn().mockResolvedValue([]),
+			}),
+		} as unknown as DbTransaction;
+		vi.mocked(db.transaction).mockImplementation(async (fn: DbTransactionCallback) => fn(mockTx));
 
-		const input = [
-			{ subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "INC" },
-		];
+		const input = [{ subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "INC" }];
 
 		const result = await submitGrades("app-1", "student-1", input);
 
@@ -163,9 +149,16 @@ describe("getGrades", () => {
 	it("returns grades for own application", async () => {
 		mockApplication();
 		const mockGrades = [
-			{ id: 1, applicationId: "app-1", subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "1.50" },
+			{
+				id: 1,
+				applicationId: "app-1",
+				subjectCode: "MATH101",
+				subjectName: "Calculus I",
+				units: 3,
+				grade: "1.50",
+			},
 		];
-		vi.mocked(db.query.grades.findMany).mockResolvedValue(mockGrades as any);
+		vi.mocked(db.query.grades.findMany).mockResolvedValue(mockGrades as never);
 
 		const result = await getGrades("app-1", "student-1", "STUDENT");
 
@@ -173,27 +166,30 @@ describe("getGrades", () => {
 	});
 
 	it("throws NotFoundError when application not found", async () => {
-		vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined as any);
+		vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined);
 
-		await expect(
-			getGrades("app-1", "student-1", "STUDENT"),
-		).rejects.toThrow(NotFoundError);
+		await expect(getGrades("app-1", "student-1", "STUDENT")).rejects.toThrow(NotFoundError);
 	});
 
 	it("throws NotFoundError when student does not own application", async () => {
 		mockApplication({ studentId: "other-student" });
 
-		await expect(
-			getGrades("app-1", "student-1", "STUDENT"),
-		).rejects.toThrow(NotFoundError);
+		await expect(getGrades("app-1", "student-1", "STUDENT")).rejects.toThrow(NotFoundError);
 	});
 
 	it("allows admin to view any application's grades", async () => {
 		mockApplication({ studentId: "other-student" });
 		const mockGrades = [
-			{ id: 1, applicationId: "app-1", subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "1.50" },
+			{
+				id: 1,
+				applicationId: "app-1",
+				subjectCode: "MATH101",
+				subjectName: "Calculus I",
+				units: 3,
+				grade: "1.50",
+			},
 		];
-		vi.mocked(db.query.grades.findMany).mockResolvedValue(mockGrades as any);
+		vi.mocked(db.query.grades.findMany).mockResolvedValue(mockGrades as never);
 
 		const result = await getGrades("app-1", "admin-1", "PRESIDENT");
 
@@ -206,9 +202,16 @@ describe("getGwaWithDisqualifiers", () => {
 		mockApplication();
 		mockTerm();
 		const mockGrades = [
-			{ id: 1, applicationId: "app-1", subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "1.50" },
+			{
+				id: 1,
+				applicationId: "app-1",
+				subjectCode: "MATH101",
+				subjectName: "Calculus I",
+				units: 3,
+				grade: "1.50",
+			},
 		];
-		vi.mocked(db.query.grades.findMany).mockResolvedValue(mockGrades as any);
+		vi.mocked(db.query.grades.findMany).mockResolvedValue(mockGrades as never);
 
 		const result = await getGwaWithDisqualifiers("app-1", "student-1", "STUDENT");
 
@@ -217,28 +220,35 @@ describe("getGwaWithDisqualifiers", () => {
 	});
 
 	it("throws NotFoundError when application not found", async () => {
-		vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined as any);
+		vi.mocked(db.query.applications.findFirst).mockResolvedValue(undefined);
 
-		await expect(
-			getGwaWithDisqualifiers("app-1", "student-1", "STUDENT"),
-		).rejects.toThrow(NotFoundError);
+		await expect(getGwaWithDisqualifiers("app-1", "student-1", "STUDENT")).rejects.toThrow(
+			NotFoundError,
+		);
 	});
 
 	it("throws NotFoundError when student does not own application", async () => {
 		mockApplication({ studentId: "other-student" });
 
-		await expect(
-			getGwaWithDisqualifiers("app-1", "student-1", "STUDENT"),
-		).rejects.toThrow(NotFoundError);
+		await expect(getGwaWithDisqualifiers("app-1", "student-1", "STUDENT")).rejects.toThrow(
+			NotFoundError,
+		);
 	});
 
 	it("allows admin to view any application's GWA", async () => {
 		mockApplication({ studentId: "other-student" });
 		mockTerm();
 		const mockGrades = [
-			{ id: 1, applicationId: "app-1", subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "1.50" },
+			{
+				id: 1,
+				applicationId: "app-1",
+				subjectCode: "MATH101",
+				subjectName: "Calculus I",
+				units: 3,
+				grade: "1.50",
+			},
 		];
-		vi.mocked(db.query.grades.findMany).mockResolvedValue(mockGrades as any);
+		vi.mocked(db.query.grades.findMany).mockResolvedValue(mockGrades as never);
 
 		const result = await getGwaWithDisqualifiers("app-1", "admin-1", "PRESIDENT");
 
@@ -251,10 +261,24 @@ describe("getGwaWithDisqualifiers", () => {
 		mockTerm();
 		vi.mocked(computeGWA).mockResolvedValue(2.0);
 		const mockGrades = [
-			{ id: 1, applicationId: "app-1", subjectCode: "MATH101", subjectName: "Calculus I", units: 3, grade: "2.00" },
-			{ id: 2, applicationId: "app-1", subjectCode: "ENG101", subjectName: "English I", units: 3, grade: "2.00" },
+			{
+				id: 1,
+				applicationId: "app-1",
+				subjectCode: "MATH101",
+				subjectName: "Calculus I",
+				units: 3,
+				grade: "2.00",
+			},
+			{
+				id: 2,
+				applicationId: "app-1",
+				subjectCode: "ENG101",
+				subjectName: "English I",
+				units: 3,
+				grade: "2.00",
+			},
 		];
-		vi.mocked(db.query.grades.findMany).mockResolvedValue(mockGrades as any);
+		vi.mocked(db.query.grades.findMany).mockResolvedValue(mockGrades as never);
 
 		const result = await getGwaWithDisqualifiers("app-1", "student-1", "STUDENT");
 

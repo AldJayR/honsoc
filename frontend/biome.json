@@ -44,6 +44,9 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true,
+			"suspicious": {
+				"noExplicitAny": "error"
+			},
 			"style": {
 				"noCommonJs": "error",
 				"noHeadElement": "warn",

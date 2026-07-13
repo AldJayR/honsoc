@@ -108,9 +108,11 @@ export function AdminSidebar<Tab extends string>({
 		<Sidebar collapsible="icon" className="border-sidebar-border">
 			<SidebarHeader className="p-3">
 				<div className="flex items-center gap-3 rounded-lg px-2 py-1.5 group-data-[collapsible=icon]:justify-center">
-					<div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
-						NHS
-					</div>
+					<img
+						alt="NEUST Honor Society"
+						className="size-8 shrink-0 object-contain"
+						src="/images/honor-soc-new-logo.png"
+					/>
 					<div className="min-w-0 group-data-[collapsible=icon]:hidden">
 						<p className="truncate text-sm font-semibold leading-tight text-sidebar-foreground">
 							NEUST

@@ -1,4 +1,4 @@
-import { useNavigate, redirect } from "react-router";
+import { redirect } from "react-router";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -40,16 +40,14 @@ export default function RegisterVerify({ loaderData }: Route.ComponentProps) {
 	return (
 		<div className="mx-auto flex w-full max-w-[521px] flex-col items-center gap-8">
 			<div
-				className="bg-success border border-success-foreground text-success-foreground flex items-center justify-center rounded-[32.5px] size-[65px] transition-transform duration-300 hover:scale-105 shadow-sm"
+				className="flex size-16 items-center justify-center rounded-full border border-success-foreground bg-success text-success-foreground"
 				aria-hidden="true"
 			>
 				<Mail className="size-7 shrink-0" />
 			</div>
 
 			<div className="flex flex-col items-center w-full gap-4 text-center">
-				<h2 className="type-h4 select-none">
-					Check your email
-				</h2>
+				<h2 className="type-h4 select-none">Check your email</h2>
 
 				<p className="type-caption">
 					We sent a verification link to{" "}

@@ -105,7 +105,9 @@ interface SignInPayload {
 export async function signInEmail(
 	payload: SignInPayload,
 ): Promise<{ id: string; email: string; name: string; role: string }> {
-	const data = await apiClient<{ user: { id: string; email: string; name: string; role: string } }>(
+	const data = await apiClient<{
+		user: { id: string; email: string; name: string; role: string };
+	}>(
 		"/auth/sign-in/email",
 		{
 			method: "POST",
@@ -117,7 +119,11 @@ export async function signInEmail(
 }
 
 export async function signOut(): Promise<void> {
-	return apiClient<void>("/auth/sign-out", { method: "POST" }, "Failed to sign out");
+	return apiClient<void>(
+		"/auth/sign-out",
+		{ method: "POST" },
+		"Failed to sign out",
+	);
 }
 
 // ─── Portal Functions ────────────────────────────────────────────────────────
@@ -131,7 +137,11 @@ export async function getCampuses(): Promise<Campus[]> {
 }
 
 export async function getDepartments(): Promise<Department[]> {
-	return apiClient<Department[]>("/departments", {}, "Failed to fetch departments");
+	return apiClient<Department[]>(
+		"/departments",
+		{},
+		"Failed to fetch departments",
+	);
 }
 
 export async function getMajors(): Promise<Major[]> {
@@ -144,7 +154,8 @@ export async function getActiveTerm(): Promise<Term | null> {
 		return null;
 	}
 	if (!response.ok) throw new Error("Failed to fetch active term");
-	return response.json();
+	const data: unknown = await response.json();
+	return data as Term;
 }
 
 export async function submitApplication(
@@ -257,7 +268,8 @@ export async function getDraft(): Promise<DraftResponse | null> {
 	const response = await apiClientRaw("/applications/draft");
 	if (response.status === 404) return null;
 	if (!response.ok) throw new Error("Failed to fetch draft");
-	return response.json();
+	const data: unknown = await response.json();
+	return data as DraftResponse;
 }
 
 export async function saveDraft(
@@ -282,4 +294,3 @@ export async function deleteDraft(): Promise<void> {
 		"Failed to delete draft",
 	);
 }
-

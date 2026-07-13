@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { presignDocument, linkDocument, listDocuments } from "./document.service.ts";
 import { NotFoundError, ForbiddenError } from "@/lib/errors.ts";
 import { generatePresignedUrl } from "@/lib/storage.ts";
+import type { DbInsertResult } from "@/test-utils/db-types.ts";
 
 vi.mock("@/db", () => ({
 	db: {
@@ -121,7 +122,7 @@ describe("linkDocument", () => {
 			},
 		]);
 		const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
-		vi.mocked(db.insert).mockReturnValue({ values: mockValues } as any);
+		vi.mocked(db.insert).mockReturnValue({ values: mockValues } as unknown as DbInsertResult);
 
 		const result = await linkDocument(
 			{
@@ -173,16 +174,14 @@ describe("listDocuments", () => {
 	it("throws NotFoundError when application does not exist", async () => {
 		mockApplicationNotFound();
 
-		await expect(
-			listDocuments("nonexistent", "student-1", "STUDENT"),
-		).rejects.toThrow(NotFoundError);
+		await expect(listDocuments("nonexistent", "student-1", "STUDENT")).rejects.toThrow(
+			NotFoundError,
+		);
 	});
 
 	it("throws ForbiddenError when student lists other student's documents", async () => {
 		mockApplicationExists("other-student");
 
-		await expect(
-			listDocuments("app-1", "student-1", "STUDENT"),
-		).rejects.toThrow(ForbiddenError);
+		await expect(listDocuments("app-1", "student-1", "STUDENT")).rejects.toThrow(ForbiddenError);
 	});
 });
