@@ -1,6 +1,7 @@
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { Link } from "react-router";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeMenuItems } from "@/components/ThemeMenuItems";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -84,7 +85,7 @@ function AdminNavGroup<Tab extends string>({
 									isActive={activeTab === item.id}
 									tooltip={item.label}
 									render={item.to ? <Link to={item.to} /> : undefined}
-									onClick={item.to ? undefined : () => onTabChange(item.id)}
+									onClick={() => onTabChange(item.id)}
 								>
 									<Icon />
 									<span>{item.label}</span>
@@ -172,6 +173,7 @@ export function AdminSidebar<Tab extends string>({
 								Switch to Student Portal
 							</DropdownMenuItem>
 						)}
+						<ThemeMenuItems />
 						<DropdownMenuItem onClick={onLogout} variant="destructive">
 							<LogOut />
 							Sign out

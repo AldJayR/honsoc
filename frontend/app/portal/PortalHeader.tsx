@@ -6,11 +6,11 @@ import {
 	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Shield } from "lucide-react";
 import { signOut } from "@/shared/services/auth.api";
+import { ThemeMenuItems } from "@/components/ThemeMenuItems";
 
 interface PortalHeaderProps {
 	user: UserProfile;
@@ -77,7 +77,7 @@ export function PortalHeader({ user, onSwitchToAdmin }: PortalHeaderProps) {
 							</DropdownMenuItem>
 						)}
 					</DropdownMenuGroup>
-					<DropdownMenuSeparator />
+					<ThemeMenuItems />
 					<DropdownMenuItem
 						onClick={handleLogout}
 						className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
