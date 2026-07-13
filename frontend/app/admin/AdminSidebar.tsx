@@ -1,4 +1,5 @@
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
+import { Link } from "react-router";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -24,6 +25,7 @@ export interface AdminSidebarMenuItem<Tab extends string = string> {
 	id: Tab;
 	label: string;
 	icon: React.ComponentType<{ className?: string }>;
+	to?: string;
 }
 
 interface AdminSidebarProps<Tab extends string> {
@@ -81,7 +83,8 @@ function AdminNavGroup<Tab extends string>({
 								<SidebarMenuButton
 									isActive={activeTab === item.id}
 									tooltip={item.label}
-									onClick={() => onTabChange(item.id)}
+									render={item.to ? <Link to={item.to} /> : undefined}
+									onClick={item.to ? undefined : () => onTabChange(item.id)}
 								>
 									<Icon />
 									<span>{item.label}</span>
@@ -106,11 +109,11 @@ export function AdminSidebar<Tab extends string>({
 }: AdminSidebarProps<Tab>) {
 	return (
 		<Sidebar collapsible="icon" className="border-sidebar-border">
-			<SidebarHeader className="p-3">
-				<div className="flex items-center gap-3 rounded-lg px-2 py-1.5 group-data-[collapsible=icon]:justify-center">
+			<SidebarHeader className="p-3 group-data-[collapsible=icon]:p-1">
+				<div className="flex items-center gap-3 rounded-lg px-2 py-1.5 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
 					<img
 						alt="NEUST Honor Society"
-						className="size-8 shrink-0 object-contain"
+						className="size-8 shrink-0 object-contain group-data-[collapsible=icon]:size-10"
 						src="/images/honor-soc-new-logo.png"
 					/>
 					<div className="min-w-0 group-data-[collapsible=icon]:hidden">

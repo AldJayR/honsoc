@@ -16,7 +16,7 @@ interface AdminWorkspaceProps {
 }
 
 const menuItems = [
-	{ id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+	{ id: "dashboard", label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
 	{ id: "queue", label: "Applicant Queue", icon: Users },
 	{ id: "audit", label: "Audit Workspace", icon: BookOpen },
 	{ id: "flagged", label: "Flagged Cases", icon: Flag },

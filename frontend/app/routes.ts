@@ -14,4 +14,5 @@ export default [
 		route("register/verify", "routes/register-verify.tsx"),
 	]),
 	route("portal", "routes/portal.tsx"),
+	route("dashboard", "routes/dashboard.tsx"),
 ] satisfies RouteConfig;
