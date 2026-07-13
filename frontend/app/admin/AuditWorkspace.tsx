@@ -114,7 +114,7 @@ export function AuditWorkspace({
 	const activeDocUrl = getActiveDocUrl();
 
 	return (
-		<div className="flex h-[calc(100vh-8rem)] min-h-[640px] max-h-[900px] w-full flex-col overflow-hidden rounded-lg border border-border bg-card lg:flex-row">
+		<div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-background lg:flex-row">
 			{/* Left Column: Applicants list */}
 			<div className="flex max-h-[220px] w-full flex-col border-b border-border bg-muted/20 lg:h-full lg:max-h-none lg:w-[258px] lg:border-b-0 lg:border-r">
 				<div className="flex shrink-0 items-center justify-between border-b border-border bg-card p-4">
@@ -181,7 +181,7 @@ export function AuditWorkspace({
 						<div className="z-10 flex shrink-0 items-center justify-between border-b border-border bg-card p-4">
 							<div>
 								<h3 className="font-semibold text-sm text-foreground">
-									{selectedApp.student.name}
+									{selectedApp.student?.name ?? "Unknown applicant"}
 								</h3>
 								<p className="text-xs text-muted-foreground">
 									{selectedApp.program} ·{" "}

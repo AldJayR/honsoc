@@ -314,6 +314,7 @@ export async function getApplicationById(
 			semester: app.semester,
 			yearLevel: app.yearLevel,
 			program: app.program,
+			student: app.student,
 			majorId: app.majorId,
 			status: app.status,
 			referenceNo: app.referenceNo,

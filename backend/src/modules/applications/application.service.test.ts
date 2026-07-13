@@ -287,6 +287,11 @@ describe("getApplicationById", () => {
 			status: "SUBMITTED",
 			referenceNo: "HS-251-1-2012345",
 			submittedAt: new Date(),
+			student: {
+				id: "student-1",
+				name: "John Doe",
+				student_number: "2012345",
+			},
 		} as never);
 		vi.mocked(db.query.terms.findFirst).mockResolvedValue({
 			id: 1,
@@ -297,6 +302,7 @@ describe("getApplicationById", () => {
 
 		expect(result.id).toBe("app-1");
 		expect(result.gwa).toBe(1.5);
+		expect(result.student.name).toBe("John Doe");
 	});
 
 	it("throws NotFoundError for student accessing other student's application", async () => {
@@ -322,6 +328,11 @@ describe("getApplicationById", () => {
 			status: "SUBMITTED",
 			referenceNo: "HS-251-1-2012345",
 			submittedAt: new Date(),
+			student: {
+				id: "other-student",
+				name: "Other Student",
+				student_number: "2012346",
+			},
 		} as never);
 		vi.mocked(db.query.terms.findFirst).mockResolvedValue({
 			id: 1,

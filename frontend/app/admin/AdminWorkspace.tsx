@@ -124,6 +124,8 @@ export function AdminWorkspace({
 		}
 	};
 
+	const isAuditWorkspace = activeTab === "audit";
+
 	return (
 		<SidebarProvider className="min-h-svh bg-background">
 			<AdminSidebar
@@ -138,8 +140,20 @@ export function AdminWorkspace({
 
 			<SidebarInset className="min-w-0">
 				<AdminHeader />
-				<main className="flex-1 overflow-y-auto bg-muted/30 p-4 sm:p-6">
-					<div className="mx-auto flex min-h-full w-full max-w-7xl flex-col">
+				<main
+					className={
+						isAuditWorkspace
+							? "min-h-0 flex-1 overflow-hidden bg-background"
+							: "flex-1 overflow-y-auto bg-muted/30 p-4 sm:p-6"
+					}
+				>
+					<div
+						className={
+							isAuditWorkspace
+								? "flex h-full min-h-0 w-full flex-col"
+								: "mx-auto flex min-h-full w-full max-w-7xl flex-col"
+						}
+					>
 						{renderContent()}
 					</div>
 				</main>

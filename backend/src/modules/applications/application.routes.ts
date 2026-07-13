@@ -38,7 +38,7 @@ export async function applicationRoutes(fastify: FastifyInstance) {
 											referenceNo: { type: "string" },
 											semester: { type: "string" },
 											yearLevel: { type: "string" },
-											program: { type: "string" },
+																								program: { type: "string" },
 											majorId: { type: ["integer", "null"] },
 										},
 									},
@@ -79,7 +79,7 @@ export async function applicationRoutes(fastify: FastifyInstance) {
 													id: { type: "string" },
 													semester: { type: "string" },
 													yearLevel: { type: "string" },
-													program: { type: "string" },
+																								program: { type: "string" },
 													majorId: { type: ["integer", "null"] },
 													status: { type: "string" },
 													referenceNo: { type: "string" },
@@ -117,12 +117,20 @@ export async function applicationRoutes(fastify: FastifyInstance) {
 							"application/json": {
 								schema: {
 									type: "object",
-									properties: {
-										id: { type: "string" },
-										semester: { type: "string" },
-										yearLevel: { type: "string" },
-										program: { type: "string" },
-										majorId: { type: ["integer", "null"] },
+															properties: {
+																id: { type: "string" },
+																semester: { type: "string" },
+																yearLevel: { type: "string" },
+																program: { type: "string" },
+																student: {
+																	type: "object",
+																	properties: {
+																		id: { type: "string" },
+																		name: { type: "string" },
+																		student_number: { type: ["string", "null"] },
+																	},
+																},
+																majorId: { type: ["integer", "null"] },
 										status: { type: "string" },
 										referenceNo: { type: "string" },
 										gwa: { type: ["number", "null"] },
