@@ -48,12 +48,14 @@ export function AdminWorkspace({
 		appsError,
 		logsError,
 		isVerifying,
+		isUnverifying,
 		isFlagging,
 		isEscalating,
 		handleLogout,
 		handleTabChange,
 		handleAuditApplicant,
 		handleVerify,
+		handleUnverify,
 		handleFlag,
 		handleEscalate,
 	} = useAdminWorkspace({ user, onSwitchToStudent });
@@ -101,9 +103,11 @@ export function AdminWorkspace({
 						documents={documents}
 						gwaData={gwaData}
 						onVerify={handleVerify}
+						onUnverify={handleUnverify}
 						onFlag={handleFlag}
 						onEscalate={handleEscalate}
 						isVerifying={isVerifying}
+						isUnverifying={isUnverifying}
 						isFlagging={isFlagging}
 						isEscalating={isEscalating}
 					/>

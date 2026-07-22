@@ -14,7 +14,15 @@ import {
 import { queryClient } from "@/lib/query";
 import type { Route } from "./+types/portal";
 import { AdminWorkspace } from "@/admin/AdminWorkspace";
-import { Shield, User } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 
 export function meta() {
 	return [
@@ -116,63 +124,77 @@ export default function PortalRoute({ loaderData }: Route.ComponentProps) {
 		user.role === "COLLEGE_ADMIN" ||
 		user.role === "OFFICER" ||
 		user.role === "PRESIDENT";
+	const roleLabel =
+		user.role === "PRESIDENT"
+			? "President"
+			: user.role === "OFFICER"
+				? "Officer"
+				: "College representative";
 
 	if (isAdminRole && !activeWorkspace) {
 		return (
-			<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-4">
-				<div className="flex w-[440px] max-w-full flex-col gap-6 rounded-xl border border-border bg-card p-6 shadow-lg">
-					<div className="text-center flex flex-col gap-2">
-						<h2 className="text-lg font-semibold text-foreground leading-tight">
-							Welcome, {user.name}
-						</h2>
-						<p className="text-xs text-muted-foreground leading-relaxed">
-							You have administrative privileges. Choose a workspace below to
-							get started:
-						</p>
+			<Dialog open>
+				<DialogContent
+					showCloseButton={false}
+					className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden p-0 sm:max-w-[500px]"
+				>
+					<div className="h-1 bg-primary" />
+					<div className="px-6 pt-6 pb-5 sm:px-7">
+						<DialogHeader className="gap-3 pr-0">
+							<div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+								<span>{roleLabel}</span>
+								<span aria-hidden="true" className="size-0.5 rounded-full bg-muted-foreground/60" />
+								<span>{user.name}</span>
+							</div>
+							<DialogTitle className="font-heading text-xl leading-tight">
+								Select a workspace
+							</DialogTitle>
+							<DialogDescription className="text-sm leading-relaxed">
+								Your account has access to both areas.
+							</DialogDescription>
+						</DialogHeader>
 					</div>
 
-					<div className="flex flex-col gap-3">
-						<button
+					<div className="divide-y border-y">
+						<Button
+							variant="ghost"
 							onClick={() => handleSelectWorkspace("student")}
-							className="group flex w-full cursor-pointer items-center gap-4 rounded-lg border border-border p-4 text-left hover:bg-muted/50 hover:border-emerald-500/30"
+							className="group h-auto w-full justify-start gap-4 rounded-none px-6 py-4 text-left hover:bg-muted/50 sm:px-7"
 						>
-							<div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 group-hover:bg-emerald-500/20">
-								<User className="w-5 h-5" />
-							</div>
-							<div className="flex-1">
-								<h3 className="font-semibold text-xs text-foreground group-hover:text-emerald-600 transition-colors">
-									Student Application Portal
-								</h3>
-								<p className="text-[10px] text-muted-foreground mt-0.5 leading-normal">
-									Apply for membership, upload transcripts, and track your
-									active application.
-								</p>
-							</div>
-						</button>
+							<span className="w-5 shrink-0 font-mono text-[10px] text-muted-foreground">01</span>
+							<span className="min-w-0 flex-1">
+								<span className="block text-sm font-semibold text-foreground">Application portal</span>
+								<span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+									Apply and track your own submissions
+								</span>
+							</span>
+							<ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+						</Button>
 
-						<button
+						<Button
+							variant="ghost"
 							onClick={() => {
 								handleSelectWorkspace("admin");
 								navigate("/dashboard");
 							}}
-							className="group flex w-full cursor-pointer items-center gap-4 rounded-lg border border-border p-4 text-left hover:bg-muted/50 hover:border-primary/30"
+							className="group h-auto w-full justify-start gap-4 rounded-none px-6 py-4 text-left hover:bg-muted/50 sm:px-7"
 						>
-							<div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary group-hover:bg-primary/20">
-								<Shield className="w-5 h-5" />
-							</div>
-							<div className="flex-1">
-								<h3 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
-									Administrative Dashboard
-								</h3>
-								<p className="text-[10px] text-muted-foreground mt-0.5 leading-normal">
-									Audit student applications, check grades, issue flags, and
-									review audit logs.
-								</p>
-							</div>
-						</button>
+							<span className="w-5 shrink-0 font-mono text-[10px] text-muted-foreground">02</span>
+							<span className="min-w-0 flex-1">
+								<span className="block text-sm font-semibold text-foreground">Review dashboard</span>
+								<span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+									Audit applications and record decisions
+								</span>
+							</span>
+							<ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+						</Button>
 					</div>
-				</div>
-			</div>
+
+					<p className="px-6 py-4 text-[11px] text-muted-foreground sm:px-7">
+						You can switch workspaces later from the account menu.
+					</p>
+				</DialogContent>
+			</Dialog>
 		);
 	}
 

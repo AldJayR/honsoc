@@ -4,6 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
 	Table,
 	TableBody,
 	TableCell,
@@ -14,6 +21,7 @@ import {
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 	DialogFooter,
@@ -36,9 +44,11 @@ interface AuditWorkspaceProps {
 	documents: ApplicationDocument[];
 	gwaData: ApplicationGwaResponse | undefined;
 	onVerify: () => Promise<void>;
+	onUnverify: () => Promise<void>;
 	onFlag: (reasonCode: string, note: string) => Promise<void>;
 	onEscalate: (note: string) => Promise<void> | void;
 	isVerifying: boolean;
+	isUnverifying: boolean;
 	isFlagging: boolean;
 	isEscalating: boolean;
 }
@@ -72,14 +82,17 @@ export function AuditWorkspace({
 	documents,
 	gwaData,
 	onVerify,
+	onUnverify,
 	onFlag,
 	onEscalate,
 	isVerifying,
+	isUnverifying,
 	isFlagging,
 	isEscalating,
 }: AuditWorkspaceProps) {
 	const [activeDocTab, setActiveDocTab] = useState<string>("COG");
 	const [isFlagDialogOpen, setIsFlagDialogOpen] = useState(false);
+	const [isUnverifyDialogOpen, setIsUnverifyDialogOpen] = useState(false);
 	const [isEscalateDialogOpen, setIsEscalateDialogOpen] = useState(false);
 	const [flagReason, setFlagReason] = useState("INCORRECT_GRADE");
 	const [flagNote, setFlagNote] = useState("");
@@ -87,6 +100,11 @@ export function AuditWorkspace({
 
 	const handleVerifyClick = () => {
 		onVerify();
+	};
+
+	const handleUnverify = async () => {
+		await onUnverify();
+		setIsUnverifyDialogOpen(false);
 	};
 
 	const handleFlagSubmit = async (e: React.FormEvent) => {
@@ -111,6 +129,7 @@ export function AuditWorkspace({
 		(type) => !documents.some((document) => document.docType === type),
 	);
 	const hasDisqualifiers = (gwaData?.disqualifiers.length ?? 0) > 0;
+	const isVerified = selectedApp?.status === "VERIFIED";
 	const semesterApplications = selectedApp
 		? applications
 			.filter(
@@ -155,11 +174,12 @@ export function AuditWorkspace({
 					{applications.map((app) => {
 						const isSelected = app.id === selectedAppId;
 						return (
-							<button
+							<Button
 								key={app.id}
-								type="button"
+								variant="ghost"
 								onClick={() => onSelectApp(app.id)}
-								className={`flex items-center gap-3 rounded-md border p-3 text-left ${
+								aria-pressed={isSelected}
+								className={`h-auto w-full justify-start gap-3 rounded-md border p-3 text-left ${
 									isSelected
 										? "border-primary/20 bg-primary/10"
 										: "border-transparent hover:bg-muted/50"
@@ -188,7 +208,7 @@ export function AuditWorkspace({
 										{app.status}
 									</Badge>
 								</div>
-							</button>
+							</Button>
 						);
 					})}
 				</div>
@@ -239,16 +259,25 @@ export function AuditWorkspace({
 									<span>Flag</span>
 								</Button>
 								<Button
-									variant="default"
+									variant={isVerified ? "outline" : "default"}
 									size="sm"
-									className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
-									onClick={handleVerifyClick}
+									className={
+										isVerified
+											? "h-8 gap-1.5 text-xs"
+											: "h-8 gap-1.5 bg-emerald-600 text-xs text-white hover:bg-emerald-700"
+									}
+									onClick={isVerified ? () => setIsUnverifyDialogOpen(true) : handleVerifyClick}
 									disabled={
-										isVerifying || hasDisqualifiers || hasMissingDocuments
+										isVerifying ||
+										(!isVerified && (hasDisqualifiers || hasMissingDocuments))
 									}
 								>
 									<Check className="w-3.5 h-3.5" />
-									<span>{isVerifying ? "Verifying..." : "Verify"}</span>
+									<span>
+										{isVerified
+											? isUnverifying ? "Unverifying..." : "Unverify"
+											: isVerifying ? "Verifying..." : "Verify"}
+									</span>
 								</Button>
 							</div>
 						</div>
@@ -450,16 +479,38 @@ export function AuditWorkspace({
 				)}
 
 				{/* Design System Dialog for Flagging */}
+				<Dialog open={isUnverifyDialogOpen} onOpenChange={setIsUnverifyDialogOpen}>
+					<DialogContent className="sm:max-w-[400px]">
+						<DialogHeader>
+							<DialogTitle>Unverify Application?</DialogTitle>
+							<DialogDescription>
+								This will return the application to under review and remove its verified status.
+							</DialogDescription>
+						</DialogHeader>
+						<DialogFooter>
+							<Button type="button" variant="ghost" onClick={() => setIsUnverifyDialogOpen(false)}>
+								Cancel
+							</Button>
+							<Button type="button" variant="destructive" onClick={handleUnverify} disabled={isUnverifying}>
+								{isUnverifying ? "Unverifying..." : "Unverify"}
+							</Button>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
+
 				<Dialog open={isEscalateDialogOpen} onOpenChange={setIsEscalateDialogOpen}>
-					<DialogContent className="gap-0 overflow-hidden rounded-lg border border-border bg-popover p-0 shadow-lg sm:max-w-[440px]">
-						<DialogHeader className="border-b border-border bg-card p-5">
-							<DialogTitle className="text-sm font-semibold text-foreground">
+					<DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[440px]">
+						<DialogHeader className="gap-1 border-b bg-card p-5 pr-12">
+							<DialogTitle className="text-sm font-semibold">
 								Escalate Application
 							</DialogTitle>
+							<DialogDescription className="text-xs">
+								Send this application to the president with a required review note.
+							</DialogDescription>
 						</DialogHeader>
 						<form onSubmit={handleEscalateSubmit} className="flex flex-col">
 							<div className="p-5">
-								<label htmlFor="escalationNote" className="text-xs font-semibold text-foreground">
+								<label htmlFor="escalationNote" className="text-xs font-semibold">
 									Escalation Note
 								</label>
 								<Textarea
@@ -472,11 +523,11 @@ export function AuditWorkspace({
 									className="mt-1.5 resize-none rounded-md border-border bg-card p-2.5 text-xs"
 								/>
 							</div>
-							<DialogFooter className="gap-2 border-t border-border bg-muted/30 p-4">
-								<Button type="button" variant="ghost" size="sm" onClick={() => setIsEscalateDialogOpen(false)}>
+							<DialogFooter className="mx-0 mb-0 shrink-0 gap-2 bg-muted/30 p-4">
+								<Button type="button" variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setIsEscalateDialogOpen(false)}>
 									Cancel
 								</Button>
-								<Button type="submit" size="sm" disabled={isEscalating}>
+								<Button type="submit" size="sm" className="h-8 text-xs" disabled={isEscalating}>
 									{isEscalating ? "Escalating..." : "Escalate"}
 								</Button>
 							</DialogFooter>
@@ -485,12 +536,15 @@ export function AuditWorkspace({
 				</Dialog>
 
 				<Dialog open={isFlagDialogOpen} onOpenChange={setIsFlagDialogOpen}>
-					<DialogContent className="gap-0 overflow-hidden rounded-lg border border-border bg-popover p-0 shadow-lg sm:max-w-[440px]">
-						<DialogHeader className="flex flex-row items-center justify-between border-b border-border bg-card p-5">
-							<DialogTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
+					<DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[440px]">
+						<DialogHeader className="gap-1 border-b bg-card p-5 pr-12">
+							<DialogTitle className="flex items-center gap-2 text-sm font-semibold">
 								<Flag className="w-4 h-4 text-red-600 fill-red-600/10" />
 								<span>Flag Application</span>
 							</DialogTitle>
+							<DialogDescription className="text-xs">
+								Record the issue so the applicant can correct it.
+							</DialogDescription>
 						</DialogHeader>
 
 						<form onSubmit={handleFlagSubmit} className="flex flex-col">
@@ -502,19 +556,20 @@ export function AuditWorkspace({
 									>
 										Reason Code
 									</label>
-									<select
-										id="flagReason"
+									<Select
 										value={flagReason}
-										onChange={(e) => setFlagReason(e.target.value)}
-										className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+										onValueChange={(value) => setFlagReason(value ?? "INCORRECT_GRADE")}
 									>
-										<option value="INCORRECT_GRADE">Incorrect Grade</option>
-										<option value="BLURRY_DOCUMENTS">Blurry Documents</option>
-										<option value="INCOMPLETE_SUBMISSION">
-											Incomplete Submission
-										</option>
-										<option value="OTHER">Other Reason</option>
-									</select>
+										<SelectTrigger id="flagReason" className="h-9 w-full bg-card text-xs">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="INCORRECT_GRADE">Incorrect Grade</SelectItem>
+											<SelectItem value="BLURRY_DOCUMENTS">Blurry Documents</SelectItem>
+											<SelectItem value="INCOMPLETE_SUBMISSION">Incomplete Submission</SelectItem>
+											<SelectItem value="OTHER">Other Reason</SelectItem>
+										</SelectContent>
+									</Select>
 								</div>
 
 								<div className="flex flex-col gap-1.5">
@@ -536,7 +591,7 @@ export function AuditWorkspace({
 								</div>
 							</div>
 
-							<DialogFooter className="flex shrink-0 justify-end gap-2 border-t border-border bg-muted/30 p-4">
+							<DialogFooter className="mx-0 mb-0 shrink-0 gap-2 bg-muted/30 p-4">
 								<Button
 									type="button"
 									variant="ghost"

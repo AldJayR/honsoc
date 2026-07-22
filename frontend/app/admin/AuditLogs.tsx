@@ -1,6 +1,13 @@
 import { useState, useMemo } from "react";
 import { Search, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AuditLogEntry, AuditLogFilters } from "@/shared/services/representative.api";
 import { MetricCard } from "./MetricCard";
@@ -89,17 +96,24 @@ export function AuditLogs({ auditLogs, filters, onFiltersChange }: AuditLogsProp
 						className="h-9 border-border bg-card pl-9 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
 					/>
 				</div>
-				<select
-					value={filters.action ?? ""}
-					onChange={(event) => onFiltersChange({ ...filters, action: event.target.value || undefined })}
-					className="h-9 rounded-md border border-border bg-card px-3 text-xs"
+				<Select
+					value={filters.action ?? "ALL"}
+					onValueChange={(action) => onFiltersChange({
+						...filters,
+						action: action === "ALL" ? undefined : action ?? undefined,
+					})}
 				>
-					<option value="">All actions</option>
-					<option value="VERIFIED">Verified</option>
-					<option value="FLAGGED">Flagged</option>
-					<option value="ESCALATED">Escalated</option>
-					<option value="REJECTED">Rejected</option>
-				</select>
+					<SelectTrigger className="h-9 bg-card text-xs">
+						<SelectValue placeholder="All actions" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="ALL">All actions</SelectItem>
+						<SelectItem value="VERIFIED">Verified</SelectItem>
+						<SelectItem value="FLAGGED">Flagged</SelectItem>
+						<SelectItem value="ESCALATED">Escalated</SelectItem>
+						<SelectItem value="REJECTED">Rejected</SelectItem>
+					</SelectContent>
+				</Select>
 				<Input
 					type="date"
 					value={filters.from ?? ""}

@@ -19,6 +19,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StepNavigation } from "@/portal/StepNavigation";
 import type { GradeInput } from "@/shared/services/auth.api";
 import {
@@ -181,30 +182,16 @@ export function PortalGradesStep({
 
 			{/* Semester Tab Toggles */}
 			{selectedSemesters.firstSem && selectedSemesters.secondSem ? (
-				<div className="flex bg-muted p-0.5 rounded-lg shrink-0">
-					<button
-						type="button"
-						onClick={() => setActiveTab("1st")}
-						className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all select-none cursor-pointer ${
-							activeTab === "1st"
-								? "bg-card text-foreground shadow-sm"
-								: "text-muted-foreground hover:text-foreground"
-						}`}
-					>
-						1st semester
-					</button>
-					<button
-						type="button"
-						onClick={() => setActiveTab("2nd")}
-						className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all select-none cursor-pointer ${
-							activeTab === "2nd"
-								? "bg-card text-foreground shadow-sm"
-								: "text-muted-foreground hover:text-foreground"
-						}`}
-					>
-						2nd semester
-					</button>
-				</div>
+				<Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "1st" | "2nd")}>
+					<TabsList className="rounded-lg bg-muted p-0.5">
+						<TabsTrigger value="1st" className="px-3 py-1.5 text-sm font-medium">
+							1st semester
+						</TabsTrigger>
+						<TabsTrigger value="2nd" className="px-3 py-1.5 text-sm font-medium">
+							2nd semester
+						</TabsTrigger>
+					</TabsList>
+				</Tabs>
 			) : null}
 
 			{/* Table of Grades */}
@@ -231,14 +218,15 @@ export function PortalGradesStep({
 									{g.grade}
 								</TableCell>
 								<TableCell className="text-right">
-									<button
-										type="button"
+									<Button
+										variant="ghost"
+										size="icon-xs"
 										onClick={() => g._key && handleDeleteGrade(g._key)}
-										className="p-1 transition-colors cursor-pointer select-none text-muted-foreground hover:text-destructive"
+										className="text-muted-foreground hover:text-destructive"
 										aria-label="Delete grade"
 									>
 										<Trash2 className="size-4" />
-									</button>
+									</Button>
 								</TableCell>
 							</TableRow>
 						))}

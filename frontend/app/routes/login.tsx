@@ -56,6 +56,7 @@ export default function LoginRoute() {
 				},
 				{
 					onSuccess: () => {
+						sessionStorage.removeItem("activeWorkspace");
 						setIsRedirecting(true);
 						navigate("/portal", { replace: true });
 					},

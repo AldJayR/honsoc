@@ -469,6 +469,29 @@ describe("updateApplicationStatus", () => {
 		);
 	});
 
+	it("UNVERIFIED returns a verified application to review and clears the reviewer", async () => {
+		mockApplicationWithGrades({ status: "VERIFIED" });
+		const { mockSet } = mockUpdateSuccess({ id: "app-1", status: "UNDER_REVIEW" });
+		const { logAction } = await import("@/modules/audit-log/audit-log.service.ts");
+
+		const result = await updateApplicationStatus(
+			"app-1",
+			"admin-1",
+			"COLLEGE_ADMIN",
+			"UNDER_REVIEW",
+		);
+
+		expect(result.status).toBe("UNDER_REVIEW");
+		expect(mockSet).toHaveBeenCalledWith({ status: "UNDER_REVIEW", reviewedBy: null });
+		expect(logAction).toHaveBeenCalledWith(
+			"admin-1",
+			"app-1",
+			"UNVERIFIED",
+			null,
+			expect.anything(),
+		);
+	});
+
 	it("REJECTED sets status without disqualifier check", async () => {
 		mockApplicationWithGrades({
 			grades: [{ grade: "INC", units: 3 }],

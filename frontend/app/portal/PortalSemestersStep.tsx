@@ -1,4 +1,5 @@
-import { Check } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { StepNavigation } from "@/portal/StepNavigation";
 import { formatSchoolYear } from "@/lib/format";
 
@@ -64,30 +65,26 @@ export function PortalSemestersStep({
 					const isSelected = selectedSemesters[semester.key];
 
 					return (
-						<button
+						<Label
 							key={semester.key}
-							type="button"
-							onClick={() => handleCardClick(semester.key)}
+							htmlFor={`semester-${semester.key}`}
 							className={`flex flex-1 items-start gap-3 rounded-lg border bg-card p-3 text-left ${
 								isSelected
 									? "border-amber-500 bg-amber-500/5"
 									: "border-border hover:border-muted-foreground/40"
 							}`}
 						>
-							<div
-								className={`flex size-4 items-center justify-center rounded border ${
-									isSelected
-										? "border-amber-500 bg-amber-500 text-white"
-										: "border-border bg-card text-transparent"
-								}`}
-							>
-								<Check className="size-3 stroke-[3]" />
-							</div>
+							<Checkbox
+								id={`semester-${semester.key}`}
+								checked={isSelected}
+								onCheckedChange={() => handleCardClick(semester.key)}
+								className="data-checked:border-amber-500 data-checked:bg-amber-500"
+							/>
 							<div className="flex flex-col gap-1 leading-tight">
 								<span className="type-label">{semester.label}</span>
 								<span className="type-caption text-muted-foreground">{semester.year}</span>
 							</div>
-						</button>
+						</Label>
 					);
 				})}
 			</div>

@@ -63,7 +63,12 @@ export async function updateApplicationStatus(
 			.update(applications)
 			.set({
 				status: newStatus as "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED" | "VERIFIED" | "REJECTED" | "ESCALATED",
-				reviewedBy: newStatus === "VERIFIED" ? actorId : undefined,
+				reviewedBy:
+					newStatus === "VERIFIED"
+						? actorId
+						: app.status === "VERIFIED" && newStatus === "UNDER_REVIEW"
+							? null
+							: undefined,
 			})
 			.where(eq(applications.id, applicationId))
 			.returning({ id: applications.id, status: applications.status });
@@ -71,6 +76,7 @@ export async function updateApplicationStatus(
 		if (!updated) throw new NotFoundError("Application not found");
 
 		const auditAction = newStatus === "VERIFIED" ? "VERIFIED"
+			: app.status === "VERIFIED" && newStatus === "UNDER_REVIEW" ? "UNVERIFIED"
 			: newStatus === "FLAGGED" ? "FLAGGED"
 			: newStatus === "REJECTED" ? "REJECTED"
 			: newStatus === "ESCALATED" ? "ESCALATED"

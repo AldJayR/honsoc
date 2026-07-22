@@ -76,6 +76,21 @@ export function useAdminWorkspace({ user, onSwitchToStudent }: UseAdminWorkspace
 		}
 	};
 
+	const handleUnverify = async () => {
+		if (!selectedAuditAppId) return;
+		try {
+			await updateStatusMutation.mutateAsync({
+				id: selectedAuditAppId,
+				status: "UNDER_REVIEW",
+			});
+			toast.success("Application returned to under review.");
+		} catch (error: unknown) {
+			const msg = error instanceof Error ? error.message : "Unable to unverify application";
+			toast.error(msg);
+			throw error;
+		}
+	};
+
 	const handleFlag = async (reasonCode: string, note: string) => {
 		if (!selectedAuditAppId) return;
 		try {
@@ -127,6 +142,7 @@ export function useAdminWorkspace({ user, onSwitchToStudent }: UseAdminWorkspace
 		appsError,
 		logsError,
 		isVerifying: updateStatusMutation.isPending,
+		isUnverifying: updateStatusMutation.isPending,
 		isFlagging: flagApplicationMutation.isPending,
 		isEscalating: updateStatusMutation.isPending,
 
@@ -135,6 +151,7 @@ export function useAdminWorkspace({ user, onSwitchToStudent }: UseAdminWorkspace
 		handleTabChange,
 		handleAuditApplicant,
 		handleVerify,
+		handleUnverify,
 		handleFlag,
 		handleEscalate,
 	};

@@ -3,6 +3,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import type { ApplicationStatusItem } from "@/shared/services/auth.api";
 import { formatDate, formatTime } from "@/lib/format";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type ApplicationStatus = ApplicationStatusItem["status"];
 type StepName = "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED_VERIFIED" | "HONOR_ROLL";
@@ -99,23 +101,20 @@ export function PortalStatusStep({
 		<div className="flex w-full flex-col items-start gap-6">
 			{/* Application Tabs if multiple applications exist */}
 			{applications.length > 1 ? (
-				<div className="flex rounded-md bg-muted p-0.5">
+				<Tabs value={String(activeAppIdx)} onValueChange={(value) => setActiveAppIdx(Number(value))}>
+					<TabsList className="rounded-md bg-muted p-0.5">
 					{applications.map((a, idx) => (
-						<button
+						<TabsTrigger
 							key={a.id}
-							type="button"
-							onClick={() => setActiveAppIdx(idx)}
-							className={`cursor-pointer rounded px-3 py-1 text-xs font-semibold ${
-								activeAppIdx === idx
-									? "bg-card text-foreground shadow-sm"
-									: "text-muted-foreground hover:text-foreground"
-							}`}
+							value={String(idx)}
+							className="px-3 py-1 text-xs font-semibold"
 						>
-							{a.semester === "1ST" ? "1st Semester" : "2nd Semester"}{" "}
+							{a.semester === "1ST" ? "1st Semester" : "2nd Semester"} {" "}
 							Application
-						</button>
+						</TabsTrigger>
 					))}
-				</div>
+					</TabsList>
+				</Tabs>
 			) : null}
 
 			{/* Submission Success Banner */}
@@ -137,10 +136,11 @@ export function PortalStatusStep({
 					<span className="font-sans font-semibold select-text text-foreground">
 						{app.referenceNo}
 					</span>
-					<button
-						type="button"
+					<Button
+						variant="ghost"
+						size="icon-xs"
 						onClick={handleCopyRef}
-						className="p-1 transition-colors cursor-pointer text-muted-foreground hover:text-primary"
+						className="text-muted-foreground hover:text-primary"
 						aria-label="Copy reference number"
 					>
 						{copied ? (
@@ -148,7 +148,7 @@ export function PortalStatusStep({
 						) : (
 							<Copy className="size-3.5" />
 						)}
-					</button>
+					</Button>
 				</div>
 			</div>
 
