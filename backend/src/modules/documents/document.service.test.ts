@@ -21,6 +21,7 @@ vi.mock("@/db", () => ({
 
 vi.mock("@/lib/storage.ts", () => ({
 	generatePresignedUrl: vi.fn().mockResolvedValue("https://r2.example.com/signed-url"),
+	generatePresignedDownloadUrl: vi.fn().mockResolvedValue("https://r2.example.com/download-url"),
 }));
 
 beforeEach(() => {
@@ -56,8 +57,9 @@ describe("presignDocument", () => {
 		expect(result.objectKey).toContain(".pdf");
 		expect(generatePresignedUrl).toHaveBeenCalledWith(
 			expect.stringContaining("applications/app-1/COG_1ST_"),
-			"application/octet-stream",
+			"application/pdf",
 		);
+		expect(result.contentType).toBe("application/pdf");
 	});
 
 	it("throws ForbiddenError when student accesses other student's application", async () => {
@@ -168,7 +170,14 @@ describe("listDocuments", () => {
 
 		const result = await listDocuments("app-1", "student-1", "STUDENT");
 
-		expect(result).toEqual(expected);
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: 1,
+					url: "https://r2.example.com/download-url",
+				}),
+			]),
+		);
 	});
 
 	it("throws NotFoundError when application does not exist", async () => {

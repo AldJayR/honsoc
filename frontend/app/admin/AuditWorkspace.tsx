@@ -122,7 +122,7 @@ export function AuditWorkspace({
 		: [];
 
 	// Find the active document URL based on tab
-	const getActiveDocUrl = () => {
+	const getActiveDocument = () => {
 		let typeToFind = "COG_1ST";
 		if (activeDocTab === "COR") {
 			typeToFind = "COR";
@@ -133,11 +133,13 @@ export function AuditWorkspace({
 			typeToFind = selectedApp?.semester === "2ND" ? "COG_2ND" : "COG_1ST";
 		}
 
-		const doc = documents.find((d) => d.docType === typeToFind);
-		return doc?.url || null;
+		return documents.find((d) => d.docType === typeToFind) || null;
 	};
 
-	const activeDocUrl = getActiveDocUrl();
+	const activeDocument = getActiveDocument();
+	const isImageDocument = activeDocument
+		? /\.(png|jpe?g)$/i.test(activeDocument.objectKey)
+		: false;
 
 	return (
 		<div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-background lg:flex-row">
@@ -289,12 +291,20 @@ export function AuditWorkspace({
 									</TabsList>
 
 									<div className="relative min-h-[300px] flex-1 overflow-hidden rounded-md border border-border bg-background">
-										{activeDocUrl ? (
+										{activeDocument ? (
+											isImageDocument ? (
+												<img
+													src={activeDocument.url}
+													alt={`${activeDocument.docType} document scan`}
+													className="h-full w-full object-contain"
+												/>
+											) : (
 											<iframe
-												src={activeDocUrl}
+												src={activeDocument.url}
 												title="Document Scan"
 												className="w-full h-full border-none"
 											/>
+											)
 										) : (
 											<div className="w-full h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground gap-2">
 												<FileText className="w-12 h-12 text-muted-foreground/30 stroke-[1.5]" />

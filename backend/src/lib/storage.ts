@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@/config/env.ts";
 
@@ -22,6 +22,20 @@ export async function generatePresignedUrl(
 		Bucket: env.R2_BUCKET,
 		Key: objectKey,
 		ContentType: contentType,
+	});
+
+	return getSignedUrl(client, command, { expiresIn: EXPIRY_SECONDS });
+}
+
+export async function generatePresignedDownloadUrl(
+	objectKey: string,
+	contentType: string,
+): Promise<string> {
+	const command = new GetObjectCommand({
+		Bucket: env.R2_BUCKET,
+		Key: objectKey,
+		ResponseContentDisposition: "inline",
+		ResponseContentType: contentType,
 	});
 
 	return getSignedUrl(client, command, { expiresIn: EXPIRY_SECONDS });

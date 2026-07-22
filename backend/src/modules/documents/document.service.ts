@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { applications, documents } from "@/db/schema/index.ts";
 import { eq, and } from "drizzle-orm";
 import { NotFoundError, ForbiddenError } from "@/lib/errors.ts";
-import { generatePresignedUrl } from "@/lib/storage.ts";
+import { generatePresignedDownloadUrl, generatePresignedUrl } from "@/lib/storage.ts";
 import type {
 	PresignDocumentInput,
 	LinkDocumentInput,
@@ -12,6 +12,20 @@ import type {
 function getExtension(fileName: string): string {
 	const dot = fileName.lastIndexOf(".");
 	return dot >= 0 ? fileName.slice(dot) : ".bin";
+}
+
+function getContentType(fileName: string): string {
+	switch (getExtension(fileName).toLowerCase()) {
+		case ".pdf":
+			return "application/pdf";
+		case ".png":
+			return "image/png";
+		case ".jpg":
+		case ".jpeg":
+			return "image/jpeg";
+		default:
+			return "application/octet-stream";
+	}
 }
 
 async function verifyOwnership(
@@ -43,9 +57,10 @@ export async function presignDocument(
 	const uniqueId = randomUUID();
 	const objectKey = `applications/${input.applicationId}/${input.docType}_${uniqueId}${ext}`;
 
-	const url = await generatePresignedUrl(objectKey, "application/octet-stream");
+	const contentType = getContentType(input.fileName);
+	const url = await generatePresignedUrl(objectKey, contentType);
 
-	return { url, objectKey };
+	return { url, objectKey, contentType };
 }
 
 export async function linkDocument(
@@ -79,7 +94,17 @@ export async function listDocuments(
 ) {
 	await verifyOwnership(applicationId, userId, role);
 
-	return db.query.documents.findMany({
+	const docs = await db.query.documents.findMany({
 		where: eq(documents.applicationId, applicationId),
 	});
+
+	return Promise.all(
+		docs.map(async (document) => ({
+			...document,
+			url: await generatePresignedDownloadUrl(
+				document.objectKey,
+				getContentType(document.objectKey),
+			),
+		})),
+	);
 }

@@ -48,7 +48,7 @@ async function uploadDocument(
 		docType,
 		fileName: file.name,
 	});
-	await uploadToR2(presign.url, file);
+	await uploadToR2(presign.url, file, presign.contentType);
 	await linkDocument({
 		applicationId: appId,
 		docType,

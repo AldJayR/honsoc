@@ -185,8 +185,8 @@ export async function presignDocument(payload: {
 	applicationId: string;
 	docType: "COR" | "COG_1ST" | "COG_2ND" | "GMC";
 	fileName: string;
-}): Promise<{ url: string; objectKey: string }> {
-	return apiClient<{ url: string; objectKey: string }>(
+}): Promise<{ url: string; objectKey: string; contentType: string }> {
+	return apiClient<{ url: string; objectKey: string; contentType: string }>(
 		"/documents/presign",
 		{
 			method: "POST",
@@ -212,11 +212,15 @@ export async function linkDocument(payload: {
 	);
 }
 
-export async function uploadToR2(url: string, file: File): Promise<void> {
+export async function uploadToR2(
+	url: string,
+	file: File,
+	contentType: string,
+): Promise<void> {
 	const response = await fetch(url, {
 		method: "PUT",
 		headers: {
-			"Content-Type": "application/octet-stream",
+			"Content-Type": contentType,
 		},
 		body: file,
 	});
