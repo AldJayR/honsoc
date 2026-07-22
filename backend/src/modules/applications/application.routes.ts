@@ -249,12 +249,13 @@ export async function applicationRoutes(fastify: FastifyInstance) {
 		},
 		async (request, reply) => {
 			const { id } = request.params as { id: string };
-			const { status } = updateStatusSchema.parse(request.body);
+			const { status, note } = updateStatusSchema.parse(request.body);
 			const result = await updateApplicationStatus(
 				id,
 				request.user!.id,
 				request.user!.role,
 				status,
+				note,
 			);
 			return reply.send(result);
 		},

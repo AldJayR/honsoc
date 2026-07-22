@@ -1,16 +1,14 @@
 import { z } from "zod";
 
-export const FLAG_REASON_CODES = [
-	"DOC-001",
-	"GRD-002",
-	"DOC-003",
-	"GRD-004",
-	"GRD-006",
-	"OTH-005",
+export const FLAG_REASONS = [
+	"INCORRECT_GRADE",
+	"BLURRY_DOCUMENTS",
+	"INCOMPLETE_SUBMISSION",
+	"OTHER",
 ] as const;
 
 export const createFlagSchema = z.object({
-	reasonCode: z.enum(FLAG_REASON_CODES),
+	reasonCode: z.enum(FLAG_REASONS),
 	note: z.string().min(1, "Note is required"),
 });
 

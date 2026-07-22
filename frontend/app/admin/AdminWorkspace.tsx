@@ -36,6 +36,8 @@ export function AdminWorkspace({
 		setSelectedAuditAppId,
 		applications,
 		auditLogs,
+		auditLogFilters,
+		setAuditLogFilters,
 		selectedApp,
 		isAppLoading,
 		grades,
@@ -47,6 +49,7 @@ export function AdminWorkspace({
 		logsError,
 		isVerifying,
 		isFlagging,
+		isEscalating,
 		handleLogout,
 		handleTabChange,
 		handleAuditApplicant,
@@ -102,6 +105,7 @@ export function AdminWorkspace({
 						onEscalate={handleEscalate}
 						isVerifying={isVerifying}
 						isFlagging={isFlagging}
+						isEscalating={isEscalating}
 					/>
 				);
 			case "flagged":
@@ -112,7 +116,13 @@ export function AdminWorkspace({
 					/>
 				);
 			case "logs":
-				return <AuditLogs auditLogs={auditLogs} />;
+				return (
+					<AuditLogs
+						auditLogs={auditLogs}
+						filters={auditLogFilters}
+						onFiltersChange={setAuditLogFilters}
+					/>
+				);
 			default:
 				return (
 					<Dashboard

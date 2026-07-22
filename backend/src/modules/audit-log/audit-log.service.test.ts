@@ -79,4 +79,14 @@ describe("getAuditLog", () => {
 
 		expect(result).toEqual([]);
 	});
+
+	it("passes action and date filters to the query", async () => {
+		vi.mocked(db.query.auditLog.findMany).mockResolvedValue([]);
+
+		await getAuditLog({ action: "ESCALATED", from: "2026-07-01", to: "2026-07-31" });
+
+		expect(db.query.auditLog.findMany).toHaveBeenCalledWith(
+			expect.objectContaining({ where: expect.anything() }),
+		);
+	});
 });

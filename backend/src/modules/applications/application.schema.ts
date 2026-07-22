@@ -39,7 +39,16 @@ export const applicationIdParamSchema = z.object({
 });
 
 export const updateStatusSchema = z.object({
-	status: z.enum(["SUBMITTED", "UNDER_REVIEW", "FLAGGED", "VERIFIED", "REJECTED"]),
+	status: z.enum(["SUBMITTED", "UNDER_REVIEW", "FLAGGED", "VERIFIED", "REJECTED", "ESCALATED"]),
+	note: z.string().trim().min(1).max(2000).optional(),
+}).superRefine((input, context) => {
+	if (input.status === "ESCALATED" && !input.note) {
+		context.addIssue({
+			code: "custom",
+			path: ["note"],
+			message: "An escalation note is required",
+		});
+	}
 }).meta({ id: "UpdateStatus" });
 
 export type UpdateStatusInput = z.infer<typeof updateStatusSchema>;

@@ -25,7 +25,7 @@ beforeEach(() => {
 });
 
 describe("createFlag", () => {
-	const validInput = { reasonCode: "DOC-001", note: "Scan is blurry" };
+	const validInput = { reasonCode: "BLURRY_DOCUMENTS", note: "Scan is blurry" };
 
 	function mockApplicationFound(overrides = {}) {
 		vi.mocked(db.query.applications.findFirst).mockResolvedValue({
@@ -94,7 +94,7 @@ describe("getFlags", () => {
 			studentId: "student-1",
 		} as never);
 		vi.mocked(db.query.flags.findMany).mockResolvedValue([
-			{ id: 1, reasonCode: "DOC-001", note: "Blurry scan" },
+			{ id: 1, reasonCode: "BLURRY_DOCUMENTS", note: "Blurry scan" },
 		] as never);
 
 		const result = await getFlags("app-1", "admin-1", "COLLEGE_ADMIN");

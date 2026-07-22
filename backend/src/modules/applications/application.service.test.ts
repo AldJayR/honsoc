@@ -359,6 +359,7 @@ describe("updateApplicationStatus", () => {
 			status: string;
 			studentId: string;
 			grades: Array<{ grade: string; units: number }>;
+			documents: Array<{ docType: string }>;
 		}> = {},
 	) {
 		const defaults = {
@@ -368,6 +369,7 @@ describe("updateApplicationStatus", () => {
 			semester: "1ST",
 			status: "SUBMITTED",
 			grades: [{ grade: "1.50", units: 3 }],
+			documents: [],
 		};
 		const merged = { ...defaults, ...overrides };
 		vi.mocked(db.query.applications.findFirst).mockResolvedValue(merged as never);
@@ -424,6 +426,7 @@ describe("updateApplicationStatus", () => {
 		vi.mocked(computeGWA).mockResolvedValue(1.5);
 		mockApplicationWithGrades({
 			grades: [{ grade: "1.50", units: 3 }],
+			documents: [{ docType: "COR" }, { docType: "GMC" }, { docType: "COG_1ST" }],
 		});
 		mockTerm("1.75");
 		mockUpdateSuccess({ id: "app-1", status: "VERIFIED" });
@@ -431,6 +434,39 @@ describe("updateApplicationStatus", () => {
 		const result = await updateApplicationStatus("app-1", "admin-1", "COLLEGE_ADMIN", "VERIFIED");
 
 		expect(result.status).toBe("VERIFIED");
+	});
+
+	it("throws UnprocessableError when VERIFY is attempted without required documents", async () => {
+		mockApplicationWithGrades({
+			documents: [{ docType: "COR" }, { docType: "COG_1ST" }],
+		});
+
+		await expect(
+			updateApplicationStatus("app-1", "admin-1", "COLLEGE_ADMIN", "VERIFIED"),
+		).rejects.toThrow("missing required documents (GMC)");
+	});
+
+	it("ESCALATED sets status and writes an escalation audit action", async () => {
+		mockApplicationWithGrades();
+		mockUpdateSuccess({ id: "app-1", status: "ESCALATED" });
+		const { logAction } = await import("@/modules/audit-log/audit-log.service.ts");
+
+		const result = await updateApplicationStatus(
+			"app-1",
+			"admin-1",
+			"COLLEGE_ADMIN",
+			"ESCALATED",
+			"Needs president review",
+		);
+
+		expect(result.status).toBe("ESCALATED");
+		expect(logAction).toHaveBeenCalledWith(
+			"admin-1",
+			"app-1",
+			"ESCALATED",
+			"Needs president review",
+			expect.anything(),
+		);
 	});
 
 	it("REJECTED sets status without disqualifier check", async () => {

@@ -37,9 +37,10 @@ interface AuditWorkspaceProps {
 	gwaData: ApplicationGwaResponse | undefined;
 	onVerify: () => Promise<void>;
 	onFlag: (reasonCode: string, note: string) => Promise<void>;
-	onEscalate: () => void;
+	onEscalate: (note: string) => Promise<void> | void;
 	isVerifying: boolean;
 	isFlagging: boolean;
+	isEscalating: boolean;
 }
 
 const formatYearLevel = (yearStr: string) => {
@@ -75,12 +76,14 @@ export function AuditWorkspace({
 	onEscalate,
 	isVerifying,
 	isFlagging,
+	isEscalating,
 }: AuditWorkspaceProps) {
 	const [activeDocTab, setActiveDocTab] = useState<string>("COG");
-	const [activeGradeSemTab, setActiveGradeSemTab] = useState<string>("1ST");
 	const [isFlagDialogOpen, setIsFlagDialogOpen] = useState(false);
+	const [isEscalateDialogOpen, setIsEscalateDialogOpen] = useState(false);
 	const [flagReason, setFlagReason] = useState("INCORRECT_GRADE");
 	const [flagNote, setFlagNote] = useState("");
+	const [escalationNote, setEscalationNote] = useState("");
 
 	const handleVerifyClick = () => {
 		onVerify();
@@ -93,7 +96,30 @@ export function AuditWorkspace({
 		setFlagNote("");
 	};
 
+	const handleEscalateSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		await onEscalate(escalationNote);
+		setIsEscalateDialogOpen(false);
+		setEscalationNote("");
+	};
+
 	const filteredGrades = grades;
+	const requiredDocumentTypes = selectedApp
+		? ["COR", "GMC", selectedApp.semester === "1ST" ? "COG_1ST" : "COG_2ND"]
+		: [];
+	const hasMissingDocuments = requiredDocumentTypes.some(
+		(type) => !documents.some((document) => document.docType === type),
+	);
+	const hasDisqualifiers = (gwaData?.disqualifiers.length ?? 0) > 0;
+	const semesterApplications = selectedApp
+		? applications
+			.filter(
+				(application) =>
+					application.student.id === selectedApp.student.id &&
+					application.term.id === selectedApp.term.id,
+			)
+			.sort((a, b) => a.semester.localeCompare(b.semester))
+		: [];
 
 	// Find the active document URL based on tab
 	const getActiveDocUrl = () => {
@@ -195,10 +221,11 @@ export function AuditWorkspace({
 									variant="outline"
 									size="sm"
 									className="h-8 text-xs gap-1.5"
-									onClick={onEscalate}
+									onClick={() => setIsEscalateDialogOpen(true)}
+									disabled={isEscalating}
 								>
 									<ArrowUpRight className="w-3.5 h-3.5" />
-									<span>Escalate</span>
+									<span>{isEscalating ? "Escalating..." : "Escalate"}</span>
 								</Button>
 								<Button
 									variant="outline"
@@ -214,7 +241,9 @@ export function AuditWorkspace({
 									size="sm"
 									className="h-8 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
 									onClick={handleVerifyClick}
-									disabled={isVerifying}
+									disabled={
+										isVerifying || hasDisqualifiers || hasMissingDocuments
+									}
 								>
 									<Check className="w-3.5 h-3.5" />
 									<span>{isVerifying ? "Verifying..." : "Verify"}</span>
@@ -299,12 +328,13 @@ export function AuditWorkspace({
 											{gwaData?.gwa ? gwaData.gwa.toFixed(2) : "N/A"}
 										</p>
 									</div>
-									{gwaData?.disqualifiers &&
-									gwaData.disqualifiers.length > 0 ? (
+									{hasDisqualifiers || hasMissingDocuments ? (
 										<div className="flex items-center gap-1.5 text-xs text-destructive bg-destructive/10 border border-destructive/20 px-2.5 py-1.5 rounded-lg max-w-[200px] font-medium">
 											<AlertCircle className="w-4 h-4 shrink-0" />
 											<span className="leading-tight text-[11px]">
-												Disqualifiers detected!
+												{hasDisqualifiers
+													? "Disqualifiers detected!"
+													: "Required documents are missing!"}
 											</span>
 										</div>
 									) : (
@@ -317,23 +347,23 @@ export function AuditWorkspace({
 
 								{/* Semester Tabs */}
 								<Tabs
-									value={activeGradeSemTab}
-									onValueChange={setActiveGradeSemTab}
+									value={selectedApp.semester}
+									onValueChange={(semester) => {
+										const application = semesterApplications.find((item) => item.semester === semester);
+										if (application) onSelectApp(application.id);
+									}}
 									className="w-full"
 								>
 									<TabsList className="mb-3 h-8 w-fit rounded-md bg-muted p-0.5">
-										<TabsTrigger
-											value="1ST"
-											className="text-[11px] font-semibold h-7 px-3 rounded-md"
-										>
-											1st Semester
-										</TabsTrigger>
-										<TabsTrigger
-											value="2ND"
-											className="text-[11px] font-semibold h-7 px-3 rounded-md"
-										>
-											2nd Semester
-										</TabsTrigger>
+										{semesterApplications.map((application) => (
+											<TabsTrigger
+												key={application.id}
+												value={application.semester}
+												className="h-7 rounded-md px-3 text-[11px] font-semibold"
+											>
+												{application.semester === "1ST" ? "1st Semester" : "2nd Semester"}
+											</TabsTrigger>
+										))}
 									</TabsList>
 
 									{/* Grades Table */}
@@ -410,6 +440,40 @@ export function AuditWorkspace({
 				)}
 
 				{/* Design System Dialog for Flagging */}
+				<Dialog open={isEscalateDialogOpen} onOpenChange={setIsEscalateDialogOpen}>
+					<DialogContent className="gap-0 overflow-hidden rounded-lg border border-border bg-popover p-0 shadow-lg sm:max-w-[440px]">
+						<DialogHeader className="border-b border-border bg-card p-5">
+							<DialogTitle className="text-sm font-semibold text-foreground">
+								Escalate Application
+							</DialogTitle>
+						</DialogHeader>
+						<form onSubmit={handleEscalateSubmit} className="flex flex-col">
+							<div className="p-5">
+								<label htmlFor="escalationNote" className="text-xs font-semibold text-foreground">
+									Escalation Note
+								</label>
+								<Textarea
+									id="escalationNote"
+									rows={4}
+									value={escalationNote}
+									onChange={(e) => setEscalationNote(e.target.value)}
+									required
+									placeholder="Explain why this application needs president review..."
+									className="mt-1.5 resize-none rounded-md border-border bg-card p-2.5 text-xs"
+								/>
+							</div>
+							<DialogFooter className="gap-2 border-t border-border bg-muted/30 p-4">
+								<Button type="button" variant="ghost" size="sm" onClick={() => setIsEscalateDialogOpen(false)}>
+									Cancel
+								</Button>
+								<Button type="submit" size="sm" disabled={isEscalating}>
+									{isEscalating ? "Escalating..." : "Escalate"}
+								</Button>
+							</DialogFooter>
+						</form>
+					</DialogContent>
+				</Dialog>
+
 				<Dialog open={isFlagDialogOpen} onOpenChange={setIsFlagDialogOpen}>
 					<DialogContent className="gap-0 overflow-hidden rounded-lg border border-border bg-popover p-0 shadow-lg sm:max-w-[440px]">
 						<DialogHeader className="flex flex-row items-center justify-between border-b border-border bg-card p-5">

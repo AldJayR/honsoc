@@ -12,7 +12,7 @@ interface ApplicantQueueProps {
 	onAuditClick: (id: string) => void;
 }
 
-type StatusFilter = "ALL" | "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED" | "VERIFIED" | "REJECTED";
+type StatusFilter = "ALL" | "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED" | "VERIFIED" | "REJECTED" | "ESCALATED";
 
 const formatYearLevel = (yearStr: string) => {
 	return yearStr
@@ -34,6 +34,8 @@ const getStatusConfig = (status: string) => {
 			return { label: "Under Review", icon: HelpCircle, className: "bg-primary/10 text-primary border-primary/20" };
 		case "REJECTED":
 			return { label: "Rejected", icon: XCircle, className: "bg-muted text-muted-foreground border-border" };
+		case "ESCALATED":
+			return { label: "Escalated", icon: AlertTriangle, className: "bg-primary/10 text-primary border-primary/20" };
 		case "SUBMITTED":
 		default:
 			return { label: "Submitted", icon: HelpCircle, className: "bg-amber-500/10 text-amber-600 border-amber-500/20" };
@@ -131,6 +133,7 @@ export function ApplicantQueue({ applications, onAuditClick }: ApplicantQueuePro
 							<DropdownMenuItem onClick={() => setStatusFilter("FLAGGED")} className="cursor-pointer">Flagged</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => setStatusFilter("VERIFIED")} className="cursor-pointer">Verified</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => setStatusFilter("REJECTED")} className="cursor-pointer">Rejected</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setStatusFilter("ESCALATED")} className="cursor-pointer">Escalated</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 

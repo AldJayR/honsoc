@@ -7,7 +7,7 @@ export interface RepresentativeApplication {
 	yearLevel: string;
 	program: string;
 	gwa: number | null;
-	status: "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED" | "VERIFIED" | "REJECTED";
+	status: "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED" | "VERIFIED" | "REJECTED" | "ESCALATED";
 	referenceNo: string;
 	submittedAt: string;
 	student: {
@@ -65,6 +65,13 @@ export interface AuditLogEntry {
 	};
 }
 
+export interface AuditLogFilters {
+	action?: string;
+	from?: string;
+	to?: string;
+	timezoneOffset?: number;
+}
+
 export async function getAllApplications(): Promise<RepresentativeApplication[]> {
 	return apiClient<RepresentativeApplication[]>("/applications", {}, "Failed to fetch applications");
 }
@@ -92,12 +99,13 @@ export async function getApplicationGwa(id: string): Promise<ApplicationGwaRespo
 export async function updateApplicationStatus(
 	id: string,
 	status: string,
+	note?: string,
 ): Promise<{ id: string; status: string }> {
 	return apiClient<{ id: string; status: string }>(
 		`/applications/${id}/status`,
 		{
 			method: "PATCH",
-			body: { status },
+			body: { status, note },
 		},
 		"Failed to update status",
 	);
@@ -118,6 +126,12 @@ export async function flagApplication(
 	);
 }
 
-export async function getAuditLogs(): Promise<AuditLogEntry[]> {
-	return apiClient<AuditLogEntry[]>("/audit-log", {}, "Failed to fetch audit logs");
+export async function getAuditLogs(filters: AuditLogFilters = {}): Promise<AuditLogEntry[]> {
+	const query = new URLSearchParams(
+		Object.entries({ ...filters, timezoneOffset: new Date().getTimezoneOffset() })
+			.filter(([, value]) => value !== undefined && value !== "")
+			.map(([key, value]) => [key, String(value)]),
+	);
+	const suffix = query.size > 0 ? `?${query.toString()}` : "";
+	return apiClient<AuditLogEntry[]>(`/audit-log${suffix}`, {}, "Failed to fetch audit logs");
 }

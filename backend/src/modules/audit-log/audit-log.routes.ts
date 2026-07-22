@@ -2,6 +2,17 @@ import type { FastifyInstance } from "fastify";
 import type { FastifyZodOpenApiSchema } from "fastify-zod-openapi";
 import { requireRole } from "@/auth/guards.ts";
 import { getAuditLog } from "@/modules/audit-log/audit-log.service.ts";
+import { z } from "zod";
+
+const auditLogFilterSchema = z.object({
+	action: z.string().min(1).optional(),
+	from: z.iso.date().optional(),
+	to: z.iso.date().optional(),
+	timezoneOffset: z.coerce.number().int().min(-840).max(840).optional(),
+}).refine(
+	({ from, to }) => !from || !to || from <= to,
+	{ message: "'from' must be on or before 'to'" },
+);
 
 export async function auditLogRoutes(fastify: FastifyInstance) {
 	fastify.get(
@@ -13,6 +24,7 @@ export async function auditLogRoutes(fastify: FastifyInstance) {
 				description: "Returns filterable audit log with actor and application data.",
 				tags: ["Audit Log"],
 				security: [{ cookieAuth: [] }],
+				querystring: auditLogFilterSchema,
 				response: {
 					200: {
 						content: {
@@ -61,7 +73,8 @@ export async function auditLogRoutes(fastify: FastifyInstance) {
 			} satisfies FastifyZodOpenApiSchema,
 		},
 		async (request, reply) => {
-			const result = await getAuditLog();
+			const filters = auditLogFilterSchema.parse(request.query);
+			const result = await getAuditLog(filters);
 			return reply.send(result);
 		},
 	);

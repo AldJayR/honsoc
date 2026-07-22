@@ -156,7 +156,7 @@ NHSVS follows a **Digitized Audit Model**:
 | STA-01 | The student portal shall display a real-time application timeline for each submitted semester application with the following states: `Submitted → Under Review → Flagged / Verified → Final Honor Roll`. |
 | STA-02 | Each timeline state shall include a timestamp when it was entered. |
 | STA-03 | If an application is flagged, the student shall see: all reason codes applied, the admin's note for each reason, and an action interface to correct and re-submit the specific semester's details. |
-| STA-04 | Flag reason codes shall include at minimum: `DOC-001` (scan unreadable), `GRD-002` (grade mismatch), `DOC-003` (missing document), `GRD-004` (INC grade), `GRD-006` (GWA below threshold), `OTH-005` (other). |
+| STA-04 | Flag reasons shall include at minimum: `INCORRECT_GRADE`, `BLURRY_DOCUMENTS`, `INCOMPLETE_SUBMISSION`, and `OTHER`. |
 | STA-05 | On re-submission after a flag, the target application state shall return to `Under Review` and the admin queue shall be updated. The status of the student's other semester application (if any) shall remain unaffected. |
 | STA-06 | The student portal shall display the Honor Roll deadline and days remaining. |
 
@@ -288,7 +288,7 @@ applications (
   student_id    UUID REFERENCES users(id),
   term_id       INT REFERENCES terms(id),
   semester      ENUM('1ST','2ND'),      -- split independently
-  status        ENUM('SUBMITTED','UNDER_REVIEW','FLAGGED','VERIFIED','REJECTED'),
+  status        ENUM('SUBMITTED','UNDER_REVIEW','FLAGGED','VERIFIED','REJECTED','ESCALATED'),
   reference_no  TEXT UNIQUE NOT NULL,   -- unique reference per semester
   submitted_at  TIMESTAMPTZ DEFAULT NOW(),
   reviewed_by   UUID REFERENCES users(id),

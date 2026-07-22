@@ -18,14 +18,30 @@ export async function updateApplicationStatus(
 	actorId: string,
 	actorRole: string,
 	newStatus: string,
+	note?: string,
 ): Promise<{ id: string; status: string }> {
 	const app = await db.query.applications.findFirst({
 		where: eq(applications.id, applicationId),
-		with: { grades: true },
+		with: { grades: true, documents: true },
 	});
 	if (!app) throw new NotFoundError("Application not found");
 
 	if (newStatus === "VERIFIED") {
+		const requiredDocumentTypes = [
+			"COR",
+			"GMC",
+			app.semester === "1ST" ? "COG_1ST" : "COG_2ND",
+		];
+		const uploadedDocumentTypes = new Set(app.documents.map((document) => document.docType));
+		const missingDocuments = requiredDocumentTypes.filter(
+			(documentType) => !uploadedDocumentTypes.has(documentType),
+		);
+		if (missingDocuments.length > 0) {
+			throw new UnprocessableError(
+				`Cannot verify: missing required documents (${missingDocuments.join(", ")})`,
+			);
+		}
+
 		const term = await db.query.terms.findFirst({
 			where: eq(terms.id, app.termId),
 		});
@@ -46,7 +62,7 @@ export async function updateApplicationStatus(
 		const [updated] = await tx
 			.update(applications)
 			.set({
-				status: newStatus as "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED" | "VERIFIED" | "REJECTED",
+				status: newStatus as "SUBMITTED" | "UNDER_REVIEW" | "FLAGGED" | "VERIFIED" | "REJECTED" | "ESCALATED",
 				reviewedBy: newStatus === "VERIFIED" ? actorId : undefined,
 			})
 			.where(eq(applications.id, applicationId))
@@ -57,8 +73,9 @@ export async function updateApplicationStatus(
 		const auditAction = newStatus === "VERIFIED" ? "VERIFIED"
 			: newStatus === "FLAGGED" ? "FLAGGED"
 			: newStatus === "REJECTED" ? "REJECTED"
+			: newStatus === "ESCALATED" ? "ESCALATED"
 			: "REVIEWED";
-		await logAction(actorId, applicationId, auditAction, null, tx);
+		await logAction(actorId, applicationId, auditAction, newStatus === "ESCALATED" ? note : null, tx);
 
 		return updated;
 	});

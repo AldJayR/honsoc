@@ -9,6 +9,7 @@ import {
 	updateApplicationStatus,
 	flagApplication,
 	getAuditLogs,
+	type AuditLogFilters,
 } from "@/shared/services/representative.api";
 
 export const repKeys = {
@@ -19,7 +20,7 @@ export const repKeys = {
 	documents: (id: string) => [...repKeys.all, "documents", id] as const,
 	flags: (id: string) => [...repKeys.all, "flags", id] as const,
 	gwa: (id: string) => [...repKeys.all, "gwa", id] as const,
-	auditLogs: () => [...repKeys.all, "audit-logs"] as const,
+	auditLogs: (filters: AuditLogFilters = {}) => [...repKeys.all, "audit-logs", filters] as const,
 };
 
 export function useAllApplications() {
@@ -73,12 +74,12 @@ export function useUpdateApplicationStatus() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: ({ id, status }: { id: string; status: string }) =>
-			updateApplicationStatus(id, status),
+		mutationFn: ({ id, status, note }: { id: string; status: string; note?: string }) =>
+			updateApplicationStatus(id, status, note),
 		onSuccess: (_, { id }) => {
 			queryClient.invalidateQueries({ queryKey: repKeys.applications() });
 			queryClient.invalidateQueries({ queryKey: repKeys.application(id) });
-			queryClient.invalidateQueries({ queryKey: repKeys.auditLogs() });
+			queryClient.invalidateQueries({ queryKey: [...repKeys.all, "audit-logs"] });
 		},
 	});
 }
@@ -97,14 +98,14 @@ export function useFlagApplication() {
 			queryClient.invalidateQueries({ queryKey: repKeys.applications() });
 			queryClient.invalidateQueries({ queryKey: repKeys.application(id) });
 			queryClient.invalidateQueries({ queryKey: repKeys.flags(id) });
-			queryClient.invalidateQueries({ queryKey: repKeys.auditLogs() });
+			queryClient.invalidateQueries({ queryKey: [...repKeys.all, "audit-logs"] });
 		},
 	});
 }
 
-export function useAuditLogs() {
+export function useAuditLogs(filters: AuditLogFilters) {
 	return useQuery({
-		queryKey: repKeys.auditLogs(),
-		queryFn: getAuditLogs,
+		queryKey: repKeys.auditLogs(filters),
+		queryFn: () => getAuditLogs(filters),
 	});
 }

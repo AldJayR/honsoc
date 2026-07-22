@@ -2,11 +2,13 @@ import { useState, useMemo } from "react";
 import { Search, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { AuditLogEntry } from "@/shared/services/representative.api";
+import type { AuditLogEntry, AuditLogFilters } from "@/shared/services/representative.api";
 import { MetricCard } from "./MetricCard";
 
 interface AuditLogsProps {
 	auditLogs: AuditLogEntry[];
+	filters: AuditLogFilters;
+	onFiltersChange: (filters: AuditLogFilters) => void;
 }
 
 const formatAction = (action: string) => {
@@ -17,6 +19,8 @@ const formatAction = (action: string) => {
 			return { label: "Flagged applicant", className: "text-destructive font-semibold" };
 		case "REJECTED":
 			return { label: "Rejected applicant", className: "text-muted-foreground font-semibold" };
+		case "ESCALATED":
+			return { label: "Escalated to president", className: "text-primary font-semibold" };
 		default:
 			return { label: "Reviewed application", className: "text-foreground font-medium" };
 	}
@@ -34,7 +38,7 @@ const formatTimestamp = (timestampStr: string) => {
 	});
 };
 
-export function AuditLogs({ auditLogs }: AuditLogsProps) {
+export function AuditLogs({ auditLogs, filters, onFiltersChange }: AuditLogsProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const filteredLogs = useMemo(() => {
@@ -85,6 +89,31 @@ export function AuditLogs({ auditLogs }: AuditLogsProps) {
 						className="h-9 border-border bg-card pl-9 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
 					/>
 				</div>
+				<select
+					value={filters.action ?? ""}
+					onChange={(event) => onFiltersChange({ ...filters, action: event.target.value || undefined })}
+					className="h-9 rounded-md border border-border bg-card px-3 text-xs"
+				>
+					<option value="">All actions</option>
+					<option value="VERIFIED">Verified</option>
+					<option value="FLAGGED">Flagged</option>
+					<option value="ESCALATED">Escalated</option>
+					<option value="REJECTED">Rejected</option>
+				</select>
+				<Input
+					type="date"
+					value={filters.from ?? ""}
+					onChange={(event) => onFiltersChange({ ...filters, from: event.target.value || undefined })}
+					aria-label="From date"
+					className="h-9 w-auto border-border bg-card text-xs"
+				/>
+				<Input
+					type="date"
+					value={filters.to ?? ""}
+					onChange={(event) => onFiltersChange({ ...filters, to: event.target.value || undefined })}
+					aria-label="To date"
+					className="h-9 w-auto border-border bg-card text-xs"
+				/>
 			</div>
 
 			{/* Table Card */}

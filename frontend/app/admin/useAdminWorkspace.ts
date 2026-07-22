@@ -13,6 +13,7 @@ import {
 } from "@/shared/services/queries/representative";
 import { signOut } from "@/shared/services/auth.api";
 import type { UserProfile } from "@/shared/services/auth.api";
+import type { AuditLogFilters } from "@/shared/services/representative.api";
 
 export type TabType = "dashboard" | "queue" | "audit" | "flagged" | "logs";
 
@@ -25,10 +26,11 @@ export function useAdminWorkspace({ user, onSwitchToStudent }: UseAdminWorkspace
 	const queryClient = useQueryClient();
 	const [activeTab, setActiveTab] = useState<TabType>("dashboard");
 	const [selectedAuditAppId, setSelectedAuditAppId] = useState<string | null>(null);
+	const [auditLogFilters, setAuditLogFilters] = useState<AuditLogFilters>({});
 
 	// Load global applications list and audit logs
 	const { data: applications = [], isLoading: isAppsLoading, error: appsError } = useAllApplications();
-	const { data: auditLogs = [], isLoading: isLogsLoading, error: logsError } = useAuditLogs();
+	const { data: auditLogs = [], isLoading: isLogsLoading, error: logsError } = useAuditLogs(auditLogFilters);
 
 	// Load audited applicant subqueries
 	const { data: selectedApp, isLoading: isAppLoading } = useApplicationById(selectedAuditAppId || "");
@@ -90,8 +92,20 @@ export function useAdminWorkspace({ user, onSwitchToStudent }: UseAdminWorkspace
 		}
 	};
 
-	const handleEscalate = () => {
-		toast.info("Escalation workflow triggered. Admin review requested.");
+	const handleEscalate = async (note: string) => {
+		if (!selectedAuditAppId) return;
+		try {
+			await updateStatusMutation.mutateAsync({
+				id: selectedAuditAppId,
+				status: "ESCALATED",
+				note,
+			});
+			toast.success("Application escalated to the president.");
+		} catch (error: unknown) {
+				const msg = error instanceof Error ? error.message : "Escalation failed";
+				toast.error(msg);
+				throw error;
+		}
 	};
 
 	return {
@@ -101,6 +115,8 @@ export function useAdminWorkspace({ user, onSwitchToStudent }: UseAdminWorkspace
 		setSelectedAuditAppId,
 		applications,
 		auditLogs,
+		auditLogFilters,
+		setAuditLogFilters,
 		selectedApp,
 		isAppLoading,
 		grades,
@@ -112,6 +128,7 @@ export function useAdminWorkspace({ user, onSwitchToStudent }: UseAdminWorkspace
 		logsError,
 		isVerifying: updateStatusMutation.isPending,
 		isFlagging: flagApplicationMutation.isPending,
+		isEscalating: updateStatusMutation.isPending,
 
 		// Handlers
 		handleLogout,

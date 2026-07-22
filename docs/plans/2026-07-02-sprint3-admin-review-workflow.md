@@ -3,7 +3,7 @@
 **Project:** NEUST Honor Society Verification System (NHSVS)
 **Sprint:** 3 (Backend + Frontend — Admin Review Workflow)
 **Date:** 2026-07-02
-**Status:** Planned
+**Status:** Implemented (president escalation resolution and endpoint integration tests remain deferred)
 
 ---
 
@@ -22,16 +22,23 @@ Build the admin review loop: the critical path where a `COLLEGE_ADMIN` reviews s
 - **Admin Management** — edit/deactivate officers, resend invite
 
 ### Frontend Pages (new under `frontend/app/admin/`)
-- **Dashboard** — stats cards, applicant queue with status/semester filters
-- **Audit Workspace** — split-screen review: document scans (COR/COG/GMC) + computed grade table + GWA. Verify / Flag (modal with reason code + note) / Reject actions
+- **Dashboard** — stats cards and applicant queue with status filters
+- **Audit Workspace** — split-screen review: document scans (COR/COG/GMC) + computed grade table + GWA. Verify / Flag (modal with reason + note) / Escalate actions
 - **Audit Log** — filterable action log
+
+### Implementation Record
+- Flag reasons use descriptive API values: `INCORRECT_GRADE`, `BLURRY_DOCUMENTS`, `INCOMPLETE_SUBMISSION`, and `OTHER`.
+- Verification is blocked in the UI and API when grades/GWA disqualify an applicant or the required COR, GMC, or semester-specific COG is absent.
+- The audit workspace derives semester tabs from applications for the same student and term. A single-semester submission shows one tab; paired applications show both tabs.
+- Audit logs filter by action and local calendar date range.
+- Escalation sets the application status to `ESCALATED`, requires an admin note, and writes an `ESCALATED` audit entry. President-side queue resolution remains Sprint 4 work.
 
 ---
 
 ## Constraints & Design Decisions
 
 - **No college scoping** — `COLLEGE_ADMIN` sees all applications for now. Scoping by `department_id` or `campus_id` deferred.
-- **Hard-block on VERIFY** — `PATCH /api/applications/:id/status` with `status: VERIFIED` shall return `422 Unprocessable Entity` if any disqualifying condition exists (INC, 5.0, GWA > threshold). This cannot be bypassed via direct API calls (SRS Constraint #6).
+- **Hard-block on VERIFY** — `PATCH /api/applications/:id/status` with `status: VERIFIED` shall return `422 Unprocessable Entity` if any disqualifying condition exists (INC, 5.0, GWA > threshold) or required documents are missing. This cannot be bypassed via direct API calls.
 - **Audit log is append-only** — No update/delete exposed. Entries are inserted by the service layer during status transitions, not via direct POST.
 - **Flag → FLAGGED status** — POSTing a flag automatically sets the application status to `FLAGGED`. The PATCH endpoint for `FLAGGED` exists but the flags endpoint is the canonical path.
 - **Style conventions** match existing codebase: no unnecessary abstractions, module-level imports from `@/db`, `vi.mock()` for unit tests, `tsc --noEmit` zero errors.
@@ -45,14 +52,14 @@ Build the admin review loop: the critical path where a `COLLEGE_ADMIN` reviews s
 | 1 | DB schemas: flags, audit_log | Backend | Create `src/db/schema/flags.ts`, `src/db/schema/audit-log.ts`, barrel export, generate migration |
 | 2 | Flags module | Backend | `src/modules/flags/` — service (`createFlag`, `getFlags`) + routes (POST, GET) + schema |
 | 3 | Audit log module | Backend | `src/modules/audit-log/` — service (`logAction`, `getAuditLog`) + routes (GET with filters) |
-| 4 | PATCH application status | Backend | Extend `application.service.ts` + `application.routes.ts` — `updateApplicationStatus` with hard-block, sets `reviewedBy`, writes audit entry |
+| 4 | PATCH application status | Backend | Extend `application.service.ts` + `application.routes.ts` — document/disqualifier hard-block, escalation note, `reviewedBy`, and audit entry |
 | 5 | Admin management | Backend | Extend `user.service.ts` + `user.routes.ts` — PUT edit officer, DELETE deactivate, POST resend-invite |
 | 6 | Unit tests | Backend | `src/modules/flags/flags.service.test.ts`, `src/modules/audit-log/audit-log.service.test.ts`, extend `application.service.test.ts` |
 | 7 | Wire routes + typecheck | Backend | Register flag routes, audit-log routes in `app.ts`. Full typecheck + test pass |
 | 8 | Frontend: Admin dashboard | Frontend | Stats cards (total/pending/verified/flagged), applicant queue table with filters |
 | 9 | Frontend: Audit workspace | Frontend | Split-screen: left = document viewer (COR/COG/GMC tabs), right = grade table + GWA + actions |
 | 10 | Frontend: Flag modal + Audit log | Frontend | Flag modal (reason code select + note). Audit log page with filter controls |
-| 11 | Integration tests | Both | Extend test coverage for new endpoints |
+| 11 | Integration tests | Both | Deferred: extend endpoint coverage beyond service-unit tests |
 
 ---
 
@@ -159,17 +166,15 @@ export { auditLog, auditLogRelations } from "./audit-log.ts";
 ```typescript
 import { z } from "zod";
 
-export const FLAG_REASON_CODES = [
-	"DOC-001",  // Scan unreadable
-	"GRD-002",  // Grade mismatch
-	"DOC-003",  // Missing document
-	"GRD-004",  // INC grade
-	"GRD-006",  // GWA below threshold
-	"OTH-005",  // Other
+export const FLAG_REASONS = [
+	"INCORRECT_GRADE",
+	"BLURRY_DOCUMENTS",
+	"INCOMPLETE_SUBMISSION",
+	"OTHER",
 ] as const;
 
 export const createFlagSchema = z.object({
-	reasonCode: z.enum(FLAG_REASON_CODES),
+	reasonCode: z.enum(FLAG_REASONS),
 	note: z.string().min(1, "Note is required"),
 });
 
@@ -275,13 +280,13 @@ export async function logAction(
 	await db.insert(auditLog).values({ actorId, applicationId, action, note });
 }
 
-export async function getAuditLog(filters?: {
-	termId?: number;
-	semester?: string;
+export async function getAuditLog(filters: {
 	action?: string;
-}) {
-	const conditions: Array<ReturnType<typeof eq>> = [];
-	// TODO: add filter conditions when applications join is needed
+	from?: string;
+	to?: string;
+	timezoneOffset?: number;
+} = {}) {
+	// Filter by action and the browser's local calendar-day boundaries.
 	return db.query.auditLog.findMany({
 		orderBy: [desc(auditLog.createdAt)],
 		with: {
@@ -296,7 +301,7 @@ export async function getAuditLog(filters?: {
 
 | Method | Path | Guard | Handler |
 |--------|------|-------|---------|
-| GET | `/api/audit-log` | `requireRole("COLLEGE_ADMIN", "PRESIDENT")` | Call `getAuditLog`, return array |
+| GET | `/api/audit-log?action=&from=&to=&timezoneOffset=` | `requireRole("COLLEGE_ADMIN", "PRESIDENT")` | Return action/date-filtered entries |
 
 ---
 
@@ -315,12 +320,12 @@ export async function updateApplicationStatus(
 ): Promise<{ id: string; status: string }> {
 	const app = await db.query.applications.findFirst({
 		where: eq(applications.id, applicationId),
-		with: { grades: true },
+	with: { grades: true, documents: true },
 	});
 	if (!app) throw new NotFoundError("Application not found");
 
 	if (newStatus === "VERIFIED") {
-		// Hard-block: check disqualifiers
+		// Hard-block: check required documents and disqualifiers
 		const term = await db.query.terms.findFirst({
 			where: eq(terms.id, app.termId),
 		});
@@ -350,8 +355,9 @@ export async function updateApplicationStatus(
 	const auditAction = newStatus === "VERIFIED" ? "VERIFIED"
 		: newStatus === "FLAGGED" ? "FLAGGED"
 		: newStatus === "REJECTED" ? "REJECTED"
+		: newStatus === "ESCALATED" ? "ESCALATED"
 		: "REVIEWED";
-	await logAction(actorId, applicationId, auditAction);
+	await logAction(actorId, applicationId, auditAction, note);
 
 	return updated!;
 }
@@ -363,7 +369,7 @@ Add:
 
 | Method | Path | Guard | Handler |
 |--------|------|-------|---------|
-| PATCH | `/api/applications/:id/status` | `requireRole("COLLEGE_ADMIN", "PRESIDENT")` | Parse `{ status }`, call `updateApplicationStatus`, return updated |
+| PATCH | `/api/applications/:id/status` | `requireRole("COLLEGE_ADMIN", "PRESIDENT")` | Parse `{ status, note? }`; `ESCALATED` requires `note` |
 
 ---
 
@@ -457,7 +463,7 @@ Run `pnpm typecheck` → zero errors. Run `pnpm test` → all tests pass.
 **Dashboard page** (`routes/admin.tsx`):
 - Stats row: Total | Pending | Verified | Flagged counts
 - Applicant queue: table with columns (Reference #, Student Name, Semester, Status, GWA, Submitted At, Actions)
-- Filters: status dropdown, semester dropdown
+- Filters: status dropdown
 - Click row → navigate to audit workspace (`/admin/applications/:id`)
 
 **Data source:** `GET /api/applications` (new endpoint or reuse existing). Need a service-side endpoint that returns all applications for COLLEGE_ADMIN/PRESIDENT — extend `application.service.ts` with `getAllApplications(role)`.
@@ -479,20 +485,22 @@ Run `pnpm typecheck` → zero errors. Run `pnpm test` → all tests pass.
 - Grade table: subject code, subject name, units, entered grade, match indicator (✓/✕)
 - Computed GWA with threshold indicator
 - Documents completeness chips
-- Action buttons: Verify (green), Flag (yellow), Reject (red)
-  - Verify: disabled if disqualifiers exist (check on load + show warning)
-  - Flag: opens modal with reason code dropdown + note textarea
+- Action buttons: Verify (green), Flag (yellow), Escalate
+	- Verify: disabled if disqualifiers exist or COR, GMC, or the semester-specific COG is missing (check on load + show warning)
+	- Flag: opens modal with reason code dropdown + note textarea
+	- Escalate: opens a modal requiring an escalation note, then sets `ESCALATED` and records the note in the audit log
+	- Semester tabs show only the current semester unless paired applications for the same student and term exist
 
 ---
 
 ### Task 10: Frontend — Flag Modal + Audit Log
 
 **Flag Modal:**
-- Reason code selector (enum: DOC-001, GRD-002, etc. with description tooltip)
+- Reason selector (`INCORRECT_GRADE`, `BLURRY_DOCUMENTS`, `INCOMPLETE_SUBMISSION`, `OTHER`)
 - Note textarea (required, min 1 char)
 - Submit → `POST /api/applications/:id/flags`
 
-**Audit Log Page** (`/admin/audit-log`):
+**Audit Log Page** (dashboard Audit Logs tab):
 - Table: Timestamp, Actor, Action, Application, Note
 - Filters: action type dropdown, date range
 - Data: `GET /api/audit-log`
@@ -501,7 +509,7 @@ Run `pnpm typecheck` → zero errors. Run `pnpm test` → all tests pass.
 
 ### Task 11: Integration Tests
 
-Extend test suite with integration tests for:
+Deferred integration tests should cover:
 - Flag creation → verifies FLAGGED status + audit entry exists
 - Verify clean application → status changes, reviewedBy set
 - Verify disqualified application → 422, status unchanged
@@ -512,23 +520,25 @@ Extend test suite with integration tests for:
 ## Acceptance Criteria
 
 ### Backend
-- [ ] `POST /api/applications/:id/flags` sets status to FLAGGED and writes audit entry
-- [ ] `GET /api/applications/:id/flags` returns flags for authorized roles
-- [ ] `GET /api/audit-log` returns entries with actor + application data, filterable
-- [ ] `PATCH /api/applications/:id/status` with `VERIFIED` hard-blocks (422) when disqualifiers exist
-- [ ] `PATCH /api/applications/:id/status` with `VERIFIED` succeeds on clean app, sets reviewedBy, writes audit
-- [ ] `PUT /api/admin/officers/:id` updates officer role/campus/department
-- [ ] `DELETE /api/admin/officers/:id` sets status to INACTIVE (not DELETE)
-- [ ] `POST /api/admin/officers/:id/resend-invite` sends invite for INVITE_PENDING accounts
-- [ ] `tsc --noEmit` passes with zero errors
-- [ ] All unit tests pass
+- [x] `POST /api/applications/:id/flags` sets status to FLAGGED and writes audit entry
+- [x] `GET /api/applications/:id/flags` returns flags for authorized roles
+- [x] `GET /api/audit-log` returns entries with actor + application data, filterable by action and local date range
+- [x] `PATCH /api/applications/:id/status` with `VERIFIED` hard-blocks (422) when disqualifiers exist or required documents are missing
+- [x] `PATCH /api/applications/:id/status` with `VERIFIED` succeeds on clean app, sets reviewedBy, writes audit
+- [x] `PATCH /api/applications/:id/status` with `ESCALATED` requires a note and writes audit
+- [x] `PUT /api/admin/officers/:id` updates officer role/campus/department
+- [x] `DELETE /api/admin/officers/:id` sets status to INACTIVE (not DELETE)
+- [x] `POST /api/admin/officers/:id/resend-invite` sends invite for INVITE_PENDING accounts
+- [x] `tsc --noEmit` passes with zero errors
+- [x] All unit tests pass
 
 ### Frontend
-- [ ] Admin dashboard shows stats and applicant queue with filters
-- [ ] Audit workspace renders split-screen: document viewer + review panel
-- [ ] Verify button is disabled when disqualifiers exist with a visible warning
-- [ ] Flag modal requires reason code + note before submission
-- [ ] Audit log page displays filterable action log
+- [x] Admin dashboard shows stats and applicant queue with filters
+- [x] Audit workspace renders split-screen: document viewer + review panel
+- [x] Verify button is disabled when disqualifiers or required documents exist with a visible warning
+- [x] Flag modal requires a reason and note before submission
+- [x] Audit log page displays filterable action log
+- [x] Escalate requires a note and records the action
 
 ---
 
@@ -536,7 +546,7 @@ Extend test suite with integration tests for:
 
 - **President dashboard / governance pages** — Sprint 4
 - **Honor Roll generation + export** — Sprint 4
-- **Escalation workflow** (admin → president → approve/return) — Sprint 4
+- **President escalation queue and approve/return resolution** — Sprint 4
 - **Flag resolve / re-submission** (student corrects flagged app) — Sprint 4
 - **College-level access scoping** — deferred until seeded data
 - **Email notifications for status changes** — deferred
